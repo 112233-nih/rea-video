@@ -1,0 +1,153 @@
+"""Overlay layers: things composited on top of the base picture.
+
+1. Static overlays: pixels that stay frozen while the rest of the shot changes
+   (titles, logos, watermarks, layout frames) -> almost always rendered by code/editor.
+2. Text (OCR, optional rapidocr): subtitle band, titles, labels; text that changes at a
+   fixed band in sync with speech is a subtitle track.
+3. Persistent template: regions frozen across *all* shots (layout skins, watermarks)."""
+from __future__ import annotations
+
+import cv2
+import numpy as np
+
+from .util import LOG
+
+_OCR = None
+_OCR_FAILED = False
+
+
+def get_ocr():
+    global _OCR, _OCR_FAILED
+    if _OCR is None and not _OCR_FAILED:
+        try:
+            from rapidocr_onnxruntime import RapidOCR  # type: ignore
+
+            _OCR = RapidOCR()
+        except Exception as exc:  # pragma: no cover - optional dependency
+            LOG.warning("OCR disabled (pip install rapidocr-onnxruntime to enable): %s", exc)
+            _OCR_FAILED = True
+    return _OCR
+
+
+def _boxes_from_mask(mask: np.ndarray, min_area_frac: float = 0.002) -> list[list[int]]:
+    h, w = mask.shape
+    m = cv2.morphologyEx(mask.astype(np.uint8) * 255, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+    n, _labels, stats, _ = cv2.connectedComponentsWithStats(m, connectivity=8)
+    boxes = []
+    for i in range(1, n):
+        x, y, bw, bh, area = stats[i]
+        if area >= min_area_frac * h * w:
+            boxes.append([int(x), int(y), int(bw), int(bh)])
+    return boxes
+
+
+def _band(y_center: float, h: int) -> str:
+    r = y_center / h
+    if r < 0.22:
+        return "top"
+    if r > 0.70:
+        return "bottom"
+    return "middle"
+
+
+def static_overlays(frames: list[np.ndarray]) -> dict:
+    """Detect frozen, edge-rich regions while the shot's background changes."""
+    if len(frames) < 4:
+        return {"background_changes": False, "boxes": [], "static_edge_ratio": 0.0}
+    grays = np.stack([cv2.cvtColor(f, cv2.COLOR_BGR2GRAY).astype(np.float32) for f in frames])
+    std = grays.std(axis=0)
+    h, w = std.shape
+    moving = std > 6.0
+    background_changes = bool(moving.mean() > 0.15)
+    edges = cv2.Canny(grays[len(grays) // 2].astype(np.uint8), 60, 160) > 0
+    edges = cv2.dilate(edges.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    frozen = std < 1.5
+    static_edges = frozen & edges
+    out = {"background_changes": background_changes, "boxes": [],
+           "static_edge_ratio": float(static_edges.sum() / max(1, edges.sum()))}
+    if not background_changes:
+        return out
+    # keep only frozen edge clusters (text/graphics), not large flat frozen areas
+    for x, y, bw, bh in _boxes_from_mask(static_edges, 0.0015):
+        density = float(static_edges[y:y + bh, x:x + bw].mean())
+        if density < 0.06:
+            continue
+        out["boxes"].append({"bbox": [x / w, y / h, bw / w, bh / h], "band": _band(y + bh / 2, h), "edge_density": density})
+    return out
+
+
+def ocr_frames(frames: list[np.ndarray], times: list[float], max_frames: int = 4) -> list[dict]:
+    ocr = get_ocr()
+    if ocr is None or not frames:
+        return []
+    idx = np.unique(np.linspace(0, len(frames) - 1, num=min(max_frames, len(frames))).round().astype(int))
+    results = []
+    for i in idx:
+        f = frames[i]
+        h, w = f.shape[:2]
+        scale = 1.0
+        if w < 720:  # upscale small analysis frames for better CJK recognition
+            scale = 720 / w
+            f = cv2.resize(f, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        try:
+            res, _ = ocr(f)
+        except Exception as exc:  # pragma: no cover
+            LOG.debug("ocr failed: %s", exc)
+            continue
+        for box, text, conf in res or []:
+            pts = np.array(box, dtype=np.float32) / scale
+            x0, y0 = pts.min(axis=0)
+            x1, y1 = pts.max(axis=0)
+            ang = float(np.degrees(np.arctan2(pts[1][1] - pts[0][1], pts[1][0] - pts[0][0])))
+            results.append({"t": round(times[i], 3), "text": text, "conf": float(conf),
+                            "bbox": [float(x0 / w), float(y0 / h), float((x1 - x0) / w), float((y1 - y0) / h)],
+                            "band": _band((y0 + y1) / 2, h), "angle": round(ang, 1)})
+    return results
+
+
+def summarize_text(items: list[dict]) -> dict:
+    """Group OCR hits into tracks: same band + similar x-position."""
+    if not items:
+        return {"tracks": [], "text_coverage": 0.0}
+    tracks: list[dict] = []
+    for it in sorted(items, key=lambda d: (d["band"], d["t"])):
+        cx = it["bbox"][0] + it["bbox"][2] / 2
+        cy = it["bbox"][1] + it["bbox"][3] / 2
+        hit = None
+        for tr in tracks:
+            if tr["band"] == it["band"] and abs(tr["cy"] - cy) < 0.06:
+                hit = tr
+                break
+        if hit is None:
+            hit = {"band": it["band"], "cy": cy, "cx": cx, "texts": [], "times": [], "heights": [], "axis_aligned": True}
+            tracks.append(hit)
+        if it["text"] not in hit["texts"]:
+            hit["texts"].append(it["text"])
+        hit["times"].append(it["t"])
+        hit["heights"].append(it["bbox"][3])
+        hit["axis_aligned"] = hit["axis_aligned"] and abs(it["angle"]) < 3
+    out = []
+    for tr in tracks:
+        changing = len(tr["texts"]) > 1
+        kind = "subtitle" if tr["band"] == "bottom" and changing else ("title" if tr["band"] == "top" else "label")
+        if tr["band"] == "middle" and changing:
+            kind = "subtitle"
+        out.append({"kind": kind, "band": tr["band"], "texts": tr["texts"][:12], "changing": changing,
+                    "axis_aligned": tr["axis_aligned"], "text_height": float(np.median(tr["heights"])),
+                    "y_center": round(tr["cy"], 3)})
+    cov = float(sum(i["bbox"][2] * i["bbox"][3] for i in items) / max(1, len({i["t"] for i in items})))
+    return {"tracks": out, "text_coverage": cov, "items": items[:80]}
+
+
+def persistent_template(frames: list[np.ndarray]) -> dict:
+    """Regions frozen across the whole video (sampled across shots)."""
+    if len(frames) < 6:
+        return {"frozen_ratio": 0.0, "boxes": []}
+    grays = np.stack([cv2.cvtColor(f, cv2.COLOR_BGR2GRAY).astype(np.float32) for f in frames])
+    std = grays.std(axis=0)
+    frozen = std < 2.0
+    h, w = std.shape
+    edges = cv2.Canny(grays[0].astype(np.uint8), 60, 160) > 0
+    boxes = [{"bbox": [x / w, y / h, bw / w, bh / h], "band": _band(y + bh / 2, h)}
+             for x, y, bw, bh in _boxes_from_mask(frozen & edges, 0.001)]
+    return {"frozen_ratio": float(frozen.mean()), "frozen_edge_ratio": float((frozen & edges).sum() / max(1, edges.sum())), "boxes": boxes[:20]}

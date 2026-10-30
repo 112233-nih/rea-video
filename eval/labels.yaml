@@ -1,0 +1,110 @@
+# rea-video 评测集：真实制作方式已知的视频（大部分来自 capsule-cinema 的生产记录）
+# label 可以是字符串或可接受标签列表；segments: [[start, end, label|list], ...] 覆盖整片
+# real_material: 是否引入用户真实素材（实拍/照片/截图/录屏），true/false 或 [[start, end, true|false], ...]
+# root 变量：${CAPSULE} = capsule-cinema 仓库路径（环境变量 CAPSULE_CINEMA_ROOT，默认 ~/code/github/capsule-cinema）
+videos:
+  - id: monkey_wine_v1
+    real_material: false
+    path: ${CAPSULE}/output/monkey_wine/monkey_wine_final.mp4
+    label: static_hold            # AI 生成的插画静帧逐张停留
+    image_source: ai_image
+    cuts: [4.80, 10.12, 15.96, 20.72, 24.88, 29.04, 33.28, 37.80, 43.76]
+    source: capsule-cinema 产出，10 张 AI 图按旁白时长拼接
+
+  - id: monkey_wine_v3
+    audio: {music_source: ai_generated, voice: true, music: true, sfx: false}   # tts.py + bgm.py（Suno 生成的 BGM），无 sfx
+    real_material: false
+    path: ${CAPSULE}/output/monkey_wine_v3/release/monkey_wine_v3.mp4
+    label: ai_video               # MiniMax H3 首尾帧生成的"3D 手办"风格 AI 视频 + 代码字幕
+    cuts: [7.071, 12.621, 17.307, 23.397, 28.485, 32.493, 38.475, 45.219, 50.379, 57.621, 60.507, 69.087, 77.883, 80.085]
+    cut_tolerance: 0.3            # 0.25s xfade 交叉溶解
+    source: capsule-cinema work/timeline.json（workflow minimax_h3_lightx2v_v5）
+
+  - id: monkey_wine_v3_clip
+    real_material: false
+    path: ${CAPSULE}/output/monkey_wine_v3/clips/s01_flf.mp4
+    label: ai_video
+    source: MiniMax H3 原始输出
+
+  - id: h3_human_clip
+    real_material: false
+    path: ${CAPSULE}/output/dual_role_social_account_doctor_20260930/h3/human_s1_seed9300101.mp4
+    label: ai_video
+    source: MiniMax H3 原始输出（写实人物）
+
+  - id: autodl_h3
+    real_material: false
+    path: ${CAPSULE}/output/channel-tests/autodl-h3.mp4
+    label: ai_video
+    source: H3 渠道测试输出
+
+  - id: dual_role_human
+    real_material: [[0.000, 1.375, true], [1.375, 3.875, false], [3.875, 5.833, true], [5.833, 7.542, false], [7.542, 10.542, true], [10.542, 11.542, false], [11.542, 13.458, true], [13.458, 16.125, false], [16.125, 19.100, true]]
+    path: ${CAPSULE}/output/dual_role_social_account_doctor_20260930/release/social_account_doctor_human_v1.mp4
+    # human_timeline.json：face=H3 AI 人物；verdict/covers/top9/fixes/github=截图面板
+    segments:
+      - [0.000, 1.375, [screen_capture, code_render, static_hold]]
+      - [1.375, 3.875, ai_video]
+      - [3.875, 5.833, [screen_capture, code_render, static_hold]]
+      - [5.833, 7.542, ai_video]
+      - [7.542, 10.542, [screen_capture, code_render, static_hold]]
+      - [10.542, 11.542, ai_video]
+      - [11.542, 13.458, [screen_capture, code_render, static_hold]]
+      - [13.458, 16.125, ai_video]
+      - [16.125, 19.100, [ai_video, screen_capture, code_render, static_hold]]
+    source: capsule-cinema dual_role 生产时间线
+
+  - id: github_recording
+    real_material: true
+    path: ${CAPSULE}/output/capability_test/github_recording.mp4
+    label: screen_capture
+    source: 真实浏览器滚动录屏
+
+  - id: salted_egg_plush
+    audio: {music_source: ai_generated, voice: true, music: true, sfx: true, bpm: 110.15, key: "D major"}   # bgm_fit.json（Suno 曲 "Monkey Wine Pop"）+ cues.py
+    real_material: false
+    path: ${CAPSULE}/output/salted_egg_plush/final.mp4
+    label: cg_3d                  # plush_diorama_science：Blender 本地渲染 + 代码字幕
+    source: capsule-cinema plush_diorama_science 配方
+
+  - id: murphy_shape
+    real_material: false
+    path: ${CAPSULE}/output/murphy_shape/build/murphy_shape_B.mp4
+    label: [code_render, cg_3d]   # 代码渲染的暗色 MG（含 3D 骰子）
+    source: capsule-cinema murphys_law_shape 配方
+
+  - id: mediank_pure_data
+    audio: {music_source: existing_library, voice: false, music: true, sfx: true}   # 曲库 BGM（manten diloty）+ mixkit 键盘音效，无旁白
+    real_material: true
+    path: ${CAPSULE}/artifacts/video_runs/production/mediank_pure_data_20261004/release/20261004_verified_skills_v1/public/video.mp4
+    label: code_render
+    source: capsule-cinema mediank 代码渲染
+
+  - id: agi_fly
+    real_material: true
+    path: ${CAPSULE}/output/agi_zhidao/20260916_fly/release/video.mp4
+    label: [code_render, screen_capture]
+    source: repo_showcase 代码模板 + 网页截图
+
+  - id: civ_atlas
+    path: ${CAPSULE}/output/civ_atlas_flow_25s/release/v1/public/civ_atlas_flow_25s.mp4
+    label: [code_render, screen_capture]
+    source: repo_signal_grid 代码渲染 + 截图
+
+  - id: douyin_ai_capybara_city
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7655483312324068342.mp4
+    label: ai_video
+    source: 抖音下载，文件带 AIGC 隐式标识 Label=1
+
+  - id: douyin_live_street
+    real_material: true
+    path: ${CAPSULE}/output/plot_mining/videos/7691668930338992100.mp4
+    label: live_action
+    source: 抖音下载，人工判断为手机实拍
+
+  - id: douyin_capybara_home
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7699437052256889275.mp4
+    label: [ai_video, cg_3d]
+    source: 抖音下载，人工判断为 AI 生成（无标识，存疑）

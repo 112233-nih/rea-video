@@ -1,0 +1,40 @@
+# 留出集：调参时未使用，用来检验规则是否过拟合（标签为人工目测 + capsule-cinema 生产记录）
+videos:
+  - id: monkey_wine_code_v1
+    real_material: false
+    path: ${CAPSULE}/output/monkey_wine_v2/monkey_wine_code_v1.mp4
+    label: code_render            # 扁平矢量风代码动画
+  - id: birdnest_plush
+    audio: {music_source: ai_generated, voice: true, music: true, sfx: true, bpm: 110.15, key: "D major"}
+    real_material: false
+    path: ${CAPSULE}/output/birdnest_plush/final.mp4
+    label: cg_3d                  # plush_diorama_science / Blender
+  - id: h3_realcat
+    real_material: false
+    path: ${CAPSULE}/output/dual_role_social_account_doctor_20260930/h3/realcat_s1_seed9300101.mp4
+    label: ai_video
+  - id: douyin_live_breakfast
+    audio: {voice: true}
+    real_material: true
+    path: ${CAPSULE}/output/plot_mining/videos/7690489550460562426.mp4
+    label: live_action
+  - id: douyin_capybara_a
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7644950675957597864.mp4
+    label: [ai_video, cg_3d]
+  - id: douyin_capybara_b
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7678263903595959921.mp4
+    label: [ai_video, cg_3d]
+  - id: douyin_capybara_c
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7688245085297572258.mp4
+    label: [ai_video, cg_3d]
+  - id: lulukong_a
+    real_material: false
+    path: ${CAPSULE}/output/account_fetch/噜噜控_20261028_064018/media/14957471328589846909.mp4
+    label: [ai_video, cg_3d]
+  - id: lulukong_b
+    real_material: false
+    path: ${CAPSULE}/output/account_fetch/噜噜控_20261028_064018/media/15003857097291603011.mp4
+    label: [ai_video, cg_3d]

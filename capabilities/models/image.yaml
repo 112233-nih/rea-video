@@ -1,0 +1,115 @@
+# 图像模型（关键帧 / 首帧 / 分镜 / 画内文字）
+
+models:
+  - id: gpt-image-2.5
+    name: GPT Image 2.5
+    vendor: OpenAI
+    category: image
+    release: 2026-08
+    status: ga
+    access: [api, app, api-aggregator]
+    primitives: [image.t2i, image.edit_multi_ref, image.text_render]
+    strengths:
+      - "【用户实测】中文字体效果最好、真实感最高，是中文画内文字和写实首帧的首选"
+      - 指令遵循稳定；可输出透明背景（PNG/WebP）；质量档位可到 xhigh 和 max
+    weaknesses:
+      - 价格与速度取决于质量档位
+    license: {commercial: true}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-image-generation-models-2026
+    verified: {date: 2026-10-29, basis: user}
+    confidence: high
+    notes: 发布月份为估计值；Hypit 目前接入的是 GPT Image 2（通过 HypiHub，2K/4K 部分画幅不可用）
+
+  - id: nano-banana-2.1
+    name: Nano Banana 2.1
+    vendor: Google
+    category: image
+    release: 2026-08
+    status: ga
+    access: [api, app, api-aggregator]
+    primitives: [image.t2i, image.edit_multi_ref, image.text_render]
+    limits:
+      resolutions: [4K]
+    strengths:
+      - 速度快；画内文字清晰；支持宽幅和全景
+    license: {commercial: true}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-image-generation-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: seedream-5.0
+    name: Seedream 5.0（Pro / Lite）
+    vendor: ByteDance Seed
+    category: image
+    release: 2026-06
+    status: ga
+    access: [app, api, api-aggregator]
+    primitives: [image.t2i, image.edit_multi_ref, image.text_render, analyze.image_layer_decompose]
+    strengths:
+      - 图层分解：输出背景加若干透明 PNG 层，可以用来逆向一帧的版式
+      - 擅长信息图、交互式编辑、写实和多语种文字
+    license: {commercial: true, note: 以平台条款为准}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-image-generation-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值；Hypit 接入的是 Seedream 5 Lite
+
+  - id: qwen-image-3.0-pro
+    name: Qwen Image 3.0 Pro
+    vendor: Alibaba
+    category: image
+    release: 2026-07
+    status: ga
+    access: [api]
+    primitives: [image.t2i, image.edit_multi_ref, image.text_render]
+    strengths:
+      - 擅长大段密集文字和长版式；提示词最长 4500 tokens；每次最多 6 张图
+    license: {commercial: true}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-image-generation-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: flux-3
+    name: FLUX 3 Image
+    vendor: Black Forest Labs
+    category: image
+    release: 2026-07
+    status: ga
+    access: [api, api-aggregator]
+    primitives: [image.t2i, image.edit_multi_ref, image.text_render]
+    strengths:
+      - 可以按包围框精确摆放元素，适合按原片布局复刻版式；多语种文字
+    weaknesses:
+      - 默认开启网页和图片搜索 grounding
+    license: {commercial: true}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-image-generation-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: kling-o3-image
+    name: Kling O3 Image
+    vendor: Kuaishou
+    category: image
+    release: 2026-03
+    status: ga
+    access: [app, api]
+    primitives: [image.t2i, image.edit_multi_ref, image.storyboard_series]
+    limits:
+      resolutions: [1K, 2K, 4K]
+    strengths:
+      - 支持参考图和 element 锁定身份与风格
+      - 分镜组图模式适合一次出整套关键帧
+    license: {commercial: true, note: 以平台条款为准}
+    sources:
+      - https://help.artlist.io/hc/en-us/articles/37026869403933-Kling-3-Model-Family
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值

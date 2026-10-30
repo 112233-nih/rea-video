@@ -1,0 +1,170 @@
+# 人物驱动：动作迁移 / 数字人 / 口型重配 / 虚拟试穿
+
+models:
+  - id: kling-motion-control
+    name: Kling Motion Control（2.6 / 3.0）
+    vendor: Kuaishou
+    category: character
+    release: 2025-12
+    status: ga
+    access: [app, api, api-aggregator]
+    primitives: [motion.transfer]
+    strengths:
+      - 把参考视频里的动作迁移到角色图上；第三方视其为动作控制的质量标杆
+      - 有技术报告（arXiv 2603.03160）
+    weaknesses:
+      - 用他人视频驱动时要注意肖像权与版权
+    license: {commercial: true, note: 以平台条款为准}
+    sources:
+      - https://arxiv.org/html/2603.03160v1
+      - https://templix.app/blogs/best-ai-motion-control-and-animation-models-in-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+
+  - id: wan-2.2-animate
+    name: Wan 2.2 Animate（含 animate-mix 换人）
+    vendor: Alibaba
+    category: character
+    release: 2025-09
+    status: ga
+    access: [open-weights, api]
+    primitives: [motion.transfer, video.edit_v2v]
+    strengths:
+      - 开源；可做动作迁移，也可在原视频中换人
+      - video-replicate-studio 用 wan2.2-animate-mix 做换人
+    weaknesses:
+      - 需要本地显卡或付费 API
+    license: {commercial: true, note: Apache 2.0（开源权重）}
+    sources:
+      - https://wanvideogenerator.com/blog/ai-motion-control-kling26-vs-wan22-animate
+      - https://github.com/derek-zhuolin/video-replicate-studio
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+
+  - id: omnihuman-2.0
+    name: OmniHuman 2.0
+    vendor: ByteDance
+    category: character
+    release: 2026-06
+    status: ga
+    access: [app, api]
+    primitives: [avatar.audio_driven]
+    limits:
+      audio_s: {min: 4, max: 300}
+    strengths:
+      - 一张图加一段音频，就能生成单镜长表演
+      - 动作随语义和节奏变化；支持多人、非人角色和唱歌
+      - 可以用提示词控制姿态、镜头和互动
+    weaknesses:
+      - 表演好坏主要取决于音频的表现力
+    license: {commercial: true, note: BytePlus 条款}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-lip-sync-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: kling-avatar-v2
+    name: Kling Avatar v2
+    vendor: Kuaishou
+    category: character
+    release: 2026-01
+    status: ga
+    access: [app, api, api-aggregator]
+    primitives: [avatar.audio_driven]
+    strengths:
+      - 设置简单；Standard 档用于迭代，Pro 档用于成片
+    weaknesses:
+      - 时长资料未明示
+    license: {commercial: true, note: 以平台条款为准}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-lip-sync-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: ltx-2.3-lipsync
+    name: LTX 2.3 Lipsync
+    vendor: Lightricks
+    category: character
+    release: 2026-03
+    status: ga
+    access: [api, open-weights]
+    primitives: [avatar.audio_driven]
+    limits:
+      audio_s: {min: 5, max: 20}
+      resolutions: [480p, 1080p]
+    strengths:
+      - 可固定 seed：用 480p 出草稿，再用同一 seed 出 1080p 成片
+    weaknesses:
+      - 只适合短片段
+    license: {commercial: conditional, note: LTX Community License}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-lip-sync-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: sync-3
+    name: Sync 3（Sync Labs）
+    vendor: Sync Labs
+    category: character
+    release: 2026-07
+    status: ga
+    access: [api, api-aggregator]
+    primitives: [lipsync.redub]
+    limits:
+      resolutions: [4K]
+    strengths:
+      - 先分析整个场景再对口型，能处理转头、阴影、手持镜头和双人镜头
+      - 保留原表演；最高 4K 60fps
+    weaknesses:
+      - 只接受视频和音频两个输入，不能指定遮罩或人脸框
+      - 旧版 Lipsync v2 Pro 有 sync_mode（时长不匹配时的处理方式），v3 没有
+    license: {commercial: true}
+    sources:
+      - https://www.eachlabs.ai/blog/best-ai-lip-sync-models-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: fashn-v1.6
+    name: FASHN Virtual Try-On v1.6
+    vendor: FASHN
+    category: character
+    release: 2026-03
+    status: ga
+    access: [api, api-aggregator]
+    primitives: [image.tryon]
+    limits:
+      resolutions: [864x1296]
+    strengths:
+      - 服装上的印花和文字保持清晰
+      - 支持模特图或平铺图作为输入，自动识别服装品类
+    weaknesses:
+      - 只做图像试穿，视频需要再经过图生视频或动作迁移
+    license: {commercial: true}
+    sources:
+      - https://fal.ai/learn/tools/best-virtual-try-on-apis-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值
+
+  - id: kling-kolors-tryon
+    name: Kling Kolors Virtual Try-On v1.5
+    vendor: Kuaishou
+    category: character
+    release: 2025-06
+    status: ga
+    access: [app, api, api-aggregator]
+    primitives: [image.tryon]
+    strengths:
+      - 保留模特的姿势、肤色和体型；带商用许可
+    weaknesses:
+      - 正面模特图配干净的平铺服装图时效果最好
+    license: {commercial: true}
+    sources:
+      - https://fal.ai/learn/tools/best-virtual-try-on-apis-2026
+    verified: {date: 2026-10-29, basis: third-party}
+    confidence: medium
+    notes: 发布月份为估计值

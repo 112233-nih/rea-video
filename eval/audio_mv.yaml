@@ -1,0 +1,6 @@
+# 音乐来源（AI 生成 vs 现成）专项：只评音频，不评画面
+# 注意：vocal_style 的阈值是看过 qing_hiphop_mv 后定的，属于开发集，不是留出集
+videos:
+  - id: qing_hiphop_mv
+    audio: {music_source: ai_generated, voice: true, music: true}   # AI 说唱 MV：Suno chirp-hawk v6 歌曲「和血吞」
+    path: ${CAPSULE}/output/qing_hiphop_zeng_guofan/out/qing_hiphop_full.mp4

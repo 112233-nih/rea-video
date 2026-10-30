@@ -1,0 +1,39 @@
+# 第二留出集：所有规则调整完成后才第一次运行（无任何针对性调参）
+videos:
+  - id: monkey_wine_code_v2
+    real_material: false
+    path: ${CAPSULE}/output/monkey_wine_v2/monkey_wine_code_v2.mp4
+    label: code_render
+  - id: monkey_wine_code_v3
+    real_material: false
+    path: ${CAPSULE}/output/monkey_wine_v2/monkey_wine_code_v3.mp4
+    label: code_render
+  - id: dual_role_realcat
+    real_material: [[0.0, 1.375, true], [1.375, 3.917, false], [3.917, 5.875, true], [5.875, 8.042, false], [8.042, 11.0, true], [11.0, 12.0, false], [12.0, 13.958, true], [13.958, 16.917, false], [16.917, 19.875, true]]
+    path: ${CAPSULE}/output/dual_role_social_account_doctor_20260930/release/social_account_doctor_realcat_v1.mp4
+    segments:
+      - [0.0, 1.375, [screen_capture, code_render, static_hold]]
+      - [1.375, 3.917, ai_video]
+      - [3.917, 5.875, [screen_capture, code_render, static_hold]]
+      - [5.875, 8.042, ai_video]
+      - [8.042, 11.0, [screen_capture, code_render, static_hold]]
+      - [11.0, 12.0, ai_video]
+      - [12.0, 13.958, [screen_capture, code_render, static_hold]]
+      - [13.958, 16.917, ai_video]
+      - [16.917, 19.875, [screen_capture, code_render, static_hold]]
+  - id: agi_kage
+    real_material: true
+    path: ${CAPSULE}/output/agi_zhidao/20260915_batch/kage/release/video.mp4
+    label: [code_render, screen_capture]
+  - id: douyin_capybara_d
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7699786681432737977.mp4
+    label: [ai_video, cg_3d]
+  - id: douyin_capybara_e
+    real_material: false
+    path: ${CAPSULE}/output/plot_mining/videos/7700202069185855866.mp4
+    label: [ai_video, cg_3d]
+  - id: lulukong_c
+    real_material: false
+    path: ${CAPSULE}/output/account_fetch/噜噜控_20261028_064018/media/15037922538409237557.mp4
+    label: [ai_video, cg_3d]
