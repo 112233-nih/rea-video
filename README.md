@@ -1,6 +1,6 @@
 # rea-video — Reverse Engineer Any Video
 
-> 拿到一条视频，逐镜头判断它**是怎么做出来的**：实拍、AI 生成、3D 渲染、代码渲染、录屏、静态图推拉，还是混合；字幕和贴片是不是后期叠加的；**哪些是用户真实素材**（实拍、截图、录屏、照片）；**声音怎么做的**（人声、BGM 的 BPM/调性/段落、音效、是否卡点），以及**音乐/人声/音效是 AI 生成的还是现成的**（先看视频形式：AI 音乐 MV 多为 AI 歌，普通配乐多为曲库）。每个结论都附可复查的证据。然后对其中的 AI 类镜头，交给 [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) 复刻。
+> 拿到一条视频，逐镜头判断它**是怎么做出来的**：实拍、AI 生成、3D 渲染、代码渲染、录屏、静态图推拉，还是混合；字幕和贴片是不是后期叠加的；**哪些是用户真实素材**（实拍、截图、录屏、照片）；**声音怎么做的**（人声、BGM 的 BPM/调性/段落、音效、是否卡点），以及**音乐/人声/音效是 AI 生成的还是现成的**（先看视频形式：AI 音乐 MV 多为 AI 歌，普通配乐多为曲库）。实拍镜头（口播、桌拍、开箱、vlog）还会按维度拆**怎么拍、怎么打光、怎么剪**：形式、景别和机位角度、手持还是支架、机位数，主光方向/光比/软硬/色温/轮廓光，剪气口、跳切和插入素材的节奏，并给出拍摄方案和器材清单；维度可插拔（`rea_video/aspects/`）。每个结论都附可复查的证据。然后对其中的 AI 类镜头，交给 [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) 复刻。
 
 **给 Agent 用**：`scripts/install_skill.sh` 会把 [`skills/rea-video`](skills/rea-video/SKILL.md) 链接到 Claude Code、Codex 等 agent 的 skills 目录。Agent 会按 Skill 里的流程拆解、复核低置信镜头、按模板交付。
 

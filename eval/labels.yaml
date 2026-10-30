@@ -98,6 +98,7 @@ videos:
     source: 抖音下载，文件带 AIGC 隐式标识 Label=1
 
   - id: douyin_live_street
+    aspects: {format: {format: talking_head}}   # 目测 2026-10-30
     real_material: true
     path: ${CAPSULE}/output/plot_mining/videos/7691668930338992100.mp4
     label: live_action

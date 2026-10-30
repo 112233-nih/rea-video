@@ -51,6 +51,30 @@ def _norm(d: dict[str, float]) -> dict[str, float]:
     return {k: max(v, 0.0) / s for k, v in d.items()}
 
 
+# Photographic-picture guards: platform transcodes make real footage look "rendered" (flat blocks, small palette).
+# Each guard needs evidence a render cannot fake easily. Thresholds were measured over every shot of eval/*.yaml
+# (labels, holdout, holdout2, articles, koubo); see eval/RESULTS.md 2026-10-30 for the distributions.
+RULES = {
+    # dim footage: near-black blocks that still carry grain (a rendered dark background is one exact colour,
+    # block std 0), lit parts not flat, and a face on screen (dark UI / 3D on black have no face)
+    "lowlight": {"dark_ratio": 0.15, "dark_std": 0.3, "dark_flat_max": 0.65, "flat_lit_max": 0.3, "faces": 0.5},
+    # a face held through the shot: cartoon / plush / illustrated faces in eval cover < 6% of the frame
+    "big_face": {"area": 0.06, "presence": 0.5, "graphic_factor": 0.4},
+    # lines of small OCR text (glyph height < 2% of the frame): 3D shots carry <= 2, screenshots 5-14
+    "ui_text": {"height": 0.02, "mid": 4.5, "width": 0.7},
+    # an avatar is a fixed frame; a moving / shaking camera argues for someone filming
+    "avatar_moving_camera": 0.3,
+}
+
+
+def lowlight_photo(f: dict, faces: float = 0.0) -> bool:
+    """Dim footage with a person in it (see RULES["lowlight"]): crushed shadows shrink the palette and add flat
+    blocks, so the "rendered texture" cues do not apply."""
+    r = RULES["lowlight"]
+    return (f.get("dark_ratio", 0.0) > r["dark_ratio"] and f.get("dark_std", 0.0) > r["dark_std"]
+            and f.get("dark_flat", 1.0) < r["dark_flat_max"] and f.get("flat_lit", 1.0) < r["flat_lit_max"] and faces >= r["faces"])
+
+
 PLATFORM_TRANSCODES = ("WeChat transcode", "WeChat Channels", "Douyin/TikTok", "Douyin", "Kuaishou", "Xiaohongshu")
 
 
@@ -64,7 +88,8 @@ def video_context(shots: list[dict], provenance: dict | None, fps: float | None)
     photo_dur = native_dur = 0.0
     for r in shots:
         f = r.get("features") or {}
-        if f.get("palette95", 0) < 100 or f.get("flat_ratio", 1) > 0.2 or f.get("dup_ratio", 0) > 0.85:
+        photo_like = (f.get("palette95", 0) >= 100 and f.get("flat_ratio", 1) <= 0.2) or lowlight_photo(f, r.get("faces", 0.0))
+        if not photo_like or f.get("dup_ratio", 0) > 0.85:
             continue  # rendered graphics or frozen frames say nothing about camera cadence
         d = float(r.get("duration", 0))
         photo_dur += d
@@ -111,10 +136,36 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     # flat colour blocks and a small palette are the most robust "rendered" cues; the
     # noise estimate is unreliable on text-heavy frames (glyph edges look like noise).
     graphic = (0.45 * _sig((flat - 0.20) / 0.05) + 0.35 * _sig((70 - pal) / 15) + 0.20 * _sig((axis - 0.33) / 0.03))
+    lowlight = lowlight_photo(f, faces)
+    facts["lowlight"] = lowlight
+    if lowlight:
+        # judge texture on the lit part only; the palette is small because the shadows are crushed
+        lit_graphic = 0.75 * _sig((f.get("flat_lit", 0) - 0.20) / 0.05) + 0.25 * _sig((axis - 0.33) / 0.03)
+        if lit_graphic < graphic:
+            ev.append(f"低照度画面：{f.get('dark_ratio', 0):.0%} 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 {f.get('flat_lit', 0):.0%}、"
+                      f"且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算")
+            graphic = lit_graphic
+    # a large face held through the shot is a photographic picture: plain walls and dark clothes make flat blocks
+    # after a platform transcode (RULES["big_face"])
+    bf = RULES["big_face"]
+    big_face = faces >= bf["presence"] and f.get("face_area", 0.0) >= bf["area"] and family in ("dynamic", "mostly_static")
+    facts["big_face"] = big_face
+    facts["face_area"] = round(f.get("face_area", 0.0), 3) if faces >= 0.3 else 0.0
+    if big_face and graphic > 0.25:
+        ev.append(f"人脸占画面 {f.get('face_area', 0):.0%}、{faces:.0%} 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权")
+        graphic *= bf["graphic_factor"]
     # (overlay text is a separate layer, so OCR coverage does not count toward the base)
     photo = 1.0 - graphic
     # fine high-frequency detail on flat ground = small text / UI (screenshots, docs, code cards)
     text_like = _sig((noise - 0.8) / 0.2) * _sig((flat - 0.4) / 0.08)
+    # many lines of small OCR text = an interface / document screenshot; the noise cue above misses them on
+    # platform transcodes, which smooth glyph edges (RULES["ui_text"])
+    ut = RULES["ui_text"]
+    small_lines = sum(1 for tr in (text or {}).get("tracks", []) if tr.get("text_height", 1.0) < ut["height"])
+    ui_text = _sig((small_lines - ut["mid"]) / ut["width"])
+    facts["ui_text"] = round(ui_text, 3)
+    if ui_text > 0.5:
+        ev.append(f"OCR 读到 {small_lines} 行小字号文字：画面里有界面/文档截图")
     # background pixels exactly unchanged while something moves = 2D compositing (code/MG)
     rsb = _sig((zero - 0.94) / 0.015) * _sig((0.1 - tnoise) / 0.03)
     facts["graphic_score"] = round(graphic, 3)
@@ -215,13 +266,16 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
         ui_gray = _sig((0.04 - f.get("saturation", 0.3)) / 0.01) * _sig((20 - pal) / 3)
         facts["ui_gray"] = round(ui_gray, 3)
         s["code_render"] += 1.5 * graphic * (0.3 + 1.2 * rsb + 1.0 * text_like + 0.8 * ui_gray) * axis_f
-        s["cg_3d"] += 1.5 * graphic * max(0.0, 1.1 - rsb - 0.8 * text_like) * (1 - 0.8 * ui_gray)
+        s["cg_3d"] += 1.5 * graphic * max(0.0, 1.1 - rsb - 0.8 * text_like) * (1 - 0.8 * ui_gray) * (1 - 0.8 * ui_text)
+        s["screen_capture"] += 1.2 * graphic * ui_text
         if ui_gray > 0.5 and graphic > 0.6:
             ev.append(f"画面几乎无彩色（饱和度 {f.get('saturation', 0):.2f}）、只用 {pal} 种颜色：界面/文档类平面画面，不是有光影的 3D 渲染")
         s["screen_capture"] += 1.2 * graphic * text_like * (0.3 + _sig((0.12 - f.get("saturation", 0.3)) / 0.04))
         s["live_action"] += 1.5 * photo * live_hint
         s["ai_video"] += 1.5 * photo * (1 - live_hint) * (1.4 if pulldown else 1.0)
-        s["avatar"] += 0.6 * photo * (1 if faces > 0.6 else 0.1) * (1.0 if speech else 0.4) * (1 - live_hint)
+        # a talking-head avatar is a fixed frame; a shaking handheld camera argues for a person filming
+        moving_cam = RULES["avatar_moving_camera"] if f.get("camera") in ("handheld_like", "smooth_move") else 1.0
+        s["avatar"] += 0.6 * photo * (1 if faces > 0.6 else 0.1) * (1.0 if speech else 0.4) * (1 - live_hint) * moving_cam
         if pulldown:
             s["cg_3d"] *= 1.2
     if gen_tags:

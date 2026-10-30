@@ -4,6 +4,7 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
+from . import aspects
 from .classify import LABEL_ZH
 from .util import fmt_time
 from .visual import LABEL_COLOR
@@ -48,6 +49,7 @@ def markdown(b: dict) -> str:
          "", "![storyboard](storyboard.jpg)", "", "## 制作方式占比", "", "| 底层画面 | 时长 | 占比 |", "|---|---|---|"]
     for m in s["production_mix"]:
         L.append(f"| {m['label_zh']} | {m['seconds']}s | {m['ratio']:.0%} |")
+    L += aspects.report_md(b)
     prov = b.get("provenance", {})
     if prov.get("hints") or prov.get("encoder"):
         L += ["", "## 元数据线索", ""]
@@ -157,6 +159,9 @@ def markdown(b: dict) -> str:
         v = r.get("vlm") or r.get("review") or {}
         if v.get("description"):
             L.append(f"- 画面：{v['description']}")
+        cl = aspects.shot_text(r) if r["base"]["label"] in aspects.PHOTOGRAPHIC else ""
+        if cl:
+            L.append(f"- 拍法/打光：{cl}")
         intrinsic = base["label"] in ("code_render", "screen_capture")
         for tr in r.get("text", {}).get("tracks", [])[:4]:
             kind = "画面内容文字" if intrinsic else KIND_ZH.get(tr["kind"], tr["kind"])
@@ -219,6 +224,7 @@ img.sb{{max-width:100%;border-radius:8px}} .real{{background:#0d9488;color:#fff;
 {esc(s.get('vlm') or vlm_note(b['analysis']['vlm'], b['analysis'].get('review')))}</p>
 <div class="mix">{mix}</div>
 <img class="sb" src="storyboard.jpg">
+{aspects.report_html(b)}
 {_sound_html(b)}
 {''.join(rows)}
 </main></body></html>"""

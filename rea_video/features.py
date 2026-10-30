@@ -57,6 +57,15 @@ def spatial_features(bgr: np.ndarray) -> dict:
     blocks = gray[: bh * 8, : bw * 8].reshape(bh, 8, bw, 8).astype(np.float32)
     bstd = blocks.std(axis=(1, 3))
     flat_ratio = float((bstd < 0.6).mean())
+    # low-light split: transcoded night footage crushes shadows into flat near-black blocks, which reads as a
+    # "rendered" flat palette. A rendered dark background is one exact colour (std 0); crushed shadows keep grain.
+    bmean = blocks.mean(axis=(1, 3))
+    dark = bmean < 28
+    lit = ~dark
+    dark_ratio = float(dark.mean())
+    dark_std = float(np.median(bstd[dark])) if dark.any() else 0.0
+    dark_flat = float((bstd[dark] < 0.6).mean()) if dark.any() else 0.0
+    flat_lit = float((bstd[lit] < 0.6).mean()) if lit.any() else 0.0
     # palette size: number of 4-bit-per-channel colours covering 95% of pixels
     q = (bgr >> 4).astype(np.int32)
     codes = (q[..., 0] << 8) | (q[..., 1] << 4) | q[..., 2]
@@ -79,6 +88,10 @@ def spatial_features(bgr: np.ndarray) -> dict:
     return {
         "noise_sigma": noise_sigma(gray),
         "flat_ratio": flat_ratio,
+        "dark_ratio": dark_ratio,
+        "dark_std": dark_std,
+        "dark_flat": dark_flat,
+        "flat_lit": flat_lit,
         "palette95": palette95,
         "edge_density": edge_density,
         "axis_edge_ratio": axis,

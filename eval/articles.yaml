@@ -26,6 +26,7 @@ videos:
     path: eval/media/articles/v10.mp4
     label: [code_render, screen_capture, still_motion]
   - id: art_v11_tiktok_original        # a2 TikTok 带货原片：手机实拍（真实厨房、真手、男声口播）
+    aspects: {format: {format: product}}   # 目测 2026-10-30：第一视角手持，手拿食材放进榨汁杯，无人脸
     path: eval/media/articles/v11.mp4
     label: live_action
     real_material: true

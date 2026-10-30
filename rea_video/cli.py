@@ -183,6 +183,7 @@ def cmd_summary(args) -> int:
     prov = b.get("provenance", {})
     if prov.get("aigc") or prov.get("hints"):
         lines.append(f"元数据: aigc={prov.get('aigc')} hints={prov.get('hints')}")
+    from .aspects import shot_text
     from .memory import hint_for, patterns
 
     pats = patterns()
@@ -198,7 +199,10 @@ def cmd_summary(args) -> int:
                      + ("  ← 低置信，需要复核" if base["confidence"] < 0.6 else "")
                      + (f"  ← {base['uncertain']}" if base.get("uncertain") else "")
                      + ("  ← 用户纠正过素材来源" if (r.get("material") or {}).get("user_corrected") else "")
-                     + (f"  ← {past}" if past else ""))
+                     + (f"  ← {past}" if past else "")
+                     + (f" | {shot_text(r)}" if r["base"]["label"] in ("live_action", "avatar") and shot_text(r) else ""))
+    if s.get("aspects"):
+        lines += [""] + s["aspects"]
     a = b.get("audio", {})
     if a.get("has_audio"):
         mu = a.get("music", {})

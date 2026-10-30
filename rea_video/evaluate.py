@@ -63,6 +63,9 @@ def audio_check(gt: dict, b: dict) -> dict:
     if gt.get("music_source"):
         ms = (b.get("sound_sources") or {}).get("music") or {}
         out["music_source"] = ms.get("leaning") == gt["music_source"]
+    if gt.get("voice_source"):
+        vs = (b.get("sound_sources") or {}).get("voice") or {}
+        out["voice_source"] = vs.get("leaning") == gt["voice_source"]
     if gt.get("key"):
         k = (a.get("music") or {}).get("key") or {}
         out["key"] = f"{k.get('tonic')} {k.get('mode')}" == gt["key"]
@@ -91,6 +94,7 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
     tot_dur = ok_dur = 0.0
     real_tot = real_ok = 0.0
     audio_hits: dict[str, list[bool]] = {}
+    aspect_hits: dict[str, list[bool]] = {}
     for entry in spec["videos"]:
         path = _expand(entry["path"])
         if not Path(path).is_file():
@@ -156,6 +160,12 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
             row["audio"] = audio_check(entry["audio"], b)
             for k, v in row["audio"].items():
                 audio_hits.setdefault(k, []).append(v)
+        if entry.get("aspects"):
+            from .aspects import check as aspect_check
+
+            row["aspects"] = aspect_check(entry["aspects"], b)
+            for k, v in row["aspects"].items():
+                aspect_hits.setdefault(k, []).append(v)
         if "cuts" in entry:
             row["cut_f1"] = boundary_f1([s["start"] for s in b["shots"][1:]], entry["cuts"], tol=float(entry.get("cut_tolerance", 0.1)))
         if entry.get("image_source"):
@@ -173,6 +183,8 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
         summary["real_material_per_video"] = {r["id"]: r["real_material_accuracy"] for r in rows if "real_material_accuracy" in r}
     if audio_hits:
         summary["audio"] = {k: f"{sum(v)}/{len(v)}" for k, v in audio_hits.items()}
+    if aspect_hits:
+        summary["aspects"] = {k: f"{sum(v)}/{len(v)}" for k, v in aspect_hits.items()}
     cuts = [r["cut_f1"]["f1"] for r in rows if "cut_f1" in r]
     if cuts:
         summary["cut_f1_mean"] = round(sum(cuts) / len(cuts), 3)

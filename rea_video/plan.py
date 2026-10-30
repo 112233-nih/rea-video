@@ -22,7 +22,7 @@ LABEL_ROUTE = {
 }
 NOTE = {
     "ai_video": "原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧",
-    "live_action": "原片为实拍：可用 AI 图生视频近似复刻（以首帧为参考），高保真需要重新拍摄",
+    "live_action": "原片为实拍：按拍摄方案（景别/机位/打光）重新拍摄；没有拍摄条件时才用 AI 图生视频近似（以首帧为参考）",
     "avatar": "数字人口播：先克隆/合成配音，再用数字人模型由人像 + 音频驱动",
     "cg_3d": "3D 渲染：可用首尾帧 AI 生成近似；需要精确多角度时走 3D 建模 + Blender 渲染",
     "code_render": "代码渲染：用 Remotion/HTML 按文字轨与版式重建，100% 可控，不需要生成模型",
@@ -79,7 +79,7 @@ class Planner:
             }
             if not prompt:
                 plan["capsule"]["prompt_missing"] = "未运行 VLM，缺少视频提示词；请用 --vlm 重新拆解或手动补写"
-        elif executor == "local_ffmpeg":
+        if executor == "local_ffmpeg":
             m = shot.get("features", {})
             plan["local"] = {"zoom_per_s": m.get("zoom_per_s", 0.0), "pan_px_per_s": m.get("pan_px_per_s", 0.0),
                              "pan_dir_deg": m.get("pan_dir_deg", 0.0), "analysis_width": 480, "duration": round(dur, 3)}

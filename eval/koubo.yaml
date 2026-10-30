@@ -1,0 +1,54 @@
+# 实拍口播评测集：真人出镜、手机拍摄、抖音转码，带截图/录屏插入与花字
+# 视频不入库（eval/media/ 已 gitignore）：用 TikHub 按分享链接下载 1080p（capsule-cinema/.claude/skills/account-diagnostic/tikhub，
+#   douyin douyin_app_v3_fetch_one_video_by_share_url → aweme_detail.video.bit_rate[0].play_addr.url_list[0]）
+# 真值来源：人工逐镜目测（2026-10-30，按 decompose 切出的镜头逐个看首尾帧）。
+# 叠了大块截图的人物镜头底层仍是实拍，截图类标签也接受；黑底文字卡是代码渲染。
+# aspects：拍法/打光真值 {维度: {字段: 可接受值}}，也是目测（存疑处没有标；夜景那条没标机位，因为支架拍和手持自拍都有）。
+videos:
+  - id: koubo_night_street
+    path: eval/media/chenpangyi_koubo.mp4
+    source: 抖音 陈胖一《新号做出100万+播放的公式邪修！》https://v.douyin.com/U0tc1sxj1q8/ ；夜晚公交站边喝酒边讲，路灯环境光
+    segments:
+      - [0.00, 1.27, live_action]
+      - [1.27, 4.07, [live_action, screen_capture, code_render]]
+      - [4.07, 11.17, [screen_capture, code_render, static_hold, live_action]]
+      - [11.17, 13.10, [code_render, static_hold, still_motion]]
+      - [13.10, 14.93, [screen_capture, code_render, still_motion]]
+      - [14.93, 25.77, live_action]
+      - [25.77, 28.07, [live_action, screen_capture, code_render]]
+      - [28.07, 40.27, live_action]
+      - [40.27, 45.27, [live_action, screen_capture, code_render]]
+      - [45.27, 59.70, live_action]
+      - [59.70, 68.30, [live_action, screen_capture, code_render]]
+      - [68.30, 69.80, live_action]
+      - [69.80, 76.20, [live_action, screen_capture, code_render]]
+      - [76.20, 78.87, live_action]
+      - [78.87, 82.07, [live_action, screen_capture, code_render]]
+      - [82.07, 89.77, live_action]
+      - [89.77, 91.23, [screen_capture, code_render, live_action]]
+      - [91.23, 94.60, live_action]
+      - [94.60, 96.23, [live_action, screen_capture, static_hold]]
+      - [96.23, 99.57, live_action]
+      - [99.57, 100.70, [live_action, code_render]]
+      - [100.70, 140.43, live_action]
+      - [140.43, 145.43, [code_render, static_hold]]
+      - [145.43, 166.07, live_action]
+      - [166.07, 167.34, [code_render, static_hold]]
+    real_material: [[0.00, 140.43, true], [140.43, 145.43, false], [145.43, 166.07, true]]
+    audio: {voice: true, music: true, voice_source: human_recording}
+    aspects: {framing: {shot_size: [大特写, 特写, 近景]}, lighting: {setup: ambient_low_light}, format: {format: talking_head}}
+
+  - id: koubo_indoor_closeup
+    path: eval/media/chenpangyi_indoor.mp4
+    source: 抖音 陈胖一《改命邪修！写《人生简历》投递给AI！》https://v.douyin.com/G4wyC9YPCV8/ ；室内贴脸口播，暖色墙，大面积柔光
+    segments:
+      - [0.00, 16.20, live_action]
+      - [16.20, 18.47, [screen_capture, live_action, code_render]]
+      - [18.47, 71.60, live_action]
+      - [71.60, 76.07, [screen_capture, code_render, live_action]]
+      - [76.07, 121.53, live_action]
+      - [121.53, 122.70, [ai_video, cg_3d, still_motion, static_hold, live_action]]
+      - [122.70, 174.07, live_action]
+    real_material: [[0.00, 121.53, true], [122.70, 174.07, true]]
+    audio: {voice: true, music: true, voice_source: human_recording}
+    aspects: {framing: {shot_size: [大特写, 特写]}, lighting: {setup: [soft_front, key_fill]}, format: {format: talking_head}}

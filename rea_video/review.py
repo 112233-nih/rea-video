@@ -8,6 +8,7 @@ import re
 import time
 
 from .classify import LABEL_ZH, LABELS, top
+from . import aspects
 from .vlm import SHOT_PROMPT, shot_hints
 
 AGENT_WEIGHT = 0.85  # agent answers are softened toward uniform before fusion
@@ -17,6 +18,7 @@ ASSET_KINDS = ("real_footage", "photo", "screenshot", "screen_recording", "produ
 # category definitions, taken from the VLM prompt so both paths ask the same question
 LABEL_GUIDE = re.search(r"底层画面类别.*?\n\n", SHOT_PROMPT, re.S).group(0).strip()
 CONFUSIONS = re.search(r"注意区分：.*?\n\n", SHOT_PROMPT, re.S).group(0).strip()
+ASPECT_GUIDE = aspects.review_guide()
 
 INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画面」的制作方式，把答案写进 review_answers.json，然后运行
   rea-video apply-review <输出目录> --by <你的名字>
@@ -36,7 +38,13 @@ INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画
 
 每个镜头要填：label_probs（8 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
 description（主体、动作、场景、运镜）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
-kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。"""
+kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。
+
+实拍/写实镜头再填 aspects（怎么拍、怎么打光；纯图形/界面画面不填），像素测不出的部分靠你看：
+{ASPECT_GUIDE}
+工具已经测了景别、主体光比、主光左右/上下、软硬、色温、背景虚化（见每镜 aspects），你主要补：机位角度、
+拍摄方式（自拍/支架）、主光是什么光源、眼神光、轮廓光/背景灯、画面里可见的光源；和测量冲突时写明依据。
+最后在答案顶层的 aspects 里写整片：机位/场景、推测设备、整体布光、剪辑手法、视频形式。"""
 
 
 def _priority(rec: dict, ctx: dict) -> tuple[str, list[str]]:
@@ -78,6 +86,7 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
                      "second": [alt[0][0], round(alt[0][1], 3)] if alt else None,
                      "evidence": rec["deterministic"]["evidence"][:6]},
             "hints": shot_hints(rec["features"], rec["deterministic"]["facts"], dl, dp),
+            "aspects": {k: v["result"] for k, v in (rec.get("aspects") or {}).items() if v.get("result")},
             "images": {"sheet": rec["assets"]["sheet"], "first": rec["assets"]["first_frame"], "last": rec["assets"]["last_frame"]},
             "zoom_cmd": f"rea-video tiles {video} --start {rec['start']:.2f} --end {rec['end']:.2f} --every 0.2 "
                         f"-o {out_dir}/check_{rec['id']}.jpg",
@@ -88,7 +97,9 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
              "shots": shots}
     answers = {"by": "", "shots": [{"id": s["id"], "time": f"{s['start']:.2f}-{s['end']:.2f}",
                                      "label_probs": {k: 0 for k in LABELS}, "image_source": "unknown",
-                                     "evidence": [], "description": "", "embedded_assets": []} for s in shots]}
+                                     "evidence": [], "description": "", "embedded_assets": [],
+                                     "aspects": aspects.review_template()} for s in shots],
+               "aspects": aspects.review_template(video=True)}
     return tasks, answers
 
 
@@ -116,7 +127,7 @@ def _clean(ans: dict) -> tuple[dict | None, str | None]:
                            "is_real_material": bool(e.get("is_real_material", e["kind"] != "ai_image"))})
     return {"label_probs": soft, "raw_probs": {k: round(v / total, 3) for k, v in vals.items()}, "image_source": src,
             "evidence": [str(x) for x in (ans.get("evidence") or [])][:8], "description": str(ans.get("description", "")),
-            "embedded_assets": assets}, None
+            "embedded_assets": assets, "aspects": aspects.clean_answers(ans.get("aspects"))}, None
 
 
 def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict:
@@ -139,6 +150,9 @@ def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict
         rec["review"] = clean
         applied.append(sid)
         changes.append((sid, before))
+    whole = aspects.clean_answers(answers.get("aspects"), video=True)
+    if whole:
+        breakdown["review_aspects"] = whole
     breakdown.setdefault("analysis", {})["review"] = {"by": by, "shots": len(applied), "of": len(breakdown["shots"]),
                                                        "time": time.strftime("%Y-%m-%d %H:%M"), "problems": problems}
     return {"applied": applied, "problems": problems, "before": dict(changes)}

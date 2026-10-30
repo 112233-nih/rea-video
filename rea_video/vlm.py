@@ -172,6 +172,8 @@ SHOT_PROMPT = """你是视频制作逆向工程专家。判断这个镜头的「
 - still_motion：一张静态图片做推拉摇移（Ken Burns），画面内部无独立运动
 - static_hold：静帧定格（图片或卡片停留不动）
 
+如果画面是实拍或写实画面，再拆「怎么拍、怎么打光」（aspects 里各项），纯图形/文字/界面画面这些字段写"不适用"。
+
 另外判断画面里有没有「引入的真实素材」：实拍片段、真实照片、商品实拍图、品牌 Logo、网页/App 截图或录屏。
 它们通常是用户自己提供的素材，复刻时不能用模型生成替代，请在 embedded_assets 里逐个列出。
 
@@ -192,6 +194,7 @@ AI 生成的写实视频与实拍（看手、文字、背景细节、物理）�
   "camera_move": "固定|推|拉|摇|移|跟|环绕|手持",
   "style": "画风/质感关键词",
   "overlay_text": ["后期叠加在画面上的文字（字幕/标题），不含场景里的实物文字"],
+  "aspects": <<SHOT_ASPECTS>>,
   "material_origin": "real|ai_generated|rendered|mixed（画面主要来自真实素材 / AI 生成 / 制作方渲染 / 混合）",
   "embedded_assets": [{{"kind": "real_footage|photo|screenshot|screen_recording|product_photo|logo|ai_image", "description": "是什么、在画面哪里", "is_real_material": true}}],
   "replication": {{
@@ -228,9 +231,16 @@ WHOLE_PROMPT = """你是短视频拆解专家。完整观看并**仔细收听**�
   "ambience": "环境声（街道、室内、无）",
   "mix": "人声/BGM/音效的音量关系，是否有人声出现时压低音乐（ducking）",
   "subtitles": {{"present": true, "style": "字体/描边/颜色/位置/逐字高亮等"}},
+  "aspects": <<VIDEO_ASPECTS>>,
   "overall_production": "整体制作方式判断（实拍/AI生成/代码渲染/混合）与理由",
   "warnings": []
 }}"""
+
+
+from .aspects import prompt_block as _aspect_block  # noqa: E402
+
+SHOT_PROMPT = SHOT_PROMPT.replace("<<SHOT_ASPECTS>>", _aspect_block(video=False))
+WHOLE_PROMPT = WHOLE_PROMPT.replace("<<VIDEO_ASPECTS>>", _aspect_block(video=True))
 
 
 def shot_hints(features: dict, facts: dict, det_top: str, det_prob: float) -> str:

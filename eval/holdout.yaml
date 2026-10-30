@@ -14,6 +14,7 @@ videos:
     path: ${CAPSULE}/output/dual_role_social_account_doctor_20260930/h3/realcat_s1_seed9300101.mp4
     label: ai_video
   - id: douyin_live_breakfast
+    aspects: {format: {format: talking_head}}   # 目测 2026-10-30：坐着边吃边对镜头说话
     audio: {voice: true}
     real_material: true
     path: ${CAPSULE}/output/plot_mining/videos/7690489550460562426.mp4

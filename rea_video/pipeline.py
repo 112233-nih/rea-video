@@ -12,7 +12,7 @@ from . import SCHEMA, __version__
 from .assets import detect_embedded, material_summary
 from .audio import analyze_audio, merge_audio_with_vlm
 from .sound_source import MUSIC_ZH, classify_sound_sources, per_clip_audio
-from .classify import LABEL_ZH, deterministic, fuse, video_context, image_source_guess, overlay_layers, top, verdict_text
+from .classify import LABEL_ZH, RULES, deterministic, fuse, video_context, image_source_guess, overlay_layers, top, verdict_text
 from .features import collect_samples, shot_features
 from .media import cut_clip, extract_frame, require_tools, video_info
 from .overlay import ocr_frames, persistent_template, static_overlays, summarize_text
@@ -20,7 +20,9 @@ from .plan import Planner
 from .probe import provenance
 from .shots import build_track, detect_shots
 from .util import LOG, fmt_time, round_floats, write_json
-from .visual import face_presence, shot_sheet, storyboard
+from . import aspects
+from .faces import shot_faces
+from .visual import shot_sheet, storyboard
 from .vlm import SHOT_PROMPT, WHOLE_PROMPT, VLMClient, VLMConfig, normalize_shot_result, shot_hints, vlm_note
 
 
@@ -74,7 +76,12 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         ov = static_overlays(smp.frames)
         text = summarize_text(ocr_frames(smp.frames, smp.frame_times)) if ocr else {"tracks": [], "text_coverage": 0.0, "items": []}
         embedded = detect_embedded(smp.frames, text.get("items"))
-        faces = face_presence(smp.frames)
+        fd = shot_faces(smp.frames)
+        faces = fd["presence"]
+        areas = [p["face"]["area"] for p in fd["frames"] if p.get("face")]
+        feats["face_presence"] = faces
+        feats["face_area"] = float(np.median(areas)) if areas else 0.0
+        asp = aspects.measure_shot(smp.frames, fd, feats, s.duration)
         probs, evidence, facts = deterministic(feats, ov, text, faces, audio, prov, fps=info.fps)
         layers = overlay_layers(ov, text, template)
         sid = f"shot_{s.index:03d}"
@@ -83,7 +90,7 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         extract_frame(video, max(s.start, s.end - min(0.08, s.duration / 4)), out / "shots" / f"{sid}_last.jpg", width=min(1080, info.width or 1080))
         rec = {
             "id": sid, **s.to_dict(), "features": round_floats(feats), "faces": round(faces, 3),
-            "overlay": round_floats(ov), "text": text, "layers": layers, "embedded_assets": round_floats(embedded),
+            "aspects": round_floats(asp), "overlay": round_floats(ov), "text": text, "layers": layers, "embedded_assets": round_floats(embedded),
             "deterministic": {"probs": round_floats(probs), "evidence": evidence, "facts": facts},
             "assets": {"sheet": f"shots/{sid}.jpg", "first_frame": f"shots/{sid}_first.jpg", "last_frame": f"shots/{sid}_last.jpg"},
             "vlm": None,
@@ -233,13 +240,22 @@ def _vlm_gate(rec: dict, vprobs: dict | None, vctx: dict) -> dict | None:
     ranked = sorted(rec["deterministic"]["probs"].items(), key=lambda kv: -kv[1])
     (d, dp), (_, sp) = ranked[0], ranked[1]
     v = top(vprobs)[0]
-    if v not in (d, ranked[1][0]):  # it must back one of the tools' two best guesses
+    # a photographic answer on a shot with a person in it (a big face, a dim shot with a face, or a face over
+    # RULES["big_face"]["area"]) overrides texture cues that rank "rendered" first: plain walls, crushed shadows and
+    # screenshots pasted over the person all look flat after a transcode
+    # Only when the tools' top two include a rendered label: inside the AI / live / avatar axis the tools' frame-rate
+    # evidence still decides (eval holdout2 dual_role_realcat: Gemini calls an AI presenter "avatar").
+    rendered_top = d not in AI_LIVE_AXIS or ranked[1][0] not in AI_LIVE_AXIS
+    person = (v in AI_LIVE_AXIS and rendered_top
+              and bool(facts.get("big_face") or facts.get("lowlight") or facts.get("face_area", 0) >= RULES["big_face"]["area"]))
+    if v not in (d, ranked[1][0]) and not person:  # it must back one of the tools' two best guesses
         return None
-    if d in AI_LIVE_AXIS or v in AI_LIVE_AXIS:
+    # the tools' confidence only protects the AI / live axis (frame-rate evidence), not a "rendered" texture call
+    if (d in AI_LIVE_AXIS or v in AI_LIVE_AXIS) and not (person and d not in AI_LIVE_AXIS):
         if dp >= 0.65 and dp - sp >= 0.25:  # tools are sure: frame-rate evidence beats "looks real / looks like a presenter"
             return None
-        if v == "live_action" and facts.get("transcode_degraded") and not vctx.get("native30"):
-            return None  # transcoded 24fps-source footage never becomes live action on looks alone
+    if v == "live_action" and facts.get("transcode_degraded") and not vctx.get("native30"):
+        return None  # transcoded 24fps-source footage never becomes live action on looks alone
     return vprobs
 
 
@@ -368,6 +384,14 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         if img is not None:
             sb_items.append((img, r["base"]["label"], f"#{r['index']} {r['base']['label']} {r['base']['confidence']:.0%}", r["start"], r["end"]))
     storyboard(sb_items, out / "storyboard.jpg")
+
+    aspects.finalize(breakdown)
+    breakdown["aspects"] = round_floats(breakdown["aspects"])
+    summary["aspects"] = aspects.summary_lines(breakdown)
+    for rec in shot_records:  # filmed shots: rebuild by shooting, with this shot's framing / camera / light
+        if rec["base"]["label"] == "live_action":
+            res = {k: v.get("result") for k, v in (rec.get("aspects") or {}).items() if v.get("result")}
+            rec["replication"]["shoot"] = {"summary": aspects.shot_text(rec), **res}
 
     breakdown["audio_plan"] = merge_audio_with_vlm(audio, breakdown.get("whole_video_vlm"))
     srcs = classify_sound_sources(breakdown)
