@@ -4,8 +4,6 @@
 
 **给 Agent 用**：`scripts/install_skill.sh` 会把 [`skills/rea-video`](skills/rea-video/SKILL.md) 链接到 Claude Code、Codex 等 agent 的 skills 目录。Agent 会按 Skill 里的流程拆解、复核低置信镜头、按模板交付。
 
-灵感来自 [REA（Reverse Engineer Anything）](https://github.com/morluto/rea)：从现象追到实现，结论附证据，用可测量的方式验证。
-
 ## 安装
 
 需要 Python ≥ 3.10 和 ffmpeg（macOS：`brew install ffmpeg`；Ubuntu：`apt install ffmpeg`）。
@@ -59,11 +57,11 @@ rea-video stems ref.mp4 -o out/ref
 ...
 ```
 
-## 效果（截至 2026-10-30）
+## 效果
 
 详细方法见 [docs/decompose.md](docs/decompose.md)，全部数字和复现命令见 [eval/RESULTS.md](eval/RESULTS.md)。
 
-**制作方式判断**（按时长加权的镜头准确率）。标注集：labels（调参集）、holdout + holdout2（16 条留出视频）、articles（10 条微信转码视频，开发集）：
+**制作方式判断**（按时长加权的镜头准确率）。标注集：labels（调参集）、holdout + holdout2（16 条留出视频）、articles（10 条文章视频，开发集）：
 
 | 配置 | labels | holdout | holdout2 | articles |
 |---|---|---|---|---|
@@ -72,7 +70,7 @@ rea-video stems ref.mp4 -o out/ref
 | + agent 看图复核（zcode） | — | 99.6% | 99.8% | 100% |
 | + VLM + agent | — | 99.6% | 99.8% | 98.8% |
 
-- 平时拍的、没转码的视频，只用工具就基本够；**平台下载的转码视频**（微信/抖音/TikTok）噪点证据被抹掉，看图（VLM 或能看图的 agent）能把 88.6% 提到 99% 以上。
+- 平时拍的、没转码的视频，只用工具就基本够；**平台下载的转码视频**噪点证据被抹掉，看图（VLM 或能看图的 agent）能把 88.6% 提到 99% 以上。
 - 拿不准时会说拿不准：转码视频里，既没有 AIGC 标识、也没有手机原生 30fps 证据的"AI / 实拍"镜头，置信度封顶 0.7，结论写"证据不足，待确认"。
 - **真实素材**（实拍、截图、录屏、照片）：97.6% / 99.6% / 98.1%（labels / holdout / holdout2），articles 100%。
 - **切点**：F1 1.0。
@@ -85,6 +83,28 @@ rea-video stems ref.mp4 -o out/ref
 - 样本少：带制作方式标注的视频共 41 条（调参 15、留出 16、转码开发集 10），实拍和定格动画尤其少。最近几条融合规则就是在这些数据上选出来的，需要新视频复核。可以用 `rea-video memory --export-labels` 把用户纠正过的视频导出成新的评测样本。
 - 转码后的"实拍还是 AI"仍然是最难的一类：现在只能如实标"待确认"，还不能判得更准。
 - 单开 VLM 时，Gemini 会很自信地把卡通 AI 判成 3D、把文字卡片判成截图；工具已做限制（只有一个看图来源时，不能推翻工具有把握的 AI / 实拍判断）。VLM 服务不稳定时会自动换备用模型，全部失败也不会中断。
+
+## 案例
+
+两条 `rea-video decompose` 的真实输出（未开 VLM，仅确定性取证）。拼帧图每格一个镜头，底部彩条是逐镜判断：制作方式、置信度、时间范围；完整产出还有 `breakdown.json`、`report.html/md`、每镜首尾帧和声音拆解图。
+
+### 混合片：代码渲染 + AI 生成 + 真实素材（19s · 10 镜）
+
+![混合片拆解拼帧](docs/cases/dual_role.jpg)
+
+**结论**：代码/模板渲染 59% + AI 生成视频 41%；叠加层：文字标注、字幕、标题（代码/剪辑软件合成）；声音：人声 + BGM 121.6 BPM + 音效 1 处。
+
+- **真实素材单独标出**：录屏 8.2s、界面截图 2.9s，复刻时原样保留、不重新生成
+- 代码渲染镜头给出文字轨和版式 → Remotion 重建；AI 镜头 → capsule-cinema 首尾帧生成；「快速开始」里的输出示例就是这条
+
+### 纯 AI 生成（10s · 4 镜）
+
+![AI 生成视频拆解拼帧](docs/cases/douyin_ai.jpg)
+
+**结论**：AI 生成视频 100%（逐镜置信度 82–83%）；声音：人声 + BGM 123.0 BPM（C major，置信 0.88）。
+
+- 元数据直接检出 **AIGC 生成标识**（generator 字段）
+- 4 镜平均 2.53s，33% 的切点落在 BGM 节拍上（随机约 26%）
 
 ## 和 capsule-cinema 一起复刻
 
@@ -153,36 +173,14 @@ Ingest ─► Decompose ─► Video IR ─► Plan ─► Reconstruct ─► Ve
 
 详见 [docs/vs-hypit.md](docs/vs-hypit.md)。一句话：Hypit 擅长"导演式改编口播类视频"，OiiOii 擅长"一键托管复刻"。rea-video 要做的是**有证据、能验证、能路由到任何模型**的逆向工程。
 
-## 仓库结构
-
-```
-rea_video/             拆解管线（media/probe/shots/features/overlay/audio/classify/vlm/pipeline/report/plan/remake）
-integrations/          capsule-cinema 对接脚本（在 capsule-cinema 的 Python 环境里运行）
-eval/                  评测标注与结果
-tests/                 单测（合成视频 + 假 VLM 服务器）
-capabilities/          模型能力地图（指令集手册）
-  primitives.yaml      生成与分析原语定义、验证指标
-  models/*.yaml        每个模型的能力、边界、价格、许可、来源、验证日期
-  routing.yaml         拆分规则 + 镜头路由规则
-  schema.json          模型条目的 JSON Schema
-docs/                  设计文档
-scripts/               校验脚本等工具
-```
-
-校验能力地图：
-
-```bash
-python3 scripts/validate_capabilities.py
-```
-
-## Roadmap
-
-- **P0 能力地图**：`capabilities/` 加校验（已完成 v0）。
-- **P0.5 拆解**：逐镜头判断制作方式 + VLM / agent 看图融合 + 用户记忆 + capsule-cinema 复刻对接（已完成，本仓库主体）。
-- **P1 MVP**：处理"动效、文字类短视频"，输出 Remotion 工程，做逐帧验证。用合成数据做基准：随机生成已知源码的 Remotion 视频，测试能还原多少。
-- **P2 混合**：实拍镜头走生成路由，代码层叠加，加入 Shot Recipe 和成本控制。
-- **P3 改写和规模化**：批量 Remix；能力探针自动刷新；导出剪映草稿和 OTIO。
-
 ## 合法使用
 
 rea-video 用于学习视频的结构、节奏和制作方法，并用**你有权使用的素材**重新制作。请勿直接搬运他人的画面、音乐、角色或肖像。投放时请遵守平台规则和当地的 AI 生成内容标识要求。
+
+## 灵感来源
+
+灵感来自 [REA（Reverse Engineer Anything）](https://github.com/morluto/rea)：从现象追到实现，结论附证据，用可测量的方式验证。
+
+## 社区
+
+欢迎来 [linux.do](https://linux.do/) 交流使用体验、拆解案例和复刻思路。
