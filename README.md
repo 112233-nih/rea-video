@@ -86,7 +86,7 @@ rea-video stems ref.mp4 -o out/ref
 
 ## 案例
 
-四条 `rea-video decompose` 的真实输出（未开 VLM，仅确定性取证）。拼帧图每格一个镜头，底部彩条是逐镜判断：制作方式、置信度、时间范围；完整产出还有 `breakdown.json`、`report.html/md`、每镜首尾帧和声音拆解图。
+`rea-video decompose` 的真实输出（未开 VLM，仅确定性取证）。拼帧图每格一个镜头，底部彩条是逐镜判断：制作方式、置信度、时间范围；完整产出还有 `breakdown.json`、`report.html/md`、每镜首尾帧和声音拆解图。
 
 ### 混合片：代码渲染 + AI 生成 + 真实素材（19s · 10 镜）
 
@@ -114,15 +114,79 @@ rea-video stems ref.mp4 -o out/ref
 
 - 45% 的切点落在 BGM 节拍上（随机约 25%）——识别出卡点剪辑
 - 报告直接给出**声音复刻方案**：人声 → TTS（需要卡时间窗用时长可控 TTS），音乐 → 按 110 BPM / D major 生成或选曲，在段落变化点对齐镜头；每镜带复刻路线（如 R08-product-multiview → capsule-cinema）
+- 这类 3D / 代码渲染的科普片，现在已经可以让 LLM 写渲染代码（如 Three.js、Blender 脚本、Remotion）直接生成，不用再一镜镜手工建模和做动画；拆出的镜头结构、标注样式和卡点节奏可以直接作为生成说明
 
 ### AI 音乐 MV：判断音乐是 AI 生成还是现成曲库（165s · 86 镜）
 
-![AI 音乐 MV 拆解拼帧](docs/cases/qing_mv.jpg)
+![AI 音乐 MV 拆解拼帧（前 24 镜）](docs/cases/qing_mv_preview.jpg)
 
-**结论**：AI 生成视频 61% + 3D 渲染 23% + 静态图推拉 17%；声音：人声（唱）+ BGM 178.2 BPM（A minor）+ 音效 56 处。
+（图为前 24 镜，[完整 86 镜拼帧](docs/cases/qing_mv.jpg)）
 
-- **音乐来源判断**：整片音乐不间断、人声是唱的、音乐与视频同时收尾 → 判为「AI 生成音乐」——这条实际是 Suno 生成的说唱，判对
-- 即使不是实拍，报告也给出画面里的光影测量（景别、机位、光比、色温、软硬），可直接写进生成提示词；另附「听歌识曲 / 看音乐标签」的人工确认方法
+**结论**：AI 生成视频 61% + 3D 渲染 23% + 静态图推拉 17%；声音：人声（唱）+ BGM 178.2 BPM（A minor）+ 音效 56 处。音乐不间断、人声是唱的、与视频同时收尾 → 判为「AI 生成音乐」，实际是 Suno 生成的说唱，判对。
+
+### OiiOii 公众号文章里的原片和复刻（13 条视频）
+
+下面几组视频都来自 OiiOii 的两篇公众号文章，都是微信转码版。每组上面是原片，下面是 AI 复刻；▶ 链接是压缩后的原视频（480p），可以对照着看。
+
+#### 原片 vs AI 复刻：分出哪条是手机实拍（21s · 11 镜 / 21s · 8 镜）
+
+![榨汁杯原片与复刻拆解拼帧](docs/cases/juicer_pair.jpg)
+
+▶ [TikTok 原片](docs/cases/videos/v11_tiktok_original.mp4) · [AI 复刻](docs/cases/videos/v12_oiioii_juicer_remake.mp4)
+
+**结论**：原片判为实拍 100%，整条标为真实素材（复刻时原样保留，不重新生成）；复刻版判为 AI 生成视频 100%（逐镜置信度 81–86%）。
+
+- **帧率证据**：原片是原生 30fps，84% 时长没有重复帧，符合手机直出；复刻版有 20% 重复帧，每 5 帧重复一次，说明是 24fps 生成后转成 30fps
+- 复刻版元数据里检出 **AIGC 生成标识**；原片则给出可照着拍的方案：手持拍物品、中景为主、正面柔光、每分钟 29 刀、60% 的切点落在说话停顿处
+- 微信转码会抹掉噪声证据，所以原片仍标了「实拍还是 AI 待确认」，建议开 VLM 或让 agent 看图复核
+
+#### 绘本风：原片 + 两种复刻（各 30s）
+
+![绘本风原片与两种复刻拆解拼帧](docs/cases/sketch_trio.jpg)
+
+▶ [原参考片](docs/cases/videos/v02_original_reference.mp4) · [视频模型 + Harness 复刻](docs/cases/videos/v01_oiioii_remake.mp4) · [纯视频模型复刻](docs/cases/videos/v03_pure_video_model_remake.mp4)
+
+**结论**：三条都判为 AI 生成视频 100%。两种复刻的镜头结构都跟着原片走：铅笔特写开场 → 云上场景 → 水彩收尾，转场都是叠化。
+
+- 插画风格、铅笔素描过渡都没有被误判成 2D 动画或 3D 渲染；纯模型复刻版元数据里检出 AIGC 标识
+- 报告给出画面光影（近景为主、右前方顶光、光比约 1.8:1、背景虚化），可直接写进生成提示词
+- 原参考片没有作者说明，判断只标了「证据不足，待确认」
+
+#### 代码 UI 动效：Gemini 发布片和两版复刻（各 70s 左右）
+
+![Gemini 原片与复刻拆解拼帧](docs/cases/gemini_code.jpg)
+
+▶ [Gemini 原片](docs/cases/videos/v09_gemini_original.mp4) · [原片 / 复刻左右对比](docs/cases/videos/v08_oiioii_gemini_style_remake.mp4) · [OiiOii 第一版「视频生成 + Coding」](docs/cases/videos/v10_oiioii_gen_coding_first.mp4)
+
+**结论**：三条都以代码/模板渲染为主（81% / 80% / 92%），逐镜准确率 81–96%。
+
+- 这类界面动效和文字动画都是代码渲染出来的，复刻路线是 Remotion 或让 LLM 直接写动画代码，不需要视频模型
+- 左右对比那条里识别出 32s 录屏素材；误判主要在 Google 搜索框那几秒，深色背景加光效被判成 3D
+
+#### 3D + 文字动效推广片：判得最差的一组（29s · 11 镜 / 34s · 10 镜）
+
+![推广片原片与复刻拆解拼帧](docs/cases/promo_pair.jpg)
+
+▶ [产品推广原片](docs/cases/videos/v04_product_promo_original.mp4) · [OiiOii「视频生成 + Coding」复刻](docs/cases/videos/v05_oiioii_gen_plus_coding.mp4)
+
+**结论**：原片判为 3D 渲染 65% + AI 生成视频 35%；复刻版判为 3D 63% + 代码渲染 22% + AI 12% + 录屏 2%。
+
+- 原片其实是 3D 元素加文字动效，没有 AI 镜头。判错的 3 镜（#4、#5、#9）都是大面积粉紫渐变、玻璃质感、几乎没有纹理，被当成了 AI 画面。原片逐镜准确率只有 65%，这类片子建议开 VLM
+- 复刻版识别出 10s 界面截图和 2s 录屏，标为真实素材
+
+#### 换主角：狗换成男生、真人变赛车游戏角色（12s / 12s / 6s）
+
+![换主角原片与复刻拆解拼帧](docs/cases/swap_pair.jpg)
+
+▶ [原片（狗）](docs/cases/videos/v06_outfit_original.mp4) · [换成男生](docs/cases/videos/v07_oiioii_male_swap.mp4) · [真人变装 QQ 飞车风](docs/cases/videos/v13_oiioii_outfit_swap.mp4)
+
+**结论**：三条都判为 AI 生成视频 100%。
+
+- 原片和男生版是同一个俯拍机位、同一块地毯和光线，只换了主角；BGM 都是 89.1 BPM，说明复刻沿用了原片配乐
+- 原片（狗）的判断标了「证据不足，待确认」，文章没说明它是实拍还是 AI
+- 变装那条真人和游戏角色两镜都判对；画面里的游戏菜单被当成了后期叠加的贴片，这一点有误
+
+> 以上视频来自 OiiOii 公众号文章（[文章 1](https://mp.weixin.qq.com/s/s7i_fQmwWo9SbRoV-KDZ9g)、[文章 2](https://mp.weixin.qq.com/s/aXhPx0eQu9ngYxuyvsFE4Q)），版权归原作者，仅作拆解演示。
 
 ## 和 capsule-cinema 一起复刻
 
