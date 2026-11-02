@@ -62,6 +62,8 @@ def _priority(rec: dict, ctx: dict) -> tuple[str, list[str]]:
     if (rec.get("base") or {}).get("disputed"):
         why.append(rec["base"]["disputed"])
     facts = (rec.get("deterministic") or {}).get("facts", {})
+    if label == "ai_video" and facts.get("pulldown") in ("24→30", "24→60", "25→30?"):
+        why.append("只有 24fps 源的帧率证据：AI 和 24p 相机实拍都会这样，看画面定")
     if facts.get("transcode_degraded") and label in ("ai_video", "live_action"):
         why.append("平台转码，实拍/AI 待确认")
     return ("high" if why else "normal"), why

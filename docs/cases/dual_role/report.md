@@ -5,7 +5,7 @@
 - 时长 19.042s · 1080×1920 · 24.0fps · 9:16
 - 镜头 10 个，平均 1.9s；转场：cut×9、start×1
 - 判断置信度（按时长加权）：75%；判定方式：确定性取证 + VLM 融合
-- VLM 已生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview）
+- VLM 已生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview）；由 claude 看图复核 1/10 个镜头，已并入结论
 
 ![storyboard](storyboard.jpg)
 
@@ -173,7 +173,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 |---|---|---|---|---|---|---|---|---|
 | 1 | 00:00.000 | 1.38s | 代码/模板渲染 | 92% | 混合（含真实素材）：录屏素材 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
 | 2 | 00:01.375 | 1.46s | AI 生成视频 | 73% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
-| 3 | 00:02.833 | 1.04s | AI 生成视频 | 56% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
+| 3 | 00:02.833 | 1.04s | AI 生成视频 | 59% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
 | 4 | 00:03.875 | 1.96s | 代码/模板渲染 | 91% | 混合（含真实素材）：录屏素材 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
 | 5 | 00:05.833 | 1.71s | AI 生成视频 | 73% | AI 生成 | 文字、标题 | 固定 | R07-product-hero → capsule_cinema |
 | 6 | 00:07.542 | 3.00s | 代码/模板渲染 | 99% | 混合（含真实素材）：录屏素材 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
@@ -231,8 +231,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_003](shots/shot_003.jpg)
 
-- 概率：AI 生成视频 56%，数字人口播 23%，实拍 15%（fused）
-- ⚠️ 有分歧：工具判AI 生成视频、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 55%，实拍 38%，数字人口播 4%（fused）
 - 素材来源：AI 生成
 - 低照度画面：47% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.38、用色 98 种、平坦块 8%
@@ -240,6 +239,8 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 - [VLM] 人物眼周微表情、眨眼和口型自然流畅，无AI面部扭曲或闪烁
 - [VLM] 手指关节、指甲边缘与茶杯接触处物理透视真实严谨
 - [VLM] 背景书架、台灯光斑及景深虚化符合真实光学镜头散焦特性
+- [claude 看图] 和 #2、#5、#7 是同一场景、同一角色，这些镜头已判为 AI 视频
+- [claude 看图] 人物皮肤过于光滑、光线均匀，背景书架细节糊成一片，没有实拍的噪声
 - 画面：戴黑色报童帽和圆框眼镜的短发女性坐在书房扶手椅上，双手捧着马克杯说话，背景为暖色台灯与书架，中近景固定机位实拍。
 - 拍法/打光：近景；平视；三脚架/支架固定；夜景/弱光环境光，没有专门补光；主光画面左侧偏前方；光比约 2.0:1（相差 1.0 档）；中等柔度
 - 文字轨（文字/bottom）：封面顺序反了

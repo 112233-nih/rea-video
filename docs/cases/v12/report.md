@@ -4,8 +4,8 @@
 
 - 时长 21.033s · 480×854 · 30.0fps · 9:16
 - 镜头 8 个，平均 2.63s；转场：cut×7、start×1
-- 判断置信度（按时长加权）：84%；判定方式：确定性取证 + VLM 融合
-- VLM 已生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview）
+- 判断置信度（按时长加权）：81%；判定方式：确定性取证 + VLM 融合
+- VLM 已生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview）；由 claude 看图复核 3/8 个镜头，已并入结论
 
 ![storyboard](storyboard.jpg)
 
@@ -195,14 +195,14 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 | # | 时间 | 时长 | 底层画面 | 置信度 | 素材来源 | 叠加层 | 运镜 | 复刻路线 |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 00:00.000 | 1.83s | AI 生成视频 | 84% | AI 生成；复刻参考：商品参考图 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 1 | 00:00.000 | 1.83s | AI 生成视频 | 74% | AI 生成；复刻参考：商品参考图 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 2 | 00:01.833 | 0.97s | AI 生成视频 | 85% | AI 生成 | — | 固定 | R07-product-hero → capsule_cinema |
 | 3 | 00:02.800 | 0.93s | AI 生成视频 | 86% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 4 | 00:03.733 | 2.50s | AI 生成视频 | 86% | AI 生成；复刻参考：商品参考图 | — | 手持晃动 | R07-product-hero → capsule_cinema |
-| 5 | 00:06.233 | 2.80s | AI 生成视频 | 85% | AI 生成；复刻参考：Logo/品牌参考 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 5 | 00:06.233 | 2.80s | AI 生成视频 | 76% | AI 生成；复刻参考：Logo/品牌参考 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 6 | 00:09.033 | 5.53s | AI 生成视频 | 81% | AI 生成 | — | 手持晃动 | R07-product-hero → capsule_cinema |
 | 7 | 00:14.567 | 4.30s | AI 生成视频 | 84% | AI 生成 | — | 固定 | R07-product-hero → capsule_cinema |
-| 8 | 00:18.867 | 2.17s | AI 生成视频 | 86% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 8 | 00:18.867 | 2.17s | AI 生成视频 | 78% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 
 ## 逐镜详情
 
@@ -210,8 +210,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_001](shots/shot_001.jpg)
 
-- 概率：AI 生成视频 84%，数字人口播 9%，3D 渲染 2%（fused）
-- ⚠️ 有分歧：工具判AI 生成视频、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 71%，实拍 22%，数字人口播 3%（fused）
 - 画面里物体上的字（不是后期字幕）：mochyrichoct、pcyayhydow、pouayhydow
 - 素材来源：AI 生成；复刻参考：商品参考图
 - 纹理呈照片/视频特征：噪声 σ=0.49、用色 167 种、平坦块 1%
@@ -220,6 +219,8 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 - [VLM] 杯身上的摩飞品牌字母'morphy richards'字迹清晰准确无乱码
 - [VLM] 人手放置草莓塑料盒时的手指关节、指纹反光真实自然
 - [VLM] 大理石桌面反射与天然纹理清晰，草莓表皮颗粒细节真实且符合物理动态
+- [claude 看图] 文件元数据带 AIGC 标识；杯身 Logo 文字是乱码（mochyrichoct），不是真品牌字样
+- [claude 看图] 手和水果的质感与同片其他 AI 镜头一致
 - 画面：俯拍大理石台面，左侧立着一个摩飞便携榨汁杯，一只手端着一盒新鲜草莓放到杯子右侧。顶部带有中文标题文案。
 - 拍法/打光：近景；略俯拍；三脚架/支架固定；侧前方主光 + 补光（标准布光）；主光画面右侧偏前方；光比约 1.4:1（相差 0.4 档）；硬光（明暗分界清楚）
 - 文字轨（文字/middle）：这个榨汁杯真的绝了
@@ -295,8 +296,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_005](shots/shot_005.jpg)
 
-- 概率：AI 生成视频 85%，数字人口播 9%，3D 渲染 2%（fused）
-- ⚠️ 有分歧：工具判AI 生成视频、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 72%，实拍 20%，数字人口播 3%（fused）
 - 画面里物体上的字（不是后期字幕）：caoyyhydow、mophyrohords、mophyidtods
 - 素材来源：AI 生成；复刻参考：Logo/品牌参考
 - 纹理呈照片/视频特征：噪声 σ=0.39、用色 153 种、平坦块 2%
@@ -305,6 +305,8 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 - [VLM] 手部皮肤细节、指甲、指关节自然写实
 - [VLM] 杯身摩飞（Morphy Richards）英文标志清晰稳定无形变
 - [VLM] 杯内酸奶与水果块随翻转产生的自然重力流动与手持抖动
+- [claude 看图] 杯身 Logo 是乱码（mophy rohords），真品是 morphy richards；文件元数据带 AIGC 标识
+- [claude 看图] 倒转杯身时杯内液体和水果几乎不动，物理不对
 - 画面：特写镜头，一只手将便携榨汁杯的盖子盖上拧紧，随后倒置拿起展示杯底的水果与酸奶。
 - 拍法/打光：特写；略俯拍；他人手持；逆光/背景比主体亮；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.3:1（相差 0.4 档）；柔光（明暗过渡宽）
 - 文字轨（字幕/middle）：caoyyhydow / mophyrohords / mophyidtods
@@ -356,8 +358,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_008](shots/shot_008.jpg)
 
-- 概率：AI 生成视频 86%，数字人口播 9%，3D 渲染 1%（fused）
-- ⚠️ 有分歧：工具判AI 生成视频、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 74%，实拍 18%，数字人口播 3%（fused）
 - 素材来源：AI 生成
 - 纹理呈照片/视频特征：噪声 σ=0.34、用色 159 种、平坦块 2%
 - 重复帧呈 24→30 规律（17%，周期 5）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材
@@ -365,6 +366,8 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 - [VLM] 自然手持镜头晃动与自然对焦变化
 - [VLM] 手部肌肉、指甲、皮肤纹理极其真实自然
 - [VLM] 粉色奶昔泡沫与挂壁细节符合真实物理特性
+- [claude 看图] 文件元数据带 AIGC 标识；和同片 #1–#7 同一场景同一风格
+- [claude 看图] Logo 文字同样不可读
 - 画面：手持透明玻璃杯展示自制粉色草莓冰沙，背景为木饰面与台面，轻微晃动杯子展示质感。
 - 拍法/打光：特写；略俯拍；他人手持；正面柔光（平光）；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.1:1（相差 0.2 档）；硬光（明暗分界清楚）
 - 文字轨（标题/top）：765 / 7657

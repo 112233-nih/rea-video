@@ -1,11 +1,11 @@
 # 视频拆解报告：qing_hiphop_full.mp4
 
-**结论**：混合制作：AI 生成视频 47% + 3D 渲染 20% + 静态图 + 推拉动效 17% + 数字人口播 17%；叠加层：文字标注、图形贴片、字幕（代码/剪辑软件合成）；用到真实素材：真实照片（3.0s）、商品实拍图（0.7s）；复刻需准备参考：人物/场景参考图（1 镜）、商品参考图（1 镜）；声音：人声 + BGM 178.2BPM（AI 生成音乐） + 音效 56 处
+**结论**：混合制作：AI 生成视频 52% + 静态图 + 推拉动效 17% + 数字人口播 17% + 3D 渲染 15%；叠加层：文字标注、图形贴片、字幕（代码/剪辑软件合成）；用到真实素材：真实照片（3.0s）、商品实拍图（0.7s）；复刻需准备参考：人物/场景参考图（1 镜）、商品参考图（1 镜）；声音：人声 + BGM 178.2BPM（AI 生成音乐） + 音效 56 处
 
 - 时长 164.958s · 1080×1920 · 24.0fps · 9:16
 - 镜头 86 个，平均 1.92s；转场：cut×85、start×1
 - 判断置信度（按时长加权）：72%；判定方式：确定性取证 + VLM 融合
-- VLM 部分生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview：60/60 个镜头有结果，整片分析失败）；由 claude 看图复核 4/86 个镜头，已并入结论
+- VLM 部分生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview：60/60 个镜头有结果，整片分析失败）；由 claude 看图复核 9/86 个镜头，已并入结论
 
 ![storyboard](storyboard.jpg)
 
@@ -13,14 +13,14 @@
 
 | 底层画面 | 时长 | 占比 |
 |---|---|---|
-| AI 生成视频 | 77.34s | 47% |
-| 3D 渲染 | 32.92s | 20% |
+| AI 生成视频 | 86.04s | 52% |
 | 静态图 + 推拉动效 | 27.46s | 17% |
 | 数字人口播 | 27.25s | 16% |
+| 3D 渲染 | 24.21s | 15% |
 
 ## 复刻方案
 
-**3D 渲染 14 镜 + AI 视频 41 镜 → 34 个生成单元、34 次 Seedance 2.5 调用；静图推拉/静帧 19 镜 → 本地重建；数字人 12 镜 → TTS + 数字人驱动**
+**3D 渲染 10 镜 + AI 视频 45 镜 → 34 个生成单元、34 次 Seedance 2.5 调用；静图推拉/静帧 19 镜 → 本地重建；数字人 12 镜 → TTS + 数字人驱动**
 
 - 默认引擎 Seedance 2.0（含 Mini / Fast） 不支持一次多镜头，用它要逐镜生成 55 次；这里按 Seedance 2.5 规划（单次 ≤30s、可一次出多镜头），共 34 次
 - 分组规则：同场景、硬切相连的 AI 镜头合并为一次生成（S01）；单次 ≤30s；单元内连续硬切尽量 ≤8s、最多 10s（S06）；在叠化/淡入淡出和换场景处切开（S03）
@@ -211,14 +211,13 @@ Shot 2 (0.5-3.0s): Camera slowly pushes in. The young scholar looks down, focuse
 
 - 参考素材：`@图片1` 产品实拍图（正面 + 带 Logo 面），用户提供；`@图片2` 人物参考图（每个角色一张正脸 + 半身），保证跨镜头长相一致；`@视频1` 原片 34.6–42.9s 片段：参考动作、运镜和剪辑节奏（只作参考，不复制画面）
 - 首帧图像提示词：中国古代老者面部特写，花白胡须，满脸深邃皱纹与老年斑，佩戴黑色现代头戴耳机，低调硬光，电影质感，超写实细节，8k分辨率
-- 另一条路：3D 工程。让 LLM 写 Blender 脚本或 Three.js 场景，角色/道具建模一次、按镜头设机位渲染，多角度和角色一致性最好，改文案和镜头也只是改代码（R08）
 
 ```text
 竖屏 9:16；夜景/弱光环境光，没有专门补光，柔光（明暗过渡宽），中性（约 5000K），背景明显虚化（浅景深/人像模式）。产品外观以 @图片1 为准，Logo 和细节保持一致。人物以 @图片2 为准。参考 @视频1 的动作、运镜和剪辑节奏。镜头之间硬切。
 镜头1（0.0–2.0s）：老者面部固定特写，严肃冷峻地对着镜头说话，嘴唇同步张合，面部微动，眼神坚定，镜头保持静止
 镜头2（2.0–4.9s）：固定特写镜头。夜色中煤油灯火苗微弱闪烁，昏黄灯光照亮榜单。一根手指稳定指向红圈内的'林子安'三个字，榜单纸张随微风极轻微颤动，整体保持幽暗压抑的悬疑氛围。
 镜头3（4.9–5.6s）：机位固定，戴着黑色耳机的长胡须亚裔老者手扶着耳机，神情沉浸地张口歌唱念诵，面部肌肉与胡须随歌唱轻微自然摆动，暗调影棚侧光。
-镜头4（5.6–8.2s）：特写俯拍，枯瘦嶙峋的手指缓缓压在发黄宣纸上，指着毛笔书写的“文理太浅”字样，镜头缓慢向前推近，油灯暖光微微晃动，周围环境深邃暗黑。
+镜头4（5.6–8.2s）：枯瘦的手指缓缓划过奏折上的大字，另一只手从下方入画按住纸面，镜头缓慢推近
 ```
 
 <details><summary>English prompt</summary>
@@ -227,27 +226,26 @@ Shot 2 (0.5-3.0s): Camera slowly pushes in. The young scholar looks down, focuse
 Shot 1 (0.0-2.0s): Extreme close-up of an elderly Asian man speaking seriously, lips synced to audio, intense gaze, highly detailed weathered skin, static shot.
 Shot 2 (2.0-4.9s): Close-up static shot. In the dark night, the flame of a kerosene lantern flickers softly, casting warm light on an old paper roster on a wooden wall. A hand with prominent veins points its index finger steadily at the Chinese name '林子安' circled in red ink. Cinematic, low-key lighting, suspenseful atmosphere.
 Shot 3 (4.9-5.6s): Fixed close-up shot, an elderly Asian man with long gray beard wearing studio headphones, holding the earcup with his hand, singing with deep emotion, subtle facial muscle and beard movement, low-key dramatic studio lighting.
-Shot 4 (5.6-8.2s): Close-up top-down shot, withered wrinkled fingers slowly pressing down on yellowed ancient rice paper, pointing at Chinese calligraphy characters. The camera slowly pushes in, candlelight flickers dimly, cinematic dark low-key lighting.
+Shot 4 (5.6-8.2s): Close-up of an old frail finger tracing large ink characters on a yellowed memorial scroll, another hand enters from below, slow push-in, dark cinematic tone
 ```
 
 </details>
 
-**G9 · 3D 渲染 · 镜头 #29 · 1.2s**
+**G9 · AI 生成视频 · 镜头 #29 · 1.2s**
 
 - 参考素材：`@图片1` 产品实拍图（正面 + 带 Logo 面），用户提供；`@图片2` 人物参考图（每个角色一张正脸 + 半身），保证跨镜头长相一致；`@视频1` 原片 43.6–44.8s 片段：参考动作、运镜和剪辑节奏（只作参考，不复制画面）
-- 首帧图像提示词：电影质感特写，粗糙苍老带有深邃皱纹的手指压在古朴宣纸上，纸上用粗黑毛笔书写大字'文理太浅'，低照度侧光，质感丰富，胶片颗粒感
+- 首帧图像提示词：泛黄奏折近景，大字「文理太浅」居中，上方一根手指按住纸边，暗调
 - 生成 4s 后剪到 1.2s（太短的镜头单独生成不稳定）
-- 另一条路：3D 工程。让 LLM 写 Blender 脚本或 Three.js 场景，角色/道具建模一次、按镜头设机位渲染，多角度和角色一致性最好，改文案和镜头也只是改代码（R08）
 
 ```text
 竖屏 9:16；夜景/弱光环境光，没有专门补光，柔光（明暗过渡宽），中性（约 5000K），背景明显虚化（浅景深/人像模式）。产品外观以 @图片1 为准，Logo 和细节保持一致。人物以 @图片2 为准。参考 @视频1 的动作、运镜和剪辑节奏。
-微距特写镜头缓慢向宣纸推进，苍老枯瘦的手指静静压在古老文书上，毛笔墨迹'文理太浅'清晰可见，低光悬疑电影氛围
+手指按住奏折，镜头轻微推近大字「文理太浅」
 ```
 
 <details><summary>English prompt</summary>
 
 ```text
-Cinematic macro close-up, slow push-in towards ancient calligraphy paper, weathered wrinkled finger resting on the paper, bold black ink characters, low-key dramatic lighting.
+Close shot of the scroll with the large characters, a finger pressing the edge, gentle push-in
 ```
 
 </details>
@@ -274,22 +272,21 @@ Shot 3 (2.2-2.8s): Close-up shot of an elderly Chinese man with a long white bea
 
 </details>
 
-**G11 · 3D 渲染 · 镜头 #36、#37 · 3.8s**
+**G11 · AI 生成视频 · 镜头 #36、#37 · 3.8s**
 
 - 参考素材：`@图片1` 产品实拍图（正面 + 带 Logo 面），用户提供；`@图片2` 人物参考图（每个角色一张正脸 + 半身），保证跨镜头长相一致；`@视频1` 原片 50.4–54.2s 片段：参考动作、运镜和剪辑节奏（只作参考，不复制画面）
-- 首帧图像提示词：中国古装历史电影剧照，竖屏构图。阴霾低沉的天空下，古代城墙前。左侧前景侧身站着一位四十岁蓄长须的清朝文人武将，神色凝重，手握书卷；背景是大批头戴清兵帽、手持长矛的士兵列队肃立，地面微起烟尘。低饱和度青灰冷色调，严肃史诗氛围。
-- 另一条路：3D 工程。让 LLM 写 Blender 脚本或 Three.js 场景，角色/道具建模一次、按镜头设机位渲染，多角度和角色一致性最好，改文案和镜头也只是改代码（R08）
+- 首帧图像提示词：阴云密布的古城墙下，列阵持枪的清代士兵，画面左侧虬髯将领侧脸前景，冷灰电影调色
 
 ```text
 竖屏 9:16；夜景/弱光环境光，没有专门补光，柔光（明暗过渡宽），中性（约 5000K），背景明显虚化（浅景深/人像模式）。产品外观以 @图片1 为准，Logo 和细节保持一致。人物以 @图片2 为准。参考 @视频1 的动作、运镜和剪辑节奏。镜头之间硬切。
-镜头1（0.0–3.1s）：镜头极其缓慢地向前推进。左侧前景的蓄须中年将领神情严峻保持侧立，背景军阵中手持长矛的士兵轻微活动，战场烟尘缓缓飘散。阴天冷峻色调，保持沉重压抑的历史电影氛围。
+镜头1（0.0–3.1s）：士兵队列缓缓移动、尘土扬起，将领侧脸静立，镜头缓慢横移
 镜头2（3.1–3.8s）：固定特写机位，戴着头戴式耳机的长胡须中国老者对着麦克风沉痛开唱，嘴部张合演唱，面部肌肉与胡须自然微颤，眼神微垂凝重，光影保持稳定。
 ```
 
 <details><summary>English prompt</summary>
 
 ```text
-Shot 1 (0.0-3.1s): Slow forward camera push-in. In the left foreground, a middle-aged bearded Qing dynasty general stands in profile with a stern expression holding a scroll; in the background, a formation of spearmen slightly shifts ranks before an ancient city wall. War dust drifts subtly. Overcast, desaturated cool cinematic lighting, somber historical epic atmosphere.
+Shot 1 (0.0-3.1s): Ancient army ranks beneath a city wall under heavy clouds, a bearded general in profile in the foreground, dust rising, slow lateral move
 Shot 2 (3.1-3.8s): Close-up static shot of an elderly East Asian man with a long grey beard wearing over-ear studio headphones, singing with a sorrowful expression into a microphone, natural facial muscle and beard movements, studio low-key moody lighting.
 ```
 
@@ -298,18 +295,18 @@ Shot 2 (3.1-3.8s): Close-up static shot of an elderly East Asian man with a long
 **G12 · AI 生成视频 · 镜头 #38 · 2.0s**
 
 - 参考素材：`@图片1` 产品实拍图（正面 + 带 Logo 面），用户提供；`@图片2` 人物参考图（每个角色一张正脸 + 半身），保证跨镜头长相一致；`@视频1` 原片 54.2–56.2s 片段：参考动作、运镜和剪辑节奏（只作参考，不复制画面）
-- 首帧图像提示词：电影质感剧照，清代老者，留着辫子与斑白长须，浑身湿透，黑色长衫浸湿，被拉上一艘夜间的木船，双手撑在湿漉漉的木船甲板上，眼神凝重坚毅，背景是汹涌江水与一盏微弱马灯，冷冽电影光影，高度写实
+- 首帧图像提示词：夜晚江面小船上，浑身湿透的白须清代老者双手撑在船板上，背后挂着煤油灯，冷蓝色调
 - 生成 4s 后剪到 2.0s（太短的镜头单独生成不稳定）
 
 ```text
 竖屏 9:16；夜景/弱光环境光，没有专门补光，柔光（明暗过渡宽），中性（约 5000K），背景明显虚化（浅景深/人像模式）。产品外观以 @图片1 为准，Logo 和细节保持一致。人物以 @图片2 为准。参考 @视频1 的动作、运镜和剪辑节奏。
-清代老者浑身湿透从水中被拉上木船甲板，双手按在湿木板上支撑身体，水珠从胡须和发尾不断滴落，他喘着粗气眼神惊魂未定，固定机位微弱晃动，电影夜戏质感
+老者喘息着撑在船板上抬头，身后的人伸手去拉他，江浪翻涌
 ```
 
 <details><summary>English prompt</summary>
 
 ```text
-Cinematic historical drama shot: an elderly Qing dynasty man, soaking wet in black robes, pulled aboard a wooden boat at night, hands resting on the wet deck as water drips from his beard, intense dramatic expression, moody cool lighting with a warm lantern glow in the background.
+At night on a small boat, a drenched old man with a white beard braces on the deck and looks up, someone behind reaches to pull him, waves churning
 ```
 
 </details>
@@ -409,22 +406,21 @@ Fixed camera. The silhouettes of ancient soldiers begin to move. The soldier on 
 
 </details>
 
-**G18 · 3D 渲染 · 镜头 #46 · 1.8s**
+**G18 · AI 生成视频 · 镜头 #46 · 1.8s**
 
 - 参考素材：`@图片1` 产品实拍图（正面 + 带 Logo 面），用户提供；`@图片2` 人物参考图（每个角色一张正脸 + 半身），保证跨镜头长相一致；`@视频1` 原片 65.4–67.2s 片段：参考动作、运镜和剪辑节奏（只作参考，不复制画面）
-- 首帧图像提示词：低机位仰拍，古代士兵劳工在泥泞工地上劳作，挥铁锹与大锤，乌云密布，背景为木质瞭望塔与旌旗，逆光剪影，电影级调色，冷色调，颗粒感
+- 首帧图像提示词：阴云营地，一群清代兵丁逆光剪影，挥锤打木桩，远处瞭望塔和旗帜
 - 生成 4s 后剪到 1.8s（太短的镜头单独生成不稳定）
-- 另一条路：3D 工程。让 LLM 写 Blender 脚本或 Three.js 场景，角色/道具建模一次、按镜头设机位渲染，多角度和角色一致性最好，改文案和镜头也只是改代码（R08）
 
 ```text
 竖屏 9:16；夜景/弱光环境光，没有专门补光，柔光（明暗过渡宽），中性（约 5000K），背景明显虚化（浅景深/人像模式）。产品外观以 @图片1 为准，Logo 和细节保持一致。人物以 @图片2 为准。参考 @视频1 的动作、运镜和剪辑节奏。
-低机位缓慢平移，古代劳工在泥地中挖掘、用力挥舞大锤砸入木桩，泥水飞溅，背景乌云流动，人物呈现厚重的逆光剪影质感
+人们弯腰挥锤反复打桩，泥土飞溅，镜头固定
 ```
 
 <details><summary>English prompt</summary>
 
 ```text
-Low-angle slow tracking shot of ancient laborers working in a muddy construction ground, digging and hammering wooden poles, backlight silhouettes against an overcast stormy sky with a watchtower.
+Silhouetted soldiers hammering wooden stakes in a muddy camp under overcast sky, mud splashing, static camera
 ```
 
 </details>
@@ -734,7 +730,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 - **结论**：视频类型：音乐 MV / 歌曲类（整片是一首唱出来的歌） → 人声TTS 配音；音乐AI 生成音乐（倾向，待确认）；音效音效库/剪辑软件后期添加（倾向，待确认）
 - **剥离出的音轨**：`stems/original.wav`（原声）、`stems/vocals.wav`（人声干声，瞬态音效也会落在这里）、`stems/music.wav`（配乐 + 环境声）
-- 视频形式：疑似带唱歌曲/MV；AI 画面占 63%，实拍占 0%
+- 视频形式：疑似带唱歌曲/MV；AI 画面占 69%，实拍占 0%
 - **背景音乐**：AI 生成音乐（ai_generated 52%，popular_song 26%，existing_library 22%）
   - 整片音乐不间断，人声是唱的（持续音高占比 0.24）：像一首带人声的歌/音乐 MV，AI 歌概率高（未开 VLM，按 MV 先验但降权）
   - 音乐与视频同时收尾：按片长剪辑或定制过（两种来源都可能，弱证据）
@@ -844,18 +840,18 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 | 24 | 00:34.625 | 2.04s | AI 生成视频 | 50% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 25 | 00:36.667 | 2.88s | AI 生成视频 | 81% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 26 | 00:39.542 | 0.71s | AI 生成视频 | 63% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 27 | 00:40.250 | 2.62s | 3D 渲染 | 61% | 制作方渲染 | 字幕 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 27 | 00:40.250 | 2.62s | AI 生成视频 | 52% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 28 | 00:42.875 | 0.71s | 数字人口播 | 89% | AI 生成 | 文字 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 29 | 00:43.583 | 1.21s | 3D 渲染 | 50% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 29 | 00:43.583 | 1.21s | AI 生成视频 | 43% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 30 | 00:44.792 | 0.62s | AI 生成视频 | 99% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 31 | 00:45.417 | 1.54s | AI 生成视频 | 77% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 32 | 00:46.958 | 0.62s | AI 生成视频 | 50% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 33 | 00:47.583 | 0.62s | 静态图 + 推拉动效 | 99% | AI 生成 | 文字 | 平滑运镜 | R17-still-motion → local_ffmpeg |
 | 34 | 00:48.208 | 0.58s | 数字人口播 | 91% | AI 生成 | 文字 | 平滑运镜 | R03-talking-head → capsule_cinema |
 | 35 | 00:48.792 | 1.58s | 数字人口播 | 99% | AI 生成 | 文字 | 固定（主体在动） | R03-talking-head → capsule_cinema |
-| 36 | 00:50.375 | 3.08s | 3D 渲染 | 52% | 制作方渲染 | 字幕 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 36 | 00:50.375 | 3.08s | AI 生成视频 | 46% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 37 | 00:53.458 | 0.75s | AI 生成视频 | 63% | AI 生成 | 文字、图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 38 | 00:54.208 | 2.00s | AI 生成视频 | 78% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 38 | 00:54.208 | 2.00s | AI 生成视频 | 61% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 39 | 00:56.208 | 0.71s | AI 生成视频 | 98% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 40 | 00:56.917 | 1.50s | AI 生成视频 | 75% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 41 | 00:58.417 | 0.50s | AI 生成视频 | 42% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
@@ -863,7 +859,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 | 43 | 00:59.500 | 3.04s | AI 生成视频 | 85% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 44 | 01:02.542 | 2.12s | AI 生成视频 | 81% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 45 | 01:04.667 | 0.71s | 数字人口播 | 98% | AI 生成 | 图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 46 | 01:05.375 | 1.79s | 3D 渲染 | 61% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 46 | 01:05.375 | 1.79s | AI 生成视频 | 47% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 47 | 01:07.167 | 3.38s | AI 生成视频 | 76% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 48 | 01:10.542 | 1.25s | 数字人口播 | 94% | AI 生成 | 文字、图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
 | 49 | 01:11.792 | 2.79s | 数字人口播 | 99% | AI 生成 | 字幕、图形贴片 | 固定（主体在动） | R03-talking-head → capsule_cinema |
@@ -1357,14 +1353,13 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
   - 首帧图像提示词：特写镜头，一位留着花白山羊胡须的亚裔老者，头戴黑色监听耳机，一只手扶在耳机边缘，深色中式对襟上衣，深灰极简背景，侧向单光源硬光，皮肤纹理清晰，电影胶片质感，竖屏
   - 视频提示词：机位固定，戴着黑色耳机的长胡须亚裔老者手扶着耳机，神情沉浸地张口歌唱念诵，面部肌肉与胡须随歌唱轻微自然摆动，暗调影棚侧光。
 
-### #27 00:40.250–00:42.875 · 3D 渲染 + 代码/剪辑叠加（字幕）
+### #27 00:40.250–00:42.875 · AI 生成视频 + 代码/剪辑叠加（字幕）
 
 ![shot_027](shots/shot_027.jpg)
 
-- 概率：3D 渲染 61%，AI 生成视频 21%，代码/模板渲染 13%（fused）
-- ⚠️ 有分歧：工具判3D 渲染、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 50%，3D 渲染 26%，实拍 18%（fused）
 - 画面里物体上的字（不是后期字幕）：道枝憶花、杨况機光心、植税流横清热境福土文
-- 素材来源：制作方渲染
+- 素材来源：AI 生成
 - 纹理呈渲染特征：平坦色块 34%、95% 像素仅用 25 种颜色、横竖直边 12%
 - 逐帧清晰度呈周期性起伏（周期 None 帧，相关 0.00）：画面经过插帧/帧率转换，原始帧率更低
 - 重复帧呈 interpolated 规律（0%，周期 None）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材
@@ -1372,14 +1367,15 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 - [VLM] 纸张纤维、墨迹渗透和折痕物理特性完全符合实拍
 - [VLM] 左上角油灯微弱火光产生的自然暗调侧逆光与手部阴影一致
 - [VLM] 书卷文字笔画工整稳定，无AI生成文字常见的融化与闪烁
+- [claude 看图] 奏折上除了「文理太浅」四个大字，竖排小字是不成字的伪汉字（臣謹枝槎、趙洼），生成画面的典型破绽
 - 画面：古风暗调特写，枯瘦干瘪的手指按在写有“文理太浅”的宣纸古籍上，镜头缓慢微移，油灯侧光照亮局部。
 - 拍法/打光：特写；俯拍；稳定器；夜景/弱光环境光，没有专门补光；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.2 档）；中等柔度
 - 文字轨（字幕/bottom）：理太浅四个 / 文理太浅四个大字 / 全城都看明白
 - 文字轨（字幕/middle）：文理太浅 / 治国之道道楼 / 治国之道道洼 / 治国之道趙挂播
 - 文字轨（字幕/middle）：道枝憶花 / 杨况機光心 / 植税流横清热境福土文
-- 复刻：3D 渲染：可用首尾帧 AI 生成近似；需要精确多角度时走 3D 建模 + Blender 渲染
-  - 首帧图像提示词：俯拍特写，暗光古风书房，一双枯瘦干瘪的老人手指按在一卷泛黄宣纸古籍上，纸上用毛笔重重写着四个黑色大字“文理太浅”，左上角有一盏微弱油灯，电影级暗调，高对比度，皮肤与宣纸细节逼真。
-  - 视频提示词：特写俯拍，枯瘦嶙峋的手指缓缓压在发黄宣纸上，指着毛笔书写的“文理太浅”字样，镜头缓慢向前推近，油灯暖光微微晃动，周围环境深邃暗黑。
+- 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
+  - 首帧图像提示词：暗调特写，泛黄古旧奏折，墨书大字「文理太浅」，一只苍老枯瘦的手指按在纸上，电影感低饱和
+  - 视频提示词：枯瘦的手指缓缓划过奏折上的大字，另一只手从下方入画按住纸面，镜头缓慢推近
 
 ### #28 00:42.875–00:43.583 · 数字人口播 + 代码/剪辑叠加（文字标注）
 
@@ -1400,26 +1396,27 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
   - 首帧图像提示词：特写肖像，饱经沧桑的中国古代道士老人，白色长胡须，头戴专业黑色头戴式监听耳机，面前有黑色麦克风，暗灰色纯色背景，电影感侧光，超写实细节，低饱和度冷色调。
   - 视频提示词：静止镜头，老人嘴部开合说话对口型，眼神微动，身体与头部保持稳定，神情严肃沉稳。
 
-### #29 00:43.583–00:44.792 · 3D 渲染 + 代码/剪辑叠加（文字标注）
+### #29 00:43.583–00:44.792 · AI 生成视频 + 代码/剪辑叠加（文字标注）
 
 ![shot_029](shots/shot_029.jpg)
 
-- 概率：3D 渲染 50%，AI 生成视频 20%，实拍 13%（fused）
-- ⚠️ 有分歧：工具判3D 渲染、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 41%，实拍 33%，3D 渲染 21%（fused）
 - 画面里物体上的字（不是后期字幕）：文理太浅、臣遒枝槎协、臣枝槎说、治国之道趙挞挂播、治国之道趙洼、治国之道挞洼
-- 素材来源：制作方渲染
+- 素材来源：AI 生成
 - [VLM] 手指皮肤纹理、指甲与褶皱极其逼真自然
 - [VLM] 宣纸纤维、墨迹渗透与纸张凹凸光影物理真实
 - [VLM] 无AI形变或闪烁，符合影视剧微距实拍道具特征
+- [claude 看图] 同一张奏折，小字依旧是伪汉字（挞洼、趙挞），字形逐帧轻微变化
+- [claude 看图] 手指和纸张质感写实，风格与 #27 连续，属同一次生成
 - 画面：特写影视镜头，粗糙苍老的手指按在写有墨迹文书的宣纸上，纸上书有大字“文理太浅”，镜头微幅缓慢推进。
 - 拍法/打光：特写；俯拍；稳定器；夜景/弱光环境光，没有专门补光；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.2 档）；柔光（明暗过渡宽）
 - 文字轨（文字/bottom）：全城都看明白
 - 文字轨（字幕/middle）：文理太浅 / 臣遒枝槎协 / 臣枝槎说 / 臣道枝槎倾协
 - 文字轨（字幕/middle）：治国之道趙挞挂播 / 治国之道趙洼 / 治国之道挞洼 / 台国之道随姑洼
 - 文字轨（文字/middle）：号
-- 复刻：3D 渲染：可用首尾帧 AI 生成近似；需要精确多角度时走 3D 建模 + Blender 渲染
-  - 首帧图像提示词：电影质感特写，粗糙苍老带有深邃皱纹的手指压在古朴宣纸上，纸上用粗黑毛笔书写大字'文理太浅'，低照度侧光，质感丰富，胶片颗粒感
-  - 视频提示词：微距特写镜头缓慢向宣纸推进，苍老枯瘦的手指静静压在古老文书上，毛笔墨迹'文理太浅'清晰可见，低光悬疑电影氛围
+- 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
+  - 首帧图像提示词：泛黄奏折近景，大字「文理太浅」居中，上方一根手指按住纸边，暗调
+  - 视频提示词：手指按住奏折，镜头轻微推近大字「文理太浅」
 
 ### #30 00:44.792–00:45.417 · AI 生成视频
 
@@ -1531,23 +1528,24 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
   - 首帧图像提示词：特写镜头，一位中国老年男性，留着长长的白胡须，穿着黑色中式立领服装，戴着黑色头戴式监听耳机，面前有一个黑色麦克风。暗灰色背景，左侧柔和主光，电影感，高细节，写实风格，8k分辨率。
   - 视频提示词：人物头部轻微自然摆动，嘴部做出说话的口型，眼神有微小变化，身体、耳机和麦克风保持绝对静止。
 
-### #36 00:50.375–00:53.458 · 3D 渲染 + 代码/剪辑叠加（字幕）
+### #36 00:50.375–00:53.458 · AI 生成视频 + 代码/剪辑叠加（字幕）
 
 ![shot_036](shots/shot_036.jpg)
 
-- 概率：3D 渲染 53%，AI 生成视频 24%，代码/模板渲染 13%（fused）
-- ⚠️ 有分歧：工具判3D 渲染、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
-- 素材来源：制作方渲染
+- 概率：AI 生成视频 44%，实拍 34%，3D 渲染 16%（fused）
+- 素材来源：AI 生成
 - 纹理呈渲染特征：平坦色块 23%、95% 像素仅用 25 种颜色、横竖直边 21%
 - [VLM] 影视剧实拍摄影质感，群演与服装道具细节真实且具有自然动态
 - [VLM] 左侧将领面部微表情与皮肤纹理自然，无AI形变或闪烁
 - [VLM] 镜头带有缓慢推移与环境扬尘效果，物理交互真实
+- [claude 看图] 写实的古代军阵，人群和旗帜细节在帧间轻微漂移，远处士兵形体模糊融合
+- [claude 看图] 与全片同一套冷灰电影调色，无实拍片场的噪声和景深变化
 - 画面：阴云密布的城墙下，左侧前景一位蓄须的中年将领手持卷轴侧身肃立，后景大批手持长矛的清军士兵列队行进。镜头缓慢向前推进，整体呈现低饱和度、压抑凝重的古装战争史诗氛围。
 - 拍法/打光：中景（前景人物半身侧影）；平视；稳定器；夜景/弱光环境光，没有专门补光；主光画面左侧偏前方；光比约 1.8:1（相差 0.9 档）；柔光（明暗过渡宽）
 - 文字轨（字幕/bottom）：四十出头才学带兵 / 靖港头一仗就败
-- 复刻：3D 渲染：可用首尾帧 AI 生成近似；需要精确多角度时走 3D 建模 + Blender 渲染
-  - 首帧图像提示词：中国古装历史电影剧照，竖屏构图。阴霾低沉的天空下，古代城墙前。左侧前景侧身站着一位四十岁蓄长须的清朝文人武将，神色凝重，手握书卷；背景是大批头戴清兵帽、手持长矛的士兵列队肃立，地面微起烟尘。低饱和度青灰冷色调，严肃史诗氛围。
-  - 视频提示词：镜头极其缓慢地向前推进。左侧前景的蓄须中年将领神情严峻保持侧立，背景军阵中手持长矛的士兵轻微活动，战场烟尘缓缓飘散。阴天冷峻色调，保持沉重压抑的历史电影氛围。
+- 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
+  - 首帧图像提示词：阴云密布的古城墙下，列阵持枪的清代士兵，画面左侧虬髯将领侧脸前景，冷灰电影调色
+  - 视频提示词：士兵队列缓缓移动、尘土扬起，将领侧脸静立，镜头缓慢横移
 
 ### #37 00:53.458–00:54.208 · AI 生成视频 + 代码/剪辑叠加（文字标注、图形贴片）
 
@@ -1574,8 +1572,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_038](shots/shot_038.jpg)
 
-- 概率：AI 生成视频 78%，实拍 9%，数字人口播 7%（fused）
-- ⚠️ 有分歧：工具判AI 生成视频、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
+- 概率：AI 生成视频 59%，实拍 31%，3D 渲染 6%（fused）
 - 素材来源：AI 生成
 - 低照度画面：50% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 1%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.58、用色 41 种、平坦块 2%
@@ -1584,12 +1581,13 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 - [VLM] 真实的演员皮肤细节、肌肉线条与湿水光泽
 - [VLM] 水滴从胡须、湿透长衫自然滴落的流体物理表现
 - [VLM] 影视剧级别的专业夜戏布光与色彩分级
+- [claude 看图] 湿透的老者趴在船沿，背景士兵手臂和船灯边缘帧间形变
 - 画面：夜间江面木船上，一位浑身湿透、蓄着白须的清代老者被部下从冰冷江水中拉上船板，双手撑地，神情复杂凝重。
 - 拍法/打光：近景；略俯拍；三脚架/支架固定；夜景/弱光环境光，没有专门补光；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.3 档）；硬光（明暗分界清楚）
 - 文字轨（字幕/bottom）：湘江水冷是部下把我捞上来 / 湘江水冷是部下把我捞上菜
 - 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
-  - 首帧图像提示词：电影质感剧照，清代老者，留着辫子与斑白长须，浑身湿透，黑色长衫浸湿，被拉上一艘夜间的木船，双手撑在湿漉漉的木船甲板上，眼神凝重坚毅，背景是汹涌江水与一盏微弱马灯，冷冽电影光影，高度写实
-  - 视频提示词：清代老者浑身湿透从水中被拉上木船甲板，双手按在湿木板上支撑身体，水珠从胡须和发尾不断滴落，他喘着粗气眼神惊魂未定，固定机位微弱晃动，电影夜戏质感
+  - 首帧图像提示词：夜晚江面小船上，浑身湿透的白须清代老者双手撑在船板上，背后挂着煤油灯，冷蓝色调
+  - 视频提示词：老者喘息着撑在船板上抬头，身后的人伸手去拉他，江浪翻涌
 
 ### #39 00:56.208–00:56.917 · AI 生成视频
 
@@ -1728,23 +1726,24 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
   - 首帧图像提示词：超写实肖像摄影，亚洲老年男性，长白胡须，满脸皱纹，戴黑色头戴式监听耳机，穿黑色中式服装，胸前有仙鹤刺绣，面前有黑色电容麦克风，灰色纯色背景，侧面柔光照明，电影级质感，8k。
   - 视频提示词：使用底图，输入音频驱动人物嘴型说话，头部伴随语音自然轻微摆动，保持身体、耳机、麦克风和背景静止。
 
-### #46 01:05.375–01:07.167 · 3D 渲染 + 代码/剪辑叠加（文字标注）
+### #46 01:05.375–01:07.167 · AI 生成视频 + 代码/剪辑叠加（文字标注）
 
 ![shot_046](shots/shot_046.jpg)
 
-- 概率：3D 渲染 61%，AI 生成视频 16%，代码/模板渲染 15%（fused）
-- ⚠️ 有分歧：工具判3D 渲染、VLM 判实拍，结论跟了工具：请对照截图核实 VLM 的证据是否真的看得见
-- 素材来源：制作方渲染
+- 概率：AI 生成视频 45%，实拍 30%，3D 渲染 19%（fused）
+- 素材来源：AI 生成
 - 纹理呈渲染特征：平坦色块 35%、95% 像素仅用 27 种颜色、横竖直边 13%
 - [VLM] 泥土飞溅与挥锤劳作的物理动态极其真实无形变
 - [VLM] 背光人物剪影轮廓和雨天漫射自然光层次分明
 - [VLM] 典型院线历史/战争电影现场实拍质感
+- [claude 看图] 逆光剪影的劳作人群，人物动作重复、锤子和木桩在帧间轻微变形
+- [claude 看图] 构图和调色与全片一致，属同一批 AI 镜头
 - 画面：阴雨天古代泥泞工地上，多名劳工挥锹挖土、抡大锤砸桩，背景有木制瞭望塔与远山，低机位平移。
 - 拍法/打光：中景；略仰拍；稳定器；夜景/弱光环境光，没有专门补光；主光画面左侧偏前方；光比约 1.9:1（相差 0.9 档）；柔光（明暗过渡宽）
 - 文字轨（文字/bottom）：笨人只会慢慢挨
-- 复刻：3D 渲染：可用首尾帧 AI 生成近似；需要精确多角度时走 3D 建模 + Blender 渲染
-  - 首帧图像提示词：低机位仰拍，古代士兵劳工在泥泞工地上劳作，挥铁锹与大锤，乌云密布，背景为木质瞭望塔与旌旗，逆光剪影，电影级调色，冷色调，颗粒感
-  - 视频提示词：低机位缓慢平移，古代劳工在泥地中挖掘、用力挥舞大锤砸入木桩，泥水飞溅，背景乌云流动，人物呈现厚重的逆光剪影质感
+- 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
+  - 首帧图像提示词：阴云营地，一群清代兵丁逆光剪影，挥锤打木桩，远处瞭望塔和旗帜
+  - 视频提示词：人们弯腰挥锤反复打桩，泥土飞溅，镜头固定
 
 ### #47 01:07.167–01:10.542 · AI 生成视频 + 代码/剪辑叠加（字幕）
 

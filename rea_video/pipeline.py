@@ -181,17 +181,24 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
 DOUBT_CAP = 0.7
 
 
-def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict, seen_live: float = 0.0) -> str | None:
+PULLDOWN_24 = ("24→30", "24→60", "25→30?")
+
+
+def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict, seen_live: float = 0.0,
+                      seen: bool = True) -> str | None:
     """On platform-transcoded files only two things settle AI vs live action: an AIGC label (AI) or a
     native-30fps camera signature (live). Without them, cap the confidence and say why.
     24fps-source pulldown alone is not decisive: AI video, stop motion and cinema cameras all produce it.
     seen_live: how strongly the image readers (VLM / agent) think the shot was filmed."""
     if label not in ("ai_video", "live_action") or prov.get("aigc"):
         return None
-    if (label == "ai_video" and facts.get("pulldown") in ("24→30", "24→60", "25→30?") and seen_live >= 0.5
-            and not (prov.get("hints") or {}).get("generator")):
-        # a cinema / mirrorless camera shooting 24p and exported at 30 fps leaves the same cadence as a generator
-        return "AI 还是 24p 相机实拍待确认：帧率痕迹只说明素材是 24fps 源，看图的一方认为是实拍，又没有 AIGC 标识"
+    if label == "ai_video" and facts.get("pulldown") in PULLDOWN_24 and not (prov.get("hints") or {}).get("generator"):
+        # a cinema / mirrorless camera shooting 24p and exported at 30 fps leaves the same cadence as a generator:
+        # measured on a phone clip converted 30 -> 24 -> 30, the tools call it AI at 89% (eval/RESULTS.md 2026-11-01)
+        if seen_live >= 0.5:
+            return "AI 还是 24p 相机实拍待确认：帧率痕迹只说明素材是 24fps 源，看图的一方认为是实拍，又没有 AIGC 标识"
+        if not seen:
+            return "AI 还是 24p 相机实拍待确认：只有帧率证据（24fps 源）、没有 AIGC 标识，需要看图确认"
     if not facts.get("transcode_degraded"):
         return None
     if label == "live_action" and vctx.get("native30") and not facts.get("pulldown"):
@@ -276,7 +283,16 @@ def _majority(rec: dict) -> str | None:
     if (top(v)[0] == d) != (top(a)[0] == d):  # same subtype: tools + agent say code render, the VLM says 3D
         return d
     gd, gv, ga = group_of(d), _top_group(v), _top_group(a)
-    return d if (gv == gd) != (ga == gd) else None
+    if (gv == gd) != (ga == gd):
+        return d
+    # the two readers disagree with each other and with the tools' first choice: side with the one that backs the
+    # tools' runner-up (qing_mv #29: tools 3D then AI video, agent AI video, VLM live action -> AI video)
+    ranked = sorted(rec["deterministic"]["probs"].items(), key=lambda kv: -kv[1])
+    if gv != ga and len(ranked) > 1 and ranked[1][1] >= 0.15:
+        d2 = ranked[1][0]
+        if (gv == group_of(d2)) != (ga == group_of(d2)):
+            return d2
+    return None
 
 
 def _top_group_label(probs: dict[str, float]) -> str:
@@ -345,7 +361,8 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
             rec["base"]["disputed"] = (f"工具判{LABEL_ZH[dt]}、VLM 判{LABEL_ZH[_top_group_label(vt)]}，结论跟了{follow}："
                                        "请对照截图核实 VLM 的证据是否真的看得见")
         seen_live = (seen.get("label_probs") or {}).get("live_action", 0.0) / (sum((seen.get("label_probs") or {}).values()) or 1.0)
-        doubt = None if decided == "user" else _ai_or_live_doubt(label, rec["deterministic"]["facts"], prov, vctx, seen_live)
+        doubt = None if decided == "user" else _ai_or_live_doubt(label, rec["deterministic"]["facts"], prov, vctx, seen_live,
+                                                                  seen=bool(seen.get("label_probs")))
         if doubt:
             rec["base"]["confidence"] = round(min(conf, DOUBT_CAP), 3)
             rec["base"]["uncertain"] = doubt

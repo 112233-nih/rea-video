@@ -56,5 +56,17 @@ def test_scene_text_dropped_by_vlm_list_and_by_drift():
 def test_24p_camera_doubt():
     facts = {"pulldown": "24→30", "transcode_degraded": False}
     assert "24p" in _ai_or_live_doubt("ai_video", facts, {}, {}, seen_live=0.8)
-    assert _ai_or_live_doubt("ai_video", facts, {}, {}, seen_live=0.1) is None
+    assert _ai_or_live_doubt("ai_video", facts, {}, {}, seen_live=0.1) is None  # a reader looked and saw AI
+    assert "看图确认" in _ai_or_live_doubt("ai_video", facts, {}, {}, seen=False)  # nobody looked yet
+    assert _ai_or_live_doubt("ai_video", facts, {"hints": {"generator": ["AIGC"]}}, {}, seen=False) is None
     assert _ai_or_live_doubt("ai_video", facts, {"aigc": True}, {}, seen_live=0.8) is None
+
+
+def test_reader_backing_tools_runner_up_wins_three_way_split():
+    det = {"cg_3d": 0.5, "ai_video": 0.2, "live_action": 0.13, "code_render": 0.12, "avatar": 0.02, "screen_capture": 0.01,
+           "still_motion": 0.01, "static_hold": 0.01}
+    rec = {"deterministic": {"probs": det}, "vlm": {"label_probs": {"live_action": 0.95, "cg_3d": 0.05}},
+           "review": {"label_probs": {"ai_video": 0.74, "cg_3d": 0.1, "live_action": 0.06}}}
+    assert _majority(rec) == "ai_video"
+    seen = {"live_action": 0.5, "ai_video": 0.37, "cg_3d": 0.08}
+    assert decide(fuse(det, seen, "dynamic", majority=_majority(rec)))[0] == "ai_video"
