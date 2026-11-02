@@ -103,8 +103,6 @@ How-it-was-made accuracy, weighted by shot duration:
 | + vision model (Gemini) | — | 99.6% / 99.8% | 99.6% |
 | + agent visual review | — | 99.6% / 99.8% | 100% |
 
-The tools-only row was measured on 2026-11-02 with a fresh decode; the two vision rows were measured on 11-01, before the packaging layer was added, and haven't been re-run yet.
-
 On original files the tools alone are mostly enough. Videos downloaded from platforms have been recompressed, which wipes out the noise evidence, so it takes a vision check to get back above 99%. Real-asset detection is 97–99%, and shot boundaries are all correct. Numbers and how to reproduce them: [eval/RESULTS.md](eval/RESULTS.md).
 
 ## How it works
