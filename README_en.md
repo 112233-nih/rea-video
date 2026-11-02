@@ -34,14 +34,15 @@ rea-video's verdict: the left is all live footage, one set and two camera positi
 | Screen recording | Software tutorials, web demos | Which parts are real material you'll need to record yourself |
 | Mixed / edits | AI characters + code UI + real screen capture; live footage with AI edits | Each shot judged separately, then reassembled on the original timeline |
 
-For every video type it also breaks out:
+Besides how the picture was made, every video also gets:
 
-- Editing packaging: a line-by-line caption timeline (exported as SRT / ASS); styled text (花字), titles, chapter cards and tracking labels with their color, outline, box, keyword highlight and pop / fade animations; stickers, GIFs, emoji and picture-in-picture windows with position, timing and whether they loop; which sound effects land on a text pop or sticker.
-- Editing: cut points and pacing, jump cuts, punch-ins, multi-camera switching, cuts on pauses, share of inserted material, whether cuts land on the beat.
-- Real assets: screen recordings, screenshots, product photos and other material you'll need to supply yourself.
-- Audio: human or AI voice-over, AI-generated or library music, BPM and key, and when each sound effect hits.
+- Captions and styled text: start and end of each line (exports to SRT / ASS), plus color, outline and how the text comes in
+- Stickers, emoji, picture-in-picture: where they sit and how long they stay
+- Editing: where the cuts are, how fast, whether they hit the beat
+- Audio: human or AI voice, AI or library music and its BPM, where each sound effect lands
+- Material you'll supply yourself: screen recordings, screenshots, product photos
 
-Every call comes with evidence you can check. When it isn't sure, it says so. Full list: [docs/what-it-detects.md](docs/what-it-detects.md).
+Anything it isn't sure about is marked as unconfirmed.
 
 ## Quick start
 
@@ -55,13 +56,11 @@ The agent installs the CLI, learns the workflow and runs the whole thing. You ne
 
 You get:
 
-- a one-line summary, e.g. "41% AI video + 59% code UI, 8 s of real screen recording, library music at 122 BPM";
-- a remake plan, split into what to film, what to generate and what to code;
-- a full `report.html` with per-shot frames, evidence, prompts, camera and lighting notes, and the audio breakdown.
+- a one-line summary, e.g. "41% AI video + 59% code UI, 8 s of real screen recording, library music at 122 BPM"
+- a remake plan, split into what to film, what to generate and what to code
+- a full `report.html` with per-shot frames, evidence, prompts, camera and lighting notes, and the audio breakdown
 
 A vision model (Gemini, GPT-4o, Doubao, Qwen-VL, etc.) is recommended: give the agent the endpoint and key. It makes live/AI/3D calls more accurate and writes a reverse-engineered prompt for every shot. Without one it still works; if your agent can see images, it will check the uncertain shots itself.
-
-To run commands yourself, see [docs/cli.md](docs/cli.md). For how to film, generate and reassemble after you get the report, see [docs/replicate.md](docs/replicate.md).
 
 ## Examples
 
@@ -133,22 +132,16 @@ On original files the tools alone are mostly enough. Videos downloaded from plat
 3. Decide: hard evidence like AIGC tags and frame cadence outranks "looks like". Conflicts are flagged for the agent to review visually.
 4. Plan the remake: batch shots according to what the target video model can actually do, such as max clip length, multi-shot support and how many reference images it takes.
 
-Detection rules: [docs/decompose.md](docs/decompose.md). Full list of what it detects: [docs/what-it-detects.md](docs/what-it-detects.md).
-
 ## FAQ
 
 <details>
 <summary>How is this different from one-click remake tools like Hypit?</summary>
 
-[Hypit](https://github.com/hypit-ai/hypit) aims to produce a new video directly: give it a reference, swap in your content, render. rea-video first works out how the original was made, then tells you which parts to film, generate or code. If you want a lookalike fast, Hypit is quicker. If you want to know how the original was made and how to remake it with the fewest generations, use rea-video. They work fine together.
+[Hypit](https://github.com/hypit-ai/hypit) takes a reference video and makes a new one: the agent reads frame grids to understand the original, generates footage with the models it supports (Seedance, PixVerse, MiniMax, Wan and others), and renders captions and motion graphics in HTML.
 
-| | Hypit | rea-video |
-|---|---|---|
-| Main output | A new video | Breakdown report and remake plan; renders with capsule-cinema |
-| Understanding the source | Agent reads frame grids and writes an analysis | Measures frames first (cadence, noise, metadata, OCR), then vision; every call has evidence and a confidence level |
-| Live vs AI | No dedicated step | Per-shot call across 10 production types, evaluated on 43 labeled videos |
-| Live shots | — | Shooting plan: setups, camera positions, lighting, gear |
-| Audio | Follows the voice-over and aligns to the script | Separates voice, music, effects; measures BPM and key, judges music source |
+It doesn't ask how the original was made. A live-action source goes through the same pipeline; it won't tell you how many cameras were used or how it was lit. What AI video it can match depends on the models it has: no Kling or Veo, and no dedicated avatar or 3D path, and no AI music: you bring your own. It is strongest on talking-head, podcast and interview videos that follow a script, and weaker on music-driven edits, product motion graphics and cinematic shorts.
+
+rea-video doesn't render a video. It works out shot by shot whether something was filmed, AI-generated or built in code, then gives a shooting plan, prompts or a code approach for each. For a quick lookalike, Hypit is faster. To understand how the original was made and remake it cheaply, use rea-video. They work fine together.
 
 More detail (in Chinese): [docs/vs-hypit.md](docs/vs-hypit.md), based on Hypit's main branch as of 2026-10-29.
 
@@ -180,6 +173,7 @@ No. rea-video is for learning a video's structure, pacing and techniques, then r
 - [docs/what-it-detects.md](docs/what-it-detects.md): everything it detects (10 visual types, camera, lighting, grade, audio)
 - [docs/replicate.md](docs/replicate.md): remaking from the report
 - [docs/cases.md](docs/cases.md): case details
+- [docs/decompose.md](docs/decompose.md): detection rules
 - [docs/cli.md](docs/cli.md): CLI usage and capsule-cinema integration
 - [capabilities/](capabilities/README.md): capability tables for video / image / audio models, used to pick models for the remake plan
 - [eval/RESULTS.md](eval/RESULTS.md): eval results
