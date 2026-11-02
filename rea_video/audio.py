@@ -191,6 +191,46 @@ def vocal_style(x: np.ndarray, Sh: np.ndarray, freqs: np.ndarray, voice_segs: li
     return out
 
 
+def sfx_type(S: np.ndarray, freqs: np.ndarray, frame_db: np.ndarray, c: int, hop_t: float = T_HOP) -> tuple[str, dict]:
+    """Coarse type of the transient starting at STFT frame c, from its spectrum and decay."""
+    w = slice(c, min(len(S), c + int(0.12 / hop_t)))
+    spec = S[w].mean(axis=0)
+    total = float(spec.sum()) + 1e-9
+    hf_ratio = float(spec[freqs > 4000].sum() / total)
+    centroid = float((spec * freqs).sum() / total)
+    tonal = float(spec.max() / (spec.mean() + 1e-9))
+    j = c
+    while j < len(frame_db) - 1 and frame_db[j] > frame_db[c] - 15 and (j - c) * hop_t < 1.5:
+        j += 1
+    d = (j - c) * hop_t
+    if d > 0.25 and hf_ratio > 0.25:
+        kind = "whoosh"
+    elif tonal > 25 and centroid > 1200:
+        kind = "ding"
+    elif centroid < 350:
+        kind = "impact"
+    elif d < 0.06 and hf_ratio > 0.3:
+        kind = "click"
+    elif hf_ratio > 0.2 or tonal > 15:
+        kind = "pop"
+    else:
+        kind = "hit"
+    return kind, {"dur": round(d, 3), "centroid_hz": int(centroid), "hf_ratio": round(hf_ratio, 3)}
+
+
+def onset_envelope(path: str):
+    """(percussive onset curve, frame dB, magnitude STFT, freqs, seconds per frame) of a file's soundtrack."""
+    x = extract_audio(path, SR)
+    if x is None or len(x) < SR * 0.3:
+        return None
+    S = _stft(x)
+    freqs = np.fft.rfftfreq(N_FFT, 1 / SR)
+    _, Sp = hpss(S)
+    frame_db = 10 * np.log10((S ** 2).mean(axis=1) + 1e-12)
+    perc = np.maximum(0, np.diff(np.log1p(Sp.sum(axis=1)), prepend=0))
+    return perc, frame_db, S, freqs, T_HOP
+
+
 def analyze_audio(path: str, cut_times: list[float] | None = None, visual_marks: list[float] | None = None) -> dict:
     x = extract_audio(path, SR)
     if x is None or len(x) < SR * 0.3:
@@ -302,7 +342,6 @@ def analyze_audio(path: str, cut_times: list[float] | None = None, visual_marks:
         voice.update(vocal_style(x, Sh, freqs, speech_segs, beats))
 
     # ---------------- SFX ---------------------------------------------------------------
-    hf = freqs > 4000
     onset = perc
     speech_frame = np.zeros(len(onset), bool)
     for a_, b_ in speech_segs:
@@ -327,30 +366,9 @@ def analyze_audio(path: str, cut_times: list[float] | None = None, visual_marks:
             continue  # under a music bed only very prominent transients are trusted
         if len(beat_frames) and np.min(np.abs(beat_frames - c)) * T_HOP < 0.05:
             continue
-        w = slice(c, min(len(S), c + int(0.12 / T_HOP)))
-        spec = S[w].mean(axis=0)
-        total = float(spec.sum()) + 1e-9
-        hf_ratio = float(spec[hf].sum() / total)
-        centroid = float((spec * freqs).sum() / total)
-        tonal = float(spec.max() / (spec.mean() + 1e-9))
-        j = c
-        while j < len(frame_db) - 1 and frame_db[j] > frame_db[c] - 15 and (j - c) * T_HOP < 1.5:
-            j += 1
-        d = (j - c) * T_HOP
-        if d > 0.25 and hf_ratio > 0.25:
-            kind = "whoosh"
-        elif tonal > 25 and centroid > 1200:
-            kind = "ding"
-        elif centroid < 350:
-            kind = "impact"
-        elif d < 0.06 and hf_ratio > 0.3:
-            kind = "click"
-        elif hf_ratio > 0.2 or tonal > 15:
-            kind = "pop"
-        else:
-            kind = "hit"
-        events.append({"t": round(c * T_HOP, 3), "dur": round(d, 3), "type": kind, "strength": round(strength, 1),
-                       "centroid_hz": int(centroid), "hf_ratio": round(hf_ratio, 3), "source": "deterministic", "confidence": "low"})
+        kind, info = sfx_type(S, freqs, frame_db, c, T_HOP)
+        events.append({"t": round(c * T_HOP, 3), "type": kind, **info, "strength": round(strength, 1),
+                       "source": "deterministic", "confidence": "low"})
     # dense click runs = typing / UI clicks
     ts = np.array([e["t"] for e in events])
     for i, e in enumerate(events):

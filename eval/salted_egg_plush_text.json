@@ -1,0 +1,685 @@
+{
+ "source": "capsule-cinema /work/overlay.py",
+ "duration": 66.542,
+ "subtitles": [
+  {
+   "t0": 0.187,
+   "t1": 1.457,
+   "text": "清晨的小院里",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 1.457,
+   "t1": 3.667,
+   "text": "鸭宝磕开一枚腌好的咸鸭蛋",
+   "highlight": [
+    "咸鸭蛋"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 3.667,
+   "t1": 5.218,
+   "text": "红亮的油涌了出来",
+   "highlight": [
+    "油"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 5.218,
+   "t1": 6.998,
+   "text": "明明没往里加一滴油",
+   "highlight": [
+    "油"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 6.998,
+   "t1": 8.879,
+   "text": "花猫看得眼睛都直了",
+   "highlight": [
+    "眼睛都直了"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 8.879,
+   "t1": 9.609,
+   "text": "这油",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 9.609,
+   "t1": 11.447,
+   "text": "到底是打哪儿冒出来的？",
+   "highlight": [
+    "冒出来"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 11.447,
+   "t1": 12.207,
+   "text": "原来",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 12.207,
+   "t1": 13.667,
+   "text": "这场流油的大戏",
+   "highlight": [
+    "流油"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 13.667,
+   "t1": 15.824,
+   "text": "幕后导演是普普通通的盐",
+   "highlight": [
+    "盐"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 15.824,
+   "t1": 18.014,
+   "text": "第一步 腌蛋的盐水里",
+   "highlight": [
+    "盐水"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 18.014,
+   "t1": 19.584,
+   "text": "盐顺着蛋壳的气孔",
+   "highlight": [
+    "气孔"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 19.584,
+   "t1": 21.039,
+   "text": "一粒粒往里钻",
+   "highlight": [
+    "钻"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 21.039,
+   "t1": 23.039,
+   "text": "第二步 盐先灌满蛋清",
+   "highlight": [
+    "蛋清"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 23.039,
+   "t1": 24.319,
+   "text": "再穿过蛋黄膜",
+   "highlight": [
+    "蛋黄膜"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 24.319,
+   "t1": 26.116,
+   "text": "一路潜进蛋黄深处",
+   "highlight": [
+    "深处"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 26.116,
+   "t1": 27.786,
+   "text": "蛋黄里存着的水分",
+   "highlight": [
+    "水分"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 27.786,
+   "t1": 29.446,
+   "text": "被盐一把拉了出去",
+   "highlight": [
+    "拉"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 29.446,
+   "t1": 30.606,
+   "text": "失了水的蛋黄",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 30.606,
+   "t1": 31.576,
+   "text": "缩成一团",
+   "highlight": [
+    "缩成一团"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 31.576,
+   "t1": 33.736,
+   "text": "越缩越小 越缩越硬",
+   "highlight": [
+    "硬"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 33.736,
+   "t1": 34.556,
+   "text": "第三步",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 34.556,
+   "t1": 36.496,
+   "text": "高盐让蛋黄里的蛋白质",
+   "highlight": [
+    "高盐",
+    "蛋白质"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 36.496,
+   "t1": 38.057,
+   "text": "纷纷收紧抱团",
+   "highlight": [
+    "收紧"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 38.057,
+   "t1": 39.997,
+   "text": "原本被裹得严严实实的油",
+   "highlight": [
+    "油"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 39.997,
+   "t1": 41.595,
+   "text": "一下子全散开了",
+   "highlight": [
+    "散开"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 41.595,
+   "t1": 42.725,
+   "text": "就像拧毛巾",
+   "highlight": [
+    "拧毛巾"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 42.725,
+   "t1": 43.685,
+   "text": "手一收紧",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 43.685,
+   "t1": 45.247,
+   "text": "水就被挤了出来",
+   "highlight": [
+    "挤"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 45.247,
+   "t1": 47.337,
+   "text": "第四步 剩下的交给时间",
+   "highlight": [
+    "时间"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 47.337,
+   "t1": 49.595,
+   "text": "家庭腌制要 30~40 天",
+   "highlight": [
+    "30~40 天"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 49.595,
+   "t1": 51.275,
+   "text": "腌足日子再敲开",
+   "highlight": [
+    "敲开"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 51.275,
+   "t1": 52.765,
+   "text": "红油汪在蛋黄上",
+   "highlight": [
+    "红油"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 52.765,
+   "t1": 54.952,
+   "text": "颤颤的 亮亮的",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 54.952,
+   "t1": 57.198,
+   "text": "这 就是流油咸鸭蛋",
+   "highlight": [
+    "流油咸鸭蛋"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 57.198,
+   "t1": 59.578,
+   "text": "不过 这油不是谁偷偷加的",
+   "highlight": [
+    "偷偷"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 59.578,
+   "t1": 60.739,
+   "text": "神秘物质",
+   "highlight": [
+    "神秘物质"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 60.739,
+   "t1": 62.979,
+   "text": "这些油本来就是蛋黄里的脂肪",
+   "highlight": [
+    "脂肪"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 62.979,
+   "t1": 63.919,
+   "text": "一滴没多",
+   "highlight": [
+    "一滴没多"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 63.919,
+   "t1": 67.542,
+   "text": "一滴也没少",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  }
+ ],
+ "titles": [
+  {
+   "t0": 0.0,
+   "t1": 66.542,
+   "text": "咸鸭蛋为什么会流油？",
+   "decorative": true,
+   "style": {
+    "multicolor": true,
+    "stroke": "dark",
+    "animation": "scale_in"
+   }
+  }
+ ],
+ "cards": [
+  {
+   "t0": 15.807,
+   "t1": 21.022,
+   "text": "第1步 · 盐钻气孔",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 21.022,
+   "t1": 33.719,
+   "text": "第2步 · 盐进蛋黄",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 33.719,
+   "t1": 45.23,
+   "text": "第3步 · 蛋白挤油",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 45.23,
+   "t1": 54.935,
+   "text": "第4步 · 静待出油",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 54.935,
+   "t1": 57.181,
+   "text": "成了！",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 57.181,
+   "t1": 66.542,
+   "text": "注意！",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  }
+ ],
+ "labels": [
+  {
+   "t0": 19.817,
+   "t1": 21.042,
+   "text": "气孔",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 22.692,
+   "t1": 23.042,
+   "text": "蛋清",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 23.832,
+   "t1": 24.333,
+   "text": "蛋黄膜",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 25.442,
+   "t1": 26.125,
+   "text": "蛋黄",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 51.558,
+   "t1": 54.958,
+   "text": "红油",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  }
+ ],
+ "stickers": [
+  {
+   "t0": 55.335,
+   "t1": 57.208,
+   "text": "流油咸鸭蛋！",
+   "decorative": true,
+   "style": {
+    "size_px": 150,
+    "stroke": "dark",
+    "animation": "pop_in_wobble"
+   }
+  }
+ ]
+}

@@ -146,7 +146,9 @@ def global_motion(prev: np.ndarray, nxt: np.ndarray) -> dict | None:
     }
 
 
-def collect_samples(path: str, info: VideoInfo, shot: Shot, n_frames: int = 16, n_motion: int = 24) -> ShotSamples:
+def collect_samples(path: str, info: VideoInfo, shot: Shot, n_frames: int = 16, n_motion: int = 24,
+                    crop: tuple[float, float, float, float] | None = None) -> ShotSamples:
+    """crop: measure only this part of the frame (0-1 x, y, w, h), e.g. to leave out a sticker / GIF layer."""
     total = shot.end_frame - shot.start_frame
     trim = 2 if total > 12 else 0  # skip frames touching the transition
     lo, hi = trim, max(trim + 1, total - trim)
@@ -155,7 +157,7 @@ def collect_samples(path: str, info: VideoInfo, shot: Shot, n_frames: int = 16, 
     motion_idx = set(np.linspace(lo + 1, hi - 1, num=min(n_motion, max(usable - 1, 0))).round().astype(int).tolist()) if usable > 1 else set()
     out = ShotSamples()
     prev_gray = None
-    for i, bgr in enumerate(iter_frames(path, info, ANALYSIS_W, start=shot.start, duration=shot.duration)):
+    for i, bgr in enumerate(iter_frames(path, info, ANALYSIS_W, start=shot.start, duration=shot.duration, crop=crop)):
         if i >= total:
             break
         gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)

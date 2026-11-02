@@ -140,11 +140,25 @@ def iter_frames(
     start: float | None = None,
     duration: float | None = None,
     gray: bool = False,
+    fps: float | None = None,
+    crop: tuple[float, float, float, float] | None = None,
 ) -> Iterator[np.ndarray]:
     """Yield decoded frames (BGR uint8, or gray if gray=True) at the requested width.
-    Frames are passed through untouched (no fps resampling) so duplicate-frame
-    statistics stay meaningful."""
+    By default frames are passed through untouched (no fps resampling) so duplicate-frame
+    statistics stay meaningful; fps= resamples to a fixed rate (frame i is at start + i / fps).
+    crop=(x, y, w, h) in 0-1 of the displayed frame keeps only that region (width applies to the crop)."""
     w, h = scaled_size(info, width)
+    vf = []
+    if fps:
+        vf.append(f"fps={fps:g}")
+    if crop:
+        cx, cy, cw, ch = crop
+        vf.append(f"crop=trunc(iw*{cw:.4f}/2)*2:trunc(ih*{ch:.4f}/2)*2:trunc(iw*{cx:.4f}):trunc(ih*{cy:.4f})")
+        full_w, full_h = scaled_size(info, 1 << 16)  # displayed size at native resolution
+        crop_w, crop_h = max(2.0, full_w * cw), max(2.0, full_h * ch)
+        w = max(2, int(min(width, crop_w)) // 2 * 2)
+        h = max(2, int(round(w * crop_h / crop_w)) // 2 * 2)
+    vf.append(f"scale={w}:{h}:flags=area")
     cmd = ["ffmpeg", "-v", "error", "-nostdin"]
     if start is not None and start > 0:
         cmd += ["-ss", f"{start:.4f}"]
@@ -152,7 +166,7 @@ def iter_frames(
     if duration is not None:
         cmd += ["-t", f"{max(duration, 0.01):.4f}"]
     pix = "gray" if gray else "bgr24"
-    cmd += ["-an", "-sn", "-vf", f"scale={w}:{h}:flags=area", *passthrough_args(), "-f", "rawvideo", "-pix_fmt", pix, "-"]
+    cmd += ["-an", "-sn", "-vf", ",".join(vf), *([] if fps else passthrough_args()), "-f", "rawvideo", "-pix_fmt", pix, "-"]
     frame_bytes = w * h * (1 if gray else 3)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert proc.stdout is not None

@@ -35,7 +35,7 @@ def _sha256_head(path: Path, limit: int = 64 << 20) -> str:
 
 def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, whole_vlm: bool = True,
               ocr: bool = True, workers: int = 3, engine: str = "seedance2.0", max_shots_vlm: int = 60,
-              platform_meta: dict | None = None, stems: bool = True, memory: bool = True) -> dict:
+              platform_meta: dict | None = None, stems: bool = True, memory: bool = True, packaging: bool = True) -> dict:
     require_tools()
     t0 = time.time()
     video = Path(video).expanduser().resolve()
@@ -60,6 +60,18 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         if stem_info.get("ok"):
             refine_with_stems(audio, stem_info["vocals"])
 
+    # ---------------- packaging layer: subtitles / 花字 / stickers on one timeline ---------------
+    pack = None
+    if packaging:
+        from .packaging import analyze as analyze_packaging, anchored_sfx, visual_events
+
+        LOG.info("packaging layer: subtitle timeline, 花字, stickers%s", "" if ocr else " (no OCR: stickers only)")
+        pack = analyze_packaging(video, info, [s.start for s in shots[1:]], out, ocr=ocr)
+        if info.has_audio:
+            ev = [e for e in visual_events(pack["text_cues"], pack["stickers"], []) if e["type"] != "subtitle_in"]
+            pack["sfx_anchored"] = anchored_sfx(video, ev, (audio.get("sfx") or {}).get("events", []))
+        pack["version"] = PACKAGING_VERSION
+
     shot_records: list[dict] = []
     template_frames: list[np.ndarray] = []
     samples_by_shot = {}
@@ -70,9 +82,15 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
             template_frames.extend([smp.frames[0], smp.frames[-1]])
     template = persistent_template(template_frames[:60]) if len(shots) >= 2 else {"frozen_ratio": 0.0, "boxes": []}
 
+    from .packaging import clean_region
+
     for s in shots:
         smp = samples_by_shot[s.index]
-        feats = shot_features(smp, info.fps)
+        crop = clean_region(pack["stickers"], s.start, s.end) if pack else None
+        # a sticker / GIF sitting on the shot would skew the picture statistics: measure the rest of the frame
+        feats = shot_features(collect_samples(str(video), info, s, crop=crop) if crop else smp, info.fps)
+        if crop:
+            feats["measured_region"] = list(crop)
         ov = static_overlays(smp.frames)
         text = summarize_text(ocr_frames(smp.frames, smp.frame_times)) if ocr else {"tracks": [], "text_coverage": 0.0, "items": []}
         embedded = detect_embedded(smp.frames, text.get("items"))
@@ -167,6 +185,8 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         "stems": {k: (Path(v).name if k in ("original", "vocals", "music") else v) for k, v in stem_info.items()},
         "per_clip_audio": per_clip_audio(str(video), [s.start for s in shots[1:]], info.duration) if info.has_audio else {},
     }
+    if pack is not None:
+        breakdown["packaging"] = round_floats(pack)
     if memory:
         from .memory import reapply
 
@@ -179,6 +199,7 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
 
 
 DOUBT_CAP = 0.7
+PACKAGING_VERSION = 2
 
 
 PULLDOWN_24 = ("24→30", "24→60", "25→30?")
@@ -320,6 +341,17 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
     prov = breakdown.get("provenance", {})
     template = breakdown.get("global_layers", {})
     planner = Planner()
+    pack = breakdown.get("packaging")
+    if pack:
+        from .packaging import merge_vlm, shot_layers
+
+        for st in pack.get("stickers", []):
+            st.pop("in_picture", None)
+            st.pop("in_picture_why", None)
+        merge_vlm(pack, breakdown.get("whole_video_vlm"))
+        from .packaging import apply_review as apply_pack_review
+
+        apply_pack_review(pack)
     vctx = video_context(shot_records, prov, breakdown["source"].get("fps"))
     breakdown["video_context"] = vctx
     for rec in shot_records:
@@ -377,6 +409,18 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         if label in ("code_render", "screen_capture"):
             # text/graphics are the rendered content itself here, not a separate overlay layer
             rec["layers"] = [l for l in rec["layers"] if l["kind"] == "layout_template"]
+        if pack:
+            extra = shot_layers(pack, rec, label)
+            if label in ("code_render", "screen_capture"):
+                extra = [l for l in extra if l["kind"] != "huazi"]
+            huazi = {t for l in extra if l["kind"] == "huazi" for t in l["texts"]}
+            from .classify import _same_words
+
+            # the per-shot OCR track that read the same 花字 is that layer, not a second "label"
+            rec["layers"] = [l for l in rec["layers"] if not (l.get("texts") and l["kind"] in ("label", "title")
+                                                               and any(_same_words(t, h) for t in l["texts"] for h in huazi))] + extra
+        if (rec.get("features") or {}).get("measured_region"):
+            rec["base"]["evidence"].append("画面统计只在贴纸/动图之外的区域测量（x{:.0%} y{:.0%} 宽{:.0%} 高{:.0%}）".format(*rec["features"]["measured_region"]))
         # imported real material: full-frame from the base label, embedded regions only where
         # the frame is a rendered layout (photographic bases would trip the region detector)
         rendered_frame = label in ("code_render", "screen_capture", "cg_3d") or (label in ("static_hold", "still_motion") and img_src in ("graphic", "screenshot"))
@@ -415,7 +459,8 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
     overlay_kinds = sorted({l["kind"] for r in shot_records for l in r["layers"]})
     conf = sum(r["base"]["confidence"] * r["duration"] for r in shot_records) / total
     parts = [f"{LABEL_ZH[k]} {v / total:.0%}" for k, v in mix_sorted]
-    kind_zh = {"subtitle": "字幕", "title": "标题", "label": "文字标注", "static_graphic": "图形贴片", "layout_template": "版式模板"}
+    kind_zh = {"subtitle": "字幕", "title": "标题", "label": "文字标注", "static_graphic": "图形贴片", "layout_template": "版式模板",
+               "huazi": "花字", "animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸", "pip": "画中画"}
     verdict = ("混合制作：" if len(mix) > 1 or overlay_kinds else "") + " + ".join(parts)
     unsure = sum(r["duration"] for r in shot_records if r["base"]["label"] in ("ai_video", "live_action")
                  and r["base"]["confidence"] < 0.65
@@ -489,6 +534,10 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
             rec["replication"]["shoot"] = {"summary": aspects.shot_text(rec), **res}
 
     breakdown["audio_plan"] = merge_audio_with_vlm(audio, breakdown.get("whole_video_vlm"))
+    if pack:
+        from .packaging import finalize_pack
+
+        finalize_pack(breakdown, out)
     srcs = classify_sound_sources(breakdown)
     breakdown["sound_sources"] = srcs
     for t in breakdown["audio_plan"].get("plan", []):
@@ -522,6 +571,26 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         a_parts.append(f"音效 {n_sfx} 处")
     if a_parts:
         summary["verdict"] += "；声音：" + " + ".join(a_parts)
+    if pack:
+        cues = [c for c in pack.get("text_cues", []) if not c.get("part_of_picture")]
+        p_parts = []
+        n_sub = sum(1 for c in cues if c["kind"] == "subtitle")
+        if n_sub:
+            p_parts.append(f"字幕 {n_sub} 句")
+        for k, zh in (("huazi", "花字"), ("title", "标题"), ("label", "文字标注")):
+            n = sum(1 for c in cues if c["kind"] == k)
+            if n:
+                p_parts.append(f"{zh} {n} 处")
+        n_st = sum(1 for st in pack.get("stickers", []) if not st.get("in_picture") and st.get("confidence") != "low")
+        if n_st:
+            p_parts.append(f"贴纸/动图 {n_st} 处")
+        on = (pack.get("sfx_alignment") or {}).get("sfx_on", {})
+        n_on = sum(v for k, v in on.items() if k != "cut")
+        if n_on:
+            p_parts.append(f"{n_on} 个音效卡在文字/贴纸出现上")
+        if p_parts:
+            summary["verdict"] += "；剪辑包装：" + "、".join(p_parts)
+        summary["packaging"] = pack.get("summary_zh", [])
     from .production import production_plan
 
     breakdown["production_plan"] = production_plan(breakdown, out, engine=engine)

@@ -9,6 +9,8 @@ videos:
     real_material: false
     path: ${CAPSULE}/output/birdnest_plush/final.mp4
     label: cg_3d                  # plush_diorama_science / Blender
+    packaging_truth: eval/birdnest_plush_text.json     # overlay.py 时间表（开发包装层时看过，不独立）
+    sfx_truth: eval/birdnest_plush_sfx.json
   - id: h3_realcat
     real_material: false
     path: ${CAPSULE}/output/dual_role_social_account_doctor_20260930/h3/realcat_s1_seed9300101.mp4

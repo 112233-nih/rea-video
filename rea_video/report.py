@@ -11,7 +11,8 @@ from .visual import LABEL_COLOR
 from .production import report_md as production_md
 from .vlm import vlm_note
 
-KIND_ZH = {"subtitle": "字幕", "title": "标题", "label": "文字", "static_graphic": "图形贴片", "layout_template": "版式模板"}
+KIND_ZH = {"subtitle": "字幕", "title": "标题", "label": "文字", "static_graphic": "图形贴片", "layout_template": "版式模板",
+           "huazi": "花字", "animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸", "pip": "画中画"}
 CAMERA_ZH = {"static": "固定", "static_with_subject_motion": "固定（主体在动）", "planar_zoom_pan": "整图推拉/平移",
              "handheld_like": "手持晃动", "smooth_move": "平滑运镜", "unknown": "—"}
 
@@ -111,8 +112,9 @@ def markdown(b: dict) -> str:
             L += ["", f"**音效**（{len(sfx)} 处；来源 vlm=大模型听出，deterministic=信号检测的候选，置信度低）", "",
                   "| 时间 | 类型 | 描述 | 对应画面 | 来源 |", "|---|---|---|---|---|"]
             for e in sfx[:40]:
-                L.append(f"| {float(e.get('t', 0)):.2f}s | {e.get('type', '')} | {e.get('description', '')} | "
-                         f"{e.get('sync_with', '切点' if e.get('sync_with_visual') else '')} | {e.get('source', '')} |")
+                on = (e.get("on") or {}).get("what") or e.get("sync_with", "切点" if e.get("sync_with_visual") else "")
+                L.append(f"| {float(e.get('t', 0)):.2f}s | {e.get('type', '')} | {e.get('description', '') or e.get('anchor', '')} | "
+                         f"{on} | {e.get('source', '')} |")
         else:
             L.append("- **音效**：信号层面未检出显著音效（在人声和音乐下面的轻音效需要 VLM 判断，见 --vlm）")
         if plan.get("plan"):
@@ -121,6 +123,7 @@ def markdown(b: dict) -> str:
                 L.append(f"- {t['track']}（{t['rule']}）：{t['what']} → {t['how']}")
             if plan.get("mix"):
                 L.append(f"- 混音：{plan['mix']}")
+    L += packaging_md(b)
     w = b.get("whole_video_vlm")
     if w:
         L += ["", "## 结构与文案（VLM）", "", f"- 概括：{w.get('summary', '')}", f"- 形式：{w.get('format', '')}；钩子：{w.get('hook', '')}"]
@@ -195,6 +198,84 @@ def markdown(b: dict) -> str:
     return "\n".join(L)
 
 
+ANIM_ZH = {"cut": "直接出现", "pop": "弹出", "fade": "淡入", "slide": "滑入", "reveal": "逐字", "cut_out": "直接消失",
+           "pop_out": "缩小消失", "fade_out": "淡出", "slide_out": "滑出"}
+
+
+def packaging_md(b: dict) -> list[str]:
+    """剪辑包装层: subtitles / 花字 / titles / labels / stickers and the sound effects that land on them."""
+    pack = b.get("packaging")
+    if not pack:
+        return []
+    cues = [c for c in pack.get("text_cues", []) if c["kind"] != "scene" and not c.get("part_of_picture")]
+    stickers = [st for st in pack.get("stickers", []) if not st.get("in_picture")]
+    L = ["", "## 剪辑包装层（字幕 / 花字 / 贴纸 / 音效卡点）", ""]
+    for line in pack.get("summary_zh") or []:
+        L.append(f"- {line}")
+    if not cues and not stickers:
+        L.append("- 没有检出后期叠加的文字或贴纸" + ("（未开 OCR，文字层没有分析）" if not (b.get("analysis") or {}).get("ocr", True) else ""))
+    files = pack.get("files") or {}
+    if files:
+        L.append("- 导出：" + "、".join(f"`{v}`" for v in files.values())
+                 + "（SRT 是字幕时间轴；ASS 带颜色、描边、位置和入场动画，字体需要换成原片字体；timeline.json 是完整时间轴）")
+    if cues:
+        L += ["", "| 时间 | 类型 | 文字 | 样式 | 入场 / 出场 | 音效 |", "|---|---|---|---|---|---|"]
+        sfx_by_ref: dict[str, list[str]] = {}
+        for e in (b.get("audio_plan") or {}).get("sfx_merged", []):
+            ref = (e.get("on") or {}).get("ref")
+            if ref:
+                sfx_by_ref.setdefault(ref, []).append(str(e.get("type", "")))
+        for c in sorted(cues, key=lambda c: c["t0"])[:120]:
+            anim = " / ".join(x for x in (ANIM_ZH.get((c.get("anim_in") or {}).get("kind"), ""), ANIM_ZH.get((c.get("anim_out") or {}).get("kind"), "")) if x)
+            if c.get("mid_motion"):
+                anim += "（中途有弹跳/变色）"
+            kind = c["kind_zh"] + ("·跟随物体" if c.get("follows") else "")
+            L.append(f"| {c['t0']:.2f}–{c['t1']:.2f}s | {kind} | {c['text'].replace('/', ' ⏎ ').replace('|', '｜')[:40]} | "
+                     f"{c.get('style_zh', '')} | {anim or '—'} | {'、'.join(sfx_by_ref.get(c['id'], [])) or '—'} |")
+    if stickers:
+        L += ["", "**贴纸 / 动图 / 画中画**", "", "| 时间 | 类型 | 位置 | 动态 | 置信 | 截图 |", "|---|---|---|---|---|---|"]
+        for st in stickers:
+            where = "x{:.0%} y{:.0%} 宽{:.0%} 高{:.0%}".format(*st["bbox"]) if st.get("bbox") else (st.get("where") or "—")
+            dyn = ("循环，周期 %.2fs" % st["loop_period_s"]) if st.get("looping") else ("在动" if st.get("animated") else "静止")
+            why = []
+            if st.get("crosses_cut"):
+                why.append("跨切镜不变")
+            if st.get("disappears_mid_shot"):
+                why.append("镜头中途出现又消失")
+            conf = {"medium": "中", "low": "低", "vlm": "VLM 看到"}.get(st.get("confidence"), st.get("confidence", ""))
+            L.append(f"| {st['t0']:.2f}–{st['t1']:.2f}s | {st['kind_zh']} | {where} | {dyn} | {conf}{('（' + '、'.join(why) + '）') if why else ''} | "
+                     + (f"![{st['id']}]({st['image']})" if st.get("image") else "—") + " |")
+        dropped = [st for st in pack.get("stickers", []) if st.get("in_picture")]
+        if dropped:
+            L.append(f"- 另有 {len(dropped)} 处画面里突然出现的东西没算作贴纸（3D/动画/版式画面里元素本来就会出现）")
+    if pack.get("vlm_text_effects"):
+        L += ["", "**VLM 看到的文字特效**", ""]
+        for e in pack["vlm_text_effects"][:20]:
+            L.append(f"- {e.get('t', '')}s {e.get('kind', '')}「{e.get('text', '')}」{e.get('style', '')} {e.get('animation', '')}")
+    L += ["", "复刻：字幕和花字用 `packaging/overlays.ass` 直接压制（ffmpeg -vf ass=overlays.ass），或按 timeline.json 在剪映 / Remotion 里重建；"
+          "贴纸和动图要找同款素材（表情包库 / GIF 库），截图在 packaging/ 下。"]
+    return L
+
+
+def _packaging_html(b: dict) -> str:
+    pack = b.get("packaging")
+    if not pack:
+        return ""
+    esc = html.escape
+    parts = ["<section class='shot'><h3 style='margin:4px 0'>剪辑包装层</h3>"]
+    parts += [f"<p>{esc(x)}</p>" for x in pack.get("summary_zh") or []]
+    stickers = [st for st in pack.get("stickers", []) if not st.get("in_picture") and st.get("image")]
+    if stickers:
+        parts.append("<div style='display:flex;gap:8px;flex-wrap:wrap'>" + "".join(
+            f"<figure style='margin:0'><img src='{esc(st['image'])}' style='max-height:90px;border-radius:6px'>"
+            f"<figcaption class='muted' style='font-size:12px'>{esc(st['kind_zh'])} {st['t0']:.1f}s</figcaption></figure>" for st in stickers) + "</div>")
+    files = pack.get("files") or {}
+    if files:
+        parts.append("<p class='muted'>" + " · ".join(f"<a href='{esc(v)}'>{esc(v)}</a>" for v in files.values()) + "</p>")
+    parts.append("</section>")
+    return "".join(parts)
+
+
 def html_report(b: dict) -> str:
     s = b["summary"]
     esc = html.escape
@@ -245,6 +326,7 @@ img.sb{{max-width:100%;border-radius:8px}} .real{{background:#0d9488;color:#fff;
 {_production_html(b.get("production_plan") or {})}
 {aspects.report_html(b)}
 {_sound_html(b)}
+{_packaging_html(b)}
 {''.join(rows)}
 </main></body></html>"""
 

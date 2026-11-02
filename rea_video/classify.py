@@ -460,7 +460,8 @@ def verdict_text(label: str, image_source: str | None, layers: list[dict]) -> st
         base += f"（{IMAGE_SOURCE_ZH.get(image_source, image_source)}）"
     kinds = []
     for l in layers:
-        name = {"subtitle": "字幕", "title": "标题", "label": "文字标注", "static_graphic": "图形贴片", "layout_template": "版式模板"}.get(l["kind"], l["kind"])
+        name = {"subtitle": "字幕", "title": "标题", "label": "文字标注", "static_graphic": "图形贴片", "layout_template": "版式模板",
+                "huazi": "花字", "animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸", "pip": "画中画"}.get(l["kind"], l["kind"])
         if name not in kinds:
             kinds.append(name)
     if kinds:

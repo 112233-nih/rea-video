@@ -36,7 +36,8 @@ def cmd_decompose(args) -> int:
     use_vlm = args.vlm or (pref("vlm") == "on" and not args.no_vlm)
     stems = not args.no_stems and pref("stems", "on") == "on"
     b = decompose(args.video, out, use_vlm=use_vlm, whole_vlm=not args.no_whole, ocr=not args.no_ocr,
-                  workers=args.workers, engine=args.engine or pref("engine", "seedance2.0"), platform_meta=meta, stems=stems)
+                  workers=args.workers, engine=args.engine or pref("engine", "seedance2.0"), platform_meta=meta, stems=stems,
+                  packaging=not args.no_packaging)
     print(json.dumps({"out": str(out), "verdict": b["summary"]["verdict"], "shots": b["summary"]["shots"],
                       "confidence": b["summary"]["confidence"], "vlm": b["summary"]["vlm"],
                       "report": str(out / "report.html")}, ensure_ascii=False, indent=2))
@@ -215,6 +216,15 @@ def cmd_summary(args) -> int:
             lines.append("声音来源: " + b["sound_sources"]["summary_zh"])
         if (b.get("stems") or {}).get("ok"):
             lines.append("音轨: stems/original.wav（原声） stems/vocals.wav（人声） stems/music.wav（配乐）")
+    pk = b.get("packaging")
+    if pk:
+        lines += [""] + [f"包装: {x}" for x in (pk.get("summary_zh") or ["没有检出后期叠加的文字或贴纸"])]
+        low = [st for st in pk.get("stickers", []) if not st.get("in_picture") and st.get("confidence") in ("low", "vlm")]
+        if low:
+            lines.append("包装: 需要看图确认的贴纸 " + "、".join(f"{st['id']} {st['t0']:.1f}-{st['t1']:.1f}s" for st in low)
+                         + "（截图在 packaging/）")
+        if pk.get("files"):
+            lines.append("包装文件: " + " ".join(pk["files"].values()))
     print("\n".join(lines))
     return 0
 
@@ -288,7 +298,8 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--vlm", action="store_true", help="启用多模态大模型（VLM）看画面逐镜判断；建议开，不开也能跑，只是实拍/AI/3D 的区分更弱")
     d.add_argument("--no-vlm", action="store_true", help="本次不开 VLM（覆盖 prefs 里的 vlm=on）")
     d.add_argument("--no-whole", action="store_true", help="跳过整片结构/文案 VLM 分析")
-    d.add_argument("--no-ocr", action="store_true")
+    d.add_argument("--no-ocr", action="store_true", help="不做 OCR（字幕/花字时间轴也会跳过，只剩贴纸检测）")
+    d.add_argument("--no-packaging", action="store_true", help="跳过剪辑包装层（整片字幕时间轴、花字、贴纸/动图、音效卡点）；省掉约每分钟 30–50 秒")
     d.add_argument("--workers", type=int, default=3)
     d.add_argument("--engine", help="复刻计划使用的 capsule-cinema 视频引擎（默认 prefs 里的 engine，否则 seedance2.0）")
     d.add_argument("--meta", help='平台元数据 JSON，例如 {"music": {"title": "xx", "author": "yy", "is_original": false, "popular": true}}')

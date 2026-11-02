@@ -16,6 +16,7 @@ videos:
     real_material: false
     path: ${CAPSULE}/output/monkey_wine_v3/release/monkey_wine_v3.mp4
     label: ai_video               # MiniMax H3 首尾帧生成的"3D 手办"风格 AI 视频 + 代码字幕
+    packaging_truth: eval/monkey_wine_v3_text.json     # overlays_v3/subtitles.json（双行字幕）
     cuts: [7.071, 12.621, 17.307, 23.397, 28.485, 32.493, 38.475, 45.219, 50.379, 57.621, 60.507, 69.087, 77.883, 80.085]
     cut_tolerance: 0.3            # 0.25s xfade 交叉溶解
     source: capsule-cinema work/timeline.json（workflow minimax_h3_lightx2v_v5）
@@ -65,6 +66,8 @@ videos:
     real_material: false
     path: ${CAPSULE}/output/salted_egg_plush/final.mp4
     label: cg_3d                  # plush_diorama_science：Blender 本地渲染 + 代码字幕
+    packaging_truth: eval/salted_egg_plush_text.json   # overlay.py 的字幕/标题/章节牌/标签/贴字时间表
+    sfx_truth: eval/salted_egg_plush_sfx.json
     source: capsule-cinema plush_diorama_science 配方
 
   - id: murphy_shape

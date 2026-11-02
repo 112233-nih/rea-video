@@ -1,0 +1,597 @@
+{
+ "source": "capsule-cinema /work/overlay.py",
+ "duration": 66.458,
+ "subtitles": [
+  {
+   "t0": 0.227,
+   "t1": 1.957,
+   "text": "在海边高高的悬崖上",
+   "highlight": [
+    "悬崖"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 1.957,
+   "t1": 3.899,
+   "text": "住着一群小小的金丝燕",
+   "highlight": [
+    "金丝燕"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 3.899,
+   "t1": 6.099,
+   "text": "它们做的巢就是名贵的燕窝",
+   "highlight": [
+    "燕窝"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 6.099,
+   "t1": 7.658,
+   "text": "卖起来论克算钱",
+   "highlight": [
+    "论克算钱"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 7.658,
+   "t1": 9.478,
+   "text": "原来 繁殖季一到",
+   "highlight": [
+    "繁殖季"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 9.478,
+   "t1": 11.818,
+   "text": "雄燕舌下的唾液腺会肿胀",
+   "highlight": [
+    "唾液腺"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 11.818,
+   "t1": 14.022,
+   "text": "会涌出多得吓人的唾液",
+   "highlight": [
+    "唾液"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 14.022,
+   "t1": 16.422,
+   "text": "第一步 雄燕飞进洞穴",
+   "highlight": [
+    "洞穴"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 16.422,
+   "t1": 19.136,
+   "text": "把唾液一小口一小口吐在岩壁上",
+   "highlight": [
+    "岩壁"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 19.136,
+   "t1": 20.796,
+   "text": "这种唾液又黏又韧",
+   "highlight": [
+    "又黏又韧"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 20.796,
+   "t1": 23.543,
+   "text": "一碰空气就凝成半透明的唾液丝",
+   "highlight": [
+    "唾液丝"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 23.543,
+   "t1": 25.918,
+   "text": "就像棉花糖机吐出来的糖丝",
+   "highlight": [
+    "棉花糖机",
+    "糖丝"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 25.918,
+   "t1": 28.068,
+   "text": "第二步 它来来回回地飞",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 28.068,
+   "t1": 29.826,
+   "text": "把丝一根根粘叠起来",
+   "highlight": [
+    "一根根",
+    "粘叠"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 29.826,
+   "t1": 31.566,
+   "text": "花上 30~45 天",
+   "highlight": [
+    "30~45 天"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 31.566,
+   "t1": 33.2,
+   "text": "才叠成半个小碗",
+   "highlight": [
+    "小碗"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 33.2,
+   "t1": 35.96,
+   "text": "第三步 雌燕在窝里下了两颗蛋",
+   "highlight": [
+    "两颗蛋"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 35.96,
+   "t1": 37.665,
+   "text": "孵出毛茸茸的雏燕",
+   "highlight": [
+    "雏燕"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 37.665,
+   "t1": 39.685,
+   "text": "再喂养 40~45 天",
+   "highlight": [
+    "40~45 天"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 39.685,
+   "t1": 41.633,
+   "text": "雏燕的翅膀就长硬了",
+   "highlight": [
+    "翅膀"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 41.633,
+   "t1": 43.863,
+   "text": "第四步 雏燕飞走以后",
+   "highlight": [
+    "飞走"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 43.863,
+   "t1": 45.867,
+   "text": "这一盏空巢才能摘下来",
+   "highlight": [
+    "空巢"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 45.867,
+   "t1": 47.697,
+   "text": "从动工筑巢到采摘",
+   "highlight": [
+    "采摘"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 47.697,
+   "t1": 49.835,
+   "text": "前后要等 80~90 天",
+   "highlight": [
+    "80~90 天"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 49.835,
+   "t1": 51.455,
+   "text": "摘下来的空巢晒干了",
+   "highlight": [
+    "空巢"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 51.455,
+   "t1": 53.301,
+   "text": "泛出莹润的金光",
+   "highlight": [
+    "金光"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 53.301,
+   "t1": 55.389,
+   "text": "这 就是燕窝",
+   "highlight": [
+    "燕窝"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 55.389,
+   "t1": 57.989,
+   "text": "不过 九成多的燕子窝都不能吃",
+   "highlight": [
+    "不能吃"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 57.989,
+   "t1": 59.379,
+   "text": "能筑食用燕窝的",
+   "highlight": [],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 59.379,
+   "t1": 61.37,
+   "text": "主要是雨燕科的金丝燕",
+   "highlight": [
+    "雨燕科",
+    "金丝燕"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 61.37,
+   "t1": 63.29,
+   "text": "而且要等雏燕都飞走了",
+   "highlight": [
+    "雏燕"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  },
+  {
+   "t0": 63.29,
+   "t1": 67.458,
+   "text": "才能摘这一盏空巢",
+   "highlight": [
+    "空巢"
+   ],
+   "style": {
+    "fill": "white",
+    "stroke": "dark",
+    "highlight_color": "yellow",
+    "animation": "keyword_bounce"
+   }
+  }
+ ],
+ "titles": [
+  {
+   "t0": 0.0,
+   "t1": 66.458,
+   "text": "燕窝是怎么筑成的？",
+   "decorative": true,
+   "style": {
+    "multicolor": true,
+    "stroke": "dark",
+    "animation": "scale_in"
+   }
+  }
+ ],
+ "cards": [
+  {
+   "t0": 14.005,
+   "t1": 25.901,
+   "text": "第1步 · 岩壁吐丝",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 25.901,
+   "t1": 33.183,
+   "text": "第2步 · 叠丝成碗",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 33.183,
+   "t1": 41.616,
+   "text": "第3步 · 下蛋孵雏",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 41.616,
+   "t1": 53.284,
+   "text": "第4步 · 空巢可采",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 53.284,
+   "t1": 55.372,
+   "text": "成了！",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 55.372,
+   "t1": 66.458,
+   "text": "注意！",
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  }
+ ],
+ "labels": [
+  {
+   "t0": 10.671,
+   "t1": 11.833,
+   "text": "唾液腺",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 22.869,
+   "t1": 23.542,
+   "text": "唾液丝",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 24.156,
+   "t1": 25.917,
+   "text": "棉花糖机",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 32.679,
+   "t1": 33.208,
+   "text": "小碗",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 37.153,
+   "t1": 37.667,
+   "text": "雏燕",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  },
+  {
+   "t0": 44.586,
+   "t1": 45.875,
+   "text": "空巢",
+   "follows_object": true,
+   "style": {
+    "box": true,
+    "animation": "pop_in"
+   }
+  }
+ ],
+ "stickers": [
+  {
+   "t0": 54.055,
+   "t1": 55.375,
+   "text": "燕窝！",
+   "decorative": true,
+   "style": {
+    "size_px": 150,
+    "stroke": "dark",
+    "animation": "pop_in_wobble"
+   }
+  }
+ ]
+}

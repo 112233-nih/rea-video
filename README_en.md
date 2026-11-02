@@ -36,7 +36,7 @@ rea-video's verdict: the left is all live footage, one set and two camera positi
 
 For every video type it also breaks out:
 
-- Styled text and captions: where and when text appears, telling captions, titles and on-object text (packaging, signs) apart; font, outline, color, word-by-word highlight and other styling.
+- Editing packaging: a line-by-line caption timeline (exported as SRT / ASS); styled text (花字), titles, chapter cards and tracking labels with their color, outline, box, keyword highlight and pop / fade animations; stickers, GIFs, emoji and picture-in-picture windows with position, timing and whether they loop; which sound effects land on a text pop or sticker.
 - Editing: cut points and pacing, jump cuts, punch-ins, multi-camera switching, cuts on pauses, share of inserted material, whether cuts land on the beat.
 - Real assets: screen recordings, screenshots, product photos and other material you'll need to supply yourself.
 - Audio: human or AI voice-over, AI-generated or library music, BPM and key, and when each sound effect hits.

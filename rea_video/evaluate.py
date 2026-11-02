@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 from .classify import LABELS
-from .pipeline import decompose, finalize
+from .pipeline import PACKAGING_VERSION, decompose, finalize
 from .util import LOG, read_json, round_floats, write_json
 
 
@@ -72,6 +72,99 @@ def audio_check(gt: dict, b: dict) -> dict:
     return out
 
 
+def packaging_check(truth_path: str | Path, pack: dict, sfx: list[dict] | None = None, sfx_truth: list | None = None) -> dict:
+    """Packaging layer vs a ground-truth overlay schedule (eval/*_text.json, exported from the maker's overlay code).
+    Subtitles: a predicted subtitle cue matches a truth line when the words agree (similarity >= 0.6) and the
+    times overlap; timing error is measured on matched pairs. Other text (title / chapter cards / object labels /
+    decorative stickers): found = any predicted non-subtitle cue with similar words overlapping in time; kind_ok =
+    it got the expected kind. Image stickers: the truth files list none, so every predicted one is a false alarm."""
+    from .packaging import _norm, _similar
+
+    gt = read_json(Path(_expand(str(truth_path))))
+    cues = pack.get("text_cues", [])
+    subs = [c for c in cues if c["kind"] == "subtitle"]
+
+    def overlap(a0, a1, b0, b1):
+        return max(0.0, min(a1, b1) - max(a0, b0))
+
+    matched_pred: set[int] = set()
+    d0, d1, sims, hits = [], [], [], 0
+    for g in gt["subtitles"]:
+        gtext = g["text"].replace("/", "")
+        best, best_s = None, 0.0
+        for i, c in enumerate(subs):
+            if overlap(g["t0"], g["t1"], c["t0"], c["t1"]) <= 0:
+                continue
+            sim = _similar(gtext, c["text"])
+            if sim > best_s:
+                best, best_s = i, sim
+        if best is not None and best_s >= 0.6:
+            hits += 1
+            matched_pred.add(best)
+            c = subs[best]
+            d0.append(abs(c["t0"] - g["t0"]))
+            d1.append(abs(c["t1"] - g["t1"]))
+            sims.append(best_s)
+    # a prediction that is a fragment of a truth line (OCR split a line) is not a false alarm
+    for i, c in enumerate(subs):
+        if i in matched_pred:
+            continue
+        if any(overlap(g["t0"], g["t1"], c["t0"], c["t1"]) > 0 and _norm(c["text"]) and _norm(c["text"]) in _norm(g["text"])
+               for g in gt["subtitles"]):
+            matched_pred.add(i)
+    n_gt = len(gt["subtitles"])
+    out: dict = {"subtitles": {"truth": n_gt, "pred": len(subs), "recall": round(hits / n_gt, 3) if n_gt else None,
+                               "precision": round(len(matched_pred) / len(subs), 3) if subs else None,
+                               "start_err_median_s": round(float(sorted(d0)[len(d0) // 2]), 3) if d0 else None,
+                               "end_err_median_s": round(float(sorted(d1)[len(d1) // 2]), 3) if d1 else None,
+                               "within_0.25s": round(sum(1 for a, b in zip(d0, d1) if a <= 0.25 and b <= 0.25) / len(d0), 3) if d0 else None,
+                               "text_similarity": round(sum(sims) / len(sims), 3) if sims else None}}
+    st = {}
+    for c in subs:
+        for k in ("fill_name", "stroke_name"):
+            v = (c.get("style") or {}).get(k)
+            if v:
+                st.setdefault(k, []).append(v)
+    want = (gt["subtitles"][0].get("style") or {}) if gt["subtitles"] else {}
+    if want and st:
+        fills = st.get("fill_name", [])
+        name = {"white": "白", "dark": ("黑", "棕", "灰")}
+        wf = name.get(want.get("fill"), want.get("fill"))
+        out["subtitles"]["fill_ok"] = round(sum(1 for f in fills if f in (wf if isinstance(wf, tuple) else (wf,))) / max(1, len(subs)), 3)
+        strokes = st.get("stroke_name", [])
+        if want.get("stroke"):
+            out["subtitles"]["stroke_found"] = round(len(strokes) / max(1, len(subs)), 3)
+        else:
+            out["subtitles"]["stroke_false"] = round(len(strokes) / max(1, len(subs)), 3)
+    if any(g.get("highlight") for g in gt["subtitles"]):
+        with_kw = [g for g in gt["subtitles"] if g.get("highlight")]
+        found = 0
+        for g in with_kw:
+            c = next((c for c in subs if overlap(g["t0"], g["t1"], c["t0"], c["t1"]) > 0.5 * (g["t1"] - g["t0"])), None)
+            found += bool(c and (c.get("style") or {}).get("multicolor"))
+        out["subtitles"]["keyword_highlight_found"] = round(found / len(with_kw), 3)
+    expect = {"titles": "title", "cards": "label", "labels": "label", "stickers": "huazi"}
+    others = [c for c in cues if c["kind"] != "subtitle"]
+    for key, kind in expect.items():
+        items = gt.get(key) or []
+        if not items:
+            continue
+        found = kind_ok = 0
+        for g in items:
+            cand = [c for c in others if overlap(g["t0"], g["t1"], c["t0"], c["t1"]) > 0 and _similar(g["text"], c["text"]) >= 0.5]
+            if cand:
+                found += 1
+                kind_ok += any(c["kind"] == kind for c in cand)
+        out[key] = {"truth": len(items), "found": found, "kind_ok": kind_ok}
+    out["image_stickers_false"] = sum(1 for st in pack.get("stickers", []) if not st.get("in_picture"))
+    if sfx is not None and sfx_truth is not None:
+        tt = sorted(float(x[0]) for x in sfx_truth)
+        anch = [e for e in sfx if e.get("source") == "deterministic_anchored"]
+        ok = sum(1 for e in anch if any(abs(e["t"] - t) <= 0.1 for t in tt))
+        out["sfx_anchored"] = {"pred": len(anch), "correct": ok, "precision": round(ok / len(anch), 3) if anch else None}
+    return out
+
+
 def boundary_f1(pred: list[float], gt: list[float], tol: float = 0.1) -> dict:
     used = set()
     tp = 0
@@ -125,6 +218,17 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
                         b["stems"] = extract_stems(path, vout)
                     if voc.is_file():
                         refine_with_stems(b["audio"], str(voc))
+            if entry.get("packaging_truth") and (b.get("packaging") or {}).get("version") != PACKAGING_VERSION:
+                from .media import video_info
+                from .packaging import analyze as analyze_packaging, anchored_sfx, visual_events
+
+                info = video_info(path)
+                pk = analyze_packaging(path, info, [s["start"] for s in b["shots"][1:]], vout, ocr=ocr)
+                if b["source"].get("has_audio"):
+                    ev = [e for e in visual_events(pk["text_cues"], pk["stickers"], []) if e["type"] != "subtitle_in"]
+                    pk["sfx_anchored"] = anchored_sfx(path, ev, (b["audio"].get("sfx") or {}).get("events", []))
+                pk["version"] = PACKAGING_VERSION
+                b["packaging"] = round_floats(pk)
             b = finalize(b, vout)  # re-classify with the current rules
         else:
             b = decompose(path, vout, use_vlm=use_vlm, ocr=ocr, whole_vlm=False, stems=stems and bool(entry.get("audio")), memory=False)
@@ -166,6 +270,9 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
             row["aspects"] = aspect_check(entry["aspects"], b)
             for k, v in row["aspects"].items():
                 aspect_hits.setdefault(k, []).append(v)
+        if entry.get("packaging_truth") and b.get("packaging"):
+            sfx_truth = read_json(Path(_expand(entry["sfx_truth"]))) if entry.get("sfx_truth") else None
+            row["packaging"] = packaging_check(entry["packaging_truth"], b["packaging"], (b.get("audio_plan") or {}).get("sfx_merged", []), sfx_truth)
         if "cuts" in entry:
             row["cut_f1"] = boundary_f1([s["start"] for s in b["shots"][1:]], entry["cuts"], tol=float(entry.get("cut_tolerance", 0.1)))
         if entry.get("image_source"):
@@ -185,6 +292,22 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
         summary["audio"] = {k: f"{sum(v)}/{len(v)}" for k, v in audio_hits.items()}
     if aspect_hits:
         summary["aspects"] = {k: f"{sum(v)}/{len(v)}" for k, v in aspect_hits.items()}
+    packs = [r["packaging"] for r in rows if r.get("packaging")]
+    if packs:
+        subs = [p_["subtitles"] for p_ in packs]
+        tot = sum(x["truth"] for x in subs)
+        summary["packaging"] = {
+            "videos": len(packs), "subtitle_lines": tot,
+            "subtitle_recall": round(sum(x["recall"] * x["truth"] for x in subs) / tot, 3) if tot else None,
+            "subtitle_precision_mean": round(sum(x["precision"] or 0 for x in subs) / len(subs), 3),
+            "start_err_median_s": {r["id"]: r["packaging"]["subtitles"]["start_err_median_s"] for r in rows if r.get("packaging")},
+            "end_err_median_s": {r["id"]: r["packaging"]["subtitles"]["end_err_median_s"] for r in rows if r.get("packaging")},
+            "other_text_found": f"{sum(p_[k]['found'] for p_ in packs for k in ('titles', 'cards', 'labels', 'stickers') if k in p_)}/"
+                                f"{sum(p_[k]['truth'] for p_ in packs for k in ('titles', 'cards', 'labels', 'stickers') if k in p_)}",
+            "other_text_kind_ok": f"{sum(p_[k]['kind_ok'] for p_ in packs for k in ('titles', 'cards', 'labels', 'stickers') if k in p_)}/"
+                                  f"{sum(p_[k]['truth'] for p_ in packs for k in ('titles', 'cards', 'labels', 'stickers') if k in p_)}",
+            "image_sticker_false_alarms": sum(p_["image_stickers_false"] for p_ in packs),
+        }
     cuts = [r["cut_f1"]["f1"] for r in rows if "cut_f1" in r]
     if cuts:
         summary["cut_f1_mean"] = round(sum(cuts) / len(cuts), 3)

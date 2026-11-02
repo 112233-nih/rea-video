@@ -49,7 +49,13 @@ video_prompt（复刻该镜头的中文视频提示词：写清动作过程和�
 {ASPECT_GUIDE}
 工具已经测了景别、主体光比、主光左右/上下、软硬、色温、背景虚化（见每镜 aspects），你主要补：机位角度、
 拍摄方式（自拍/支架）、主光是什么光源、眼神光、轮廓光/背景灯、画面里可见的光源；和测量冲突时写明依据。
-最后在答案顶层的 aspects 里写整片：机位/场景、推测设备、整体布光、剪辑手法、视频形式。"""
+最后在答案顶层的 aspects 里写整片：机位/场景、推测设备、整体布光、剪辑手法、视频形式。
+
+剪辑包装（tasks.packaging，有才做）：
+- stickers：工具找到的贴纸 / 动图 / 画中画，看 image（贴纸截图）和 frame_cmd 抽的帧，在答案 packaging.stickers 里填
+  is_overlay（true = 后期贴上去的；false = 画面本身的东西，例如 3D 里突然出现的物体）和 what（表情包 / GIF / emoji / 箭头 / 小窗里放的什么）。
+- text：工具分好类的花字 / 标题 / 文字标注，分错了就在 packaging.text 里填 kind（subtitle / huazi / title / label / scene）。
+- 工具漏掉的贴纸、动图，写进 packaging.missed：{{"t0": 秒, "t1": 秒, "what": "...", "where": "画面位置"}}。"""
 
 
 def _priority(rec: dict, ctx: dict) -> tuple[str, list[str]]:
@@ -100,16 +106,33 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
             "zoom_cmd": f"rea-video tiles {video} --start {rec['start']:.2f} --end {rec['end']:.2f} --every 0.2 "
                         f"-o {out_dir}/check_{rec['id']}.jpg",
         })
+    pack = breakdown.get("packaging") or {}
+    pk_tasks, pk_answers = None, None
+    if pack:
+        sts = [st for st in pack.get("stickers", []) if st.get("bbox")]
+        txt = [c for c in pack.get("text_cues", []) if c["kind"] not in ("subtitle",)]
+        pk_tasks = {"stickers": [{"id": st["id"], "t0": st["t0"], "t1": st["t1"], "kind_zh": st["kind_zh"], "confidence": st.get("confidence"),
+                                  "in_picture": bool(st.get("in_picture")), "image": st.get("image"), "bbox": st["bbox"],
+                                  "frame_cmd": f"rea-video tiles {video} --start {st['t0']:.2f} --end {st['t1']:.2f} --every 0.25 "
+                                               f"-o {out_dir}/check_{st['id']}.jpg"} for st in sts],
+                    "text": [{"id": c["id"], "t0": c["t0"], "t1": c["t1"], "text": c["text"], "kind": c["kind"], "style": c.get("style_zh", "")}
+                             for c in txt[:80]]}
+        pk_answers = {"stickers": [{"id": st["id"], "is_overlay": None, "what": ""} for st in sts],
+                      "text": [{"id": c["id"], "kind": ""} for c in txt[:80]], "missed": []}
     tasks = {"instructions": INSTRUCTIONS, "video": video, "storyboard": "storyboard.jpg",
              "video_context": {k: ctx.get(k) for k in ("transcoded", "platform", "native30") if k in ctx},
              "aigc": (breakdown.get("provenance") or {}).get("aigc"),
              "shots": shots}
+    if pk_tasks:
+        tasks["packaging"] = pk_tasks
     answers = {"by": "", "shots": [{"id": s["id"], "time": f"{s['start']:.2f}-{s['end']:.2f}",
                                      "label_probs": {k: 0 for k in LABELS}, "image_source": "unknown",
                                      "evidence": [], "description": "", "embedded_assets": [], "ai_edits": [],
                                      "replication": {"image_prompt": "", "video_prompt": "", "video_prompt_en": ""},
                                      "aspects": aspects.review_template()} for s in shots],
                "aspects": aspects.review_template(video=True)}
+    if pk_answers:
+        answers["packaging"] = pk_answers
     return tasks, answers
 
 
@@ -164,6 +187,15 @@ def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict
         rec["review"] = clean
         applied.append(sid)
         changes.append((sid, before))
+    pk = answers.get("packaging")
+    if isinstance(pk, dict) and breakdown.get("packaging"):
+        kinds = ("subtitle", "huazi", "title", "label", "scene")
+        clean_pk = {"stickers": {str(a["id"]): {"is_overlay": bool(a["is_overlay"]), "what": str(a.get("what", ""))[:80]}
+                                 for a in pk.get("stickers") or [] if isinstance(a, dict) and isinstance(a.get("is_overlay"), bool)},
+                    "text": {str(a["id"]): a["kind"] for a in pk.get("text") or [] if isinstance(a, dict) and a.get("kind") in kinds},
+                    "missed": [m for m in pk.get("missed") or [] if isinstance(m, dict) and "t0" in m], "by": by}
+        if clean_pk["stickers"] or clean_pk["text"] or clean_pk["missed"]:
+            breakdown["packaging"]["review"] = clean_pk
     whole = aspects.clean_answers(answers.get("aspects"), video=True)
     if whole:
         breakdown["review_aspects"] = whole

@@ -1,0 +1,437 @@
+{
+ "source": "capsule-cinema monkey_wine_v3/work/overlays_v3/subtitles.json (edit.py)",
+ "duration": 87.832,
+ "subtitles": [
+  {
+   "t0": 0.43,
+   "t1": 3.11,
+   "text": "要是你在深山里/撞见一群野猴子",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 3.11,
+   "t1": 4.62,
+   "text": "只要悄悄跟着它们",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 4.62,
+   "t1": 7.03,
+   "text": "八成就能找到/传说中的猴儿酒",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 7.246,
+   "t1": 9.166,
+   "text": "原来，秋天果子一熟",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 9.166,
+   "t1": 11.096,
+   "text": "猴子们为了/熬过缺吃的冬天",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 11.096,
+   "t1": 12.546,
+   "text": "就开始拼命囤粮",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 12.816,
+   "t1": 15.126,
+   "text": "它们搬来/一大堆高糖分的野果",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 15.126,
+   "t1": 17.176,
+   "text": "一股脑塞进天然的树洞里",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 17.512,
+   "t1": 18.722,
+   "text": "果子越堆越多",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 18.722,
+   "t1": 20.862,
+   "text": "互相挤压，果皮破了",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 20.862,
+   "t1": 23.272,
+   "text": "果肉里的糖水/就大量渗了出来",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 23.572,
+   "t1": 25.042,
+   "text": "树洞里空间密闭",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 25.042,
+   "t1": 26.112,
+   "text": "温度又稳定",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 26.112,
+   "t1": 28.212,
+   "text": "简直就是/一个天然的发酵罐",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 28.84,
+   "t1": 32.42,
+   "text": "更巧的是，果子表皮上/本来就带着野生酵母菌",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 32.708,
+   "t1": 34.678,
+   "text": "一下雨，雨水渗进树洞",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 34.678,
+   "t1": 36.348,
+   "text": "把浓稠的果浆稀释开",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 36.348,
+   "t1": 38.388,
+   "text": "正好满足了/发酵需要的湿度",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 38.68,
+   "t1": 40.67,
+   "text": "这时洞里还剩一点氧气",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 40.67,
+   "t1": 42.51,
+   "text": "酵母菌开始大量繁殖",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 42.51,
+   "t1": 44.97,
+   "text": "还把蔗糖/拆成了葡萄糖和果糖",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 45.504,
+   "t1": 47.964,
+   "text": "时间一长，果肉把树洞慢慢堵死",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 47.964,
+   "t1": 50.334,
+   "text": "里面变成了/密不透风的缺氧环境",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 50.604,
+   "t1": 51.734,
+   "text": "氧气一耗尽",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 51.734,
+   "t1": 53.894,
+   "text": "酵母菌马上切换生存模式",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 53.894,
+   "t1": 55.234,
+   "text": "开始无氧呼吸",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 55.234,
+   "t1": 57.544,
+   "text": "把糖分解成/酒精和二氧化碳",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 57.846,
+   "t1": 58.996,
+   "text": "糖越来越少",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 58.996,
+   "t1": 60.426,
+   "text": "酒精度越来越高",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 60.692,
+   "t1": 62.522,
+   "text": "可酵母也有耐受上限",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 62.522,
+   "t1": 65.162,
+   "text": "酒精度一到12%~15%左右",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 65.162,
+   "t1": 67.502,
+   "text": "它们就会被/自己产的酒精杀死",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 67.502,
+   "t1": 68.882,
+   "text": "发酵自动停止",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 69.562,
+   "t1": 72.082,
+   "text": "剩下的酒精/和果子里的有机酸",
+   "lines": 2,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 72.082,
+   "t1": 74.162,
+   "text": "还会慢慢发生酯化反应",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 74.162,
+   "t1": 76.232,
+   "text": "生成带果香的酯类物质",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 76.232,
+   "t1": 77.762,
+   "text": "飘出浓浓的酒香",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 78.088,
+   "t1": 80.018,
+   "text": "这就是传说中的猴儿酒",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 80.29,
+   "t1": 81.97,
+   "text": "不过树洞里杂菌太多",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 81.97,
+   "t1": 83.73,
+   "text": "很容易产生有毒物质",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 83.73,
+   "t1": 85.08,
+   "text": "所以这种猴儿酒",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  },
+  {
+   "t0": 85.08,
+   "t1": 86.45,
+   "text": "千万别随便喝",
+   "lines": 1,
+   "style": {
+    "fill": "dark",
+    "stroke": null
+   }
+  }
+ ],
+ "titles": [
+  {
+   "t0": 0.0,
+   "t1": 87.832,
+   "text": "猴儿酒是怎么来的？",
+   "decorative": false
+  }
+ ],
+ "cards": [],
+ "labels": [],
+ "stickers": []
+}
