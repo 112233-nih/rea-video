@@ -1,0 +1,10 @@
+{
+  "name": "rea-video",
+  "version": "0.1.0",
+  "description": "逆向拆解视频：逐镜头判断实拍 / AI / 3D / 代码渲染 / 录屏，拆剪辑包装、声音和真实素材，给出复刻方案。",
+  "author": { "name": "June" },
+  "homepage": "https://github.com/JuneYaooo/rea-video",
+  "repository": "https://github.com/JuneYaooo/rea-video",
+  "license": "MIT",
+  "keywords": ["video", "forensics", "ai-video", "remake"]
+}

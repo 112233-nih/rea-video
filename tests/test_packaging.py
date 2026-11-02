@@ -140,11 +140,15 @@ def test_ass_export():
 
 
 def test_clean_region():
-    st = [{"bbox": [0.6, 0.1, 0.3, 0.15], "t0": 1.0, "t1": 3.0, "confidence": "medium"}]
+    st = [{"bbox": [0.6, 0.1, 0.3, 0.15], "t0": 1.0, "t1": 3.0, "confidence": "medium", "appears_mid_shot": True}]
     x, y, w, h = P.clean_region(st, 1.0, 3.0)
     assert w * h >= 0.45 and (x + w <= 0.6 + 1e-6 or y >= 0.25 - 1e-6)  # the band avoids the sticker
     assert P.clean_region(st, 5.0, 8.0) is None                                 # not on this shot
     assert P.clean_region([dict(st[0], confidence="low")], 1.0, 3.0) is None    # unconfirmed: leave the shot alone
+    # only survived a cut (no pop-in, no loop): may be content both shots share, keep the full frame
+    cut_only = dict(st[0], appears_mid_shot=False, crosses_cut=True, looping=False)
+    assert P.clean_region([cut_only], 1.0, 3.0) is None
+    assert P.clean_region([dict(cut_only, looping=True)], 1.0, 3.0) is not None  # a looping GIF is a pasted layer
 
 
 def test_review_overrides_stickers_and_kinds():

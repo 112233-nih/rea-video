@@ -1,6 +1,6 @@
 # 能力矩阵（自动生成，请勿手改）
 
-由 `python3 scripts/validate_capabilities.py --matrix` 根据 `capabilities/` 生成。
+由 `python3 scripts/validate_capabilities.py --matrix` 根据 `rea_video/capabilities/` 生成。
 置信度：● high ◐ medium ○ low。已关停的模型不列出。
 
 | 原语 | 名称 | 可用模型 |

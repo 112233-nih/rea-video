@@ -202,7 +202,7 @@ def export_capsule_analysis(b: dict, out_path: Path) -> Path:
 
 def build_remake_jobs(b: dict, bdir: Path, capsule_root: Path, engine: str = "seedance2.0",
                       mode: str = "first_last_frame", labels: list[str] | None = None) -> Path:
-    """Write jobs.json for integrations/capsule_cinema/run_remake.py.
+    """Write jobs.json for `rea-video remake-run` (rea_video/integrations/run_remake.py).
     Output dirs live under <capsule_root>/output/ to satisfy capsule-cinema's output guard."""
     labels = labels or list(AI_LABELS)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")

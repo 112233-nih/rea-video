@@ -6,8 +6,7 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-CAP = ROOT / "capabilities"
+CAP = Path(__file__).resolve().parent / "capabilities"
 
 # base label -> (routing rule, executor, capsule generation type)
 LABEL_ROUTE = {

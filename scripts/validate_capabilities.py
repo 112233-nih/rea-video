@@ -3,10 +3,10 @@
 
 用法:
   python3 scripts/validate_capabilities.py            # 只校验
-  python3 scripts/validate_capabilities.py --matrix   # 校验并写出 capabilities/MATRIX.md
+  python3 scripts/validate_capabilities.py --matrix   # 校验并写出 rea_video/capabilities/MATRIX.md
 
 检查项:
-  1. 每个模型条目符合 capabilities/schema.json
+  1. 每个模型条目符合 rea_video/capabilities/schema.json
   2. 模型 id 全局唯一；primitives 引用都存在
   3. 每个原语至少有一个可用（非 shutdown）模型，分析/渲染类除外的空缺会报 warning
   4. routing.yaml 中 signals/route/prefer/verify 引用都存在
@@ -27,7 +27,7 @@ except ImportError:  # 旧版 jsonschema
     from jsonschema import Draft7Validator as SchemaValidator
 
 ROOT = Path(__file__).resolve().parent.parent
-CAP = ROOT / "capabilities"
+CAP = ROOT / "rea_video" / "capabilities"
 STALE_DAYS = 90
 
 
@@ -144,7 +144,7 @@ def main() -> int:
 
     if "--matrix" in sys.argv and not errors:
         write_matrix(primitives, models, by_prim)
-        print("已写出 capabilities/MATRIX.md")
+        print("已写出 rea_video/capabilities/MATRIX.md")
 
     if errors:
         print(f"\n校验失败：{len(errors)} 个错误")
@@ -158,7 +158,7 @@ def write_matrix(primitives: dict, models: dict, by_prim: dict) -> None:
     lines = [
         "# 能力矩阵（自动生成，请勿手改）",
         "",
-        "由 `python3 scripts/validate_capabilities.py --matrix` 根据 `capabilities/` 生成。",
+        "由 `python3 scripts/validate_capabilities.py --matrix` 根据 `rea_video/capabilities/` 生成。",
         "置信度：● high ◐ medium ○ low。已关停的模型不列出。",
         "",
         "| 原语 | 名称 | 可用模型 |",

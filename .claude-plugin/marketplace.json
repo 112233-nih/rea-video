@@ -1,0 +1,11 @@
+{
+  "name": "rea-video",
+  "owner": { "name": "June" },
+  "plugins": [
+    {
+      "name": "rea-video",
+      "source": "./",
+      "description": "逆向拆解视频：逐镜头判断制作方式，拆剪辑包装、声音和真实素材，给出复刻方案。"
+    }
+  ]
+}

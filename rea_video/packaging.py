@@ -1310,10 +1310,16 @@ LAYER_ZH = {"huazi": "花字", "animated_sticker": "动态贴纸/GIF", "static_s
 def clean_region(stickers: list[dict], t0: float, t1: float, min_area: float = 0.45) -> tuple[float, float, float, float] | None:
     """The largest band of the frame (left / right / above / below) free of the stickers that sit on this shot for
     most of it, so the picture's own statistics are measured without the pasted layer. None if no sticker
-    covers the shot or the free band is too small to measure."""
+    covers the shot or the free band is too small to measure.
+
+    Only stickers seen being pasted on within a shot (popped in mid-shot, or looping) count. A block that merely
+    survives a cut is often content the two shots share (a character in consecutive illustrations, a heading on
+    a layout card); cropping it away cost labels / holdout2 three shots (static -> code render, code render ->
+    3D / AI video) and fixed none."""
     dur = max(1e-6, t1 - t0)
     boxes = [s["bbox"] for s in stickers
-             if s.get("confidence") != "low" and min(t1, s["t1"]) - max(t0, s["t0"]) >= 0.4 * dur]
+             if s.get("confidence") != "low" and (s.get("appears_mid_shot") or s.get("looping"))
+             and min(t1, s["t1"]) - max(t0, s["t0"]) >= 0.4 * dur]
     if not boxes:
         return None
     x0 = min(b[0] for b in boxes)

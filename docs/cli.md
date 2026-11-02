@@ -13,6 +13,13 @@ rea-video --help
 bash scripts/install_skill.sh    # 可选：装 CLI 并把 skill 链接到 ~/.claude/skills、~/.codex/skills、~/.agents/skills
 ```
 
+Claude Code 也可以按插件装 skill（CLI 仍需 `pip install`，skill 第一步会检查）：
+
+```text
+/plugin marketplace add JuneYaooo/rea-video
+/plugin install rea-video@rea-video
+```
+
 首次拆解会自动下载约 67 MB 的人声分离模型（`~/.cache/rea-video/models`）。一条 30 秒视频不开 VLM 约 1 分钟出结果。
 
 装好 skill 后，在 Claude Code / Codex / zcode 里直接说"帮我拆解这条视频 xxx.mp4，看看是不是 AI 做的"即可，agent 会按 [SKILL.md](../skills/rea-video/SKILL.md) 的流程跑：先看记忆 → 拆解 → 看图复核 → 按模板交付。
@@ -58,18 +65,18 @@ rea-video stems ref.mp4 -o out/ref
 ## 和 capsule-cinema 一起复刻
 
 ```bash
-CC=~/code/github/capsule-cinema; PY=$CC/.venv/bin/python
+CC=~/code/github/capsule-cinema   # capsule-cinema 仓库，也可以设 CAPSULE_CINEMA_ROOT
 rea-video remake-plan out/ref/breakdown.json --capsule-root $CC                  # AI 类镜头 → 首尾帧生成任务
-$PY integrations/capsule_cinema/run_remake.py --jobs out/ref/remake/jobs.json    # 调 capsule-cinema 生成（会计费，可先 --dry-run）
+rea-video remake-run out/ref/remake/jobs.json                                    # 调 capsule-cinema 生成（会计费，可先 --dry-run）
 rea-video assemble out/ref/breakdown.json out/ref/remake/results.json            # 按原时间线拼回 + 对比片
-$PY integrations/capsule_cinema/to_capsule.py --breakdown out/ref/breakdown.json --capsule-root $CC --capsule-name my_remake
+rea-video capsule-draft out/ref/breakdown.json --capsule-root $CC --capsule-name my_remake
 ```
 
 - 静态图推拉和静帧：不调模型，本地用测得的缩放和平移参数精确重建。
 - 代码渲染和录屏：报告给出文字轨和版式，用 Remotion 重建。
-- `to_capsule.py`：通过 capsule-cinema 自带的 `tool_factory` 注入拆解结果，生成可复用的配方草稿，不需要改 capsule-cinema 的代码。
+- `capsule-draft`：通过 capsule-cinema 自带的 `tool_factory` 注入拆解结果，生成可复用的配方草稿，不需要改 capsule-cinema 的代码。
 
-见 [integrations/capsule_cinema/README.md](../integrations/capsule_cinema/README.md)。
+见 [capsule-cinema.md](capsule-cinema.md)。
 
 ## 命令
 
@@ -87,6 +94,8 @@ $PY integrations/capsule_cinema/to_capsule.py --breakdown out/ref/breakdown.json
 | `eval labels.yaml` | 在带标注的样本上评测准确率和切点 F1 |
 | `capsule breakdown.json` | 导出 capsule-cinema 的视频分析 JSON |
 | `remake-plan` / `assemble` | 生成复刻任务、拼回成片 |
+| `remake-run JOBS [--dry-run] [--only]` | 用 capsule-cinema 执行复刻任务（会计费） |
+| `capsule-draft breakdown.json` | 生成 capsule-cinema 胶囊草稿 |
 
 ## 工作流（设计目标；目前完成到拆解和 AI 镜头复刻）
 
@@ -106,7 +115,7 @@ Ingest ─► Decompose ─► Video IR ─► Plan ─► Reconstruct ─► Ve
 1. **Ingest（导入）**：probe、抽帧、分离音轨。
 2. **Decompose（拆解）**：确定性 CV 和 VLM 分工。CV 负责精确的时间和位置：切镜、OCR 轨迹、分割、相机运动、节拍、字级对齐；VLM 负责语义：镜头意图、表演、风格。
 3. **Video IR（源码）**：时间线 → 轨道 → 片段。每个片段标注渲染方式（`code` / `gen` / `footage` / `audio`），并附参数、证据和 unknowns。
-4. **Plan（路由）**：读取 [能力地图](../capabilities/README.md)，把每个生成单元路由到原语和模型，输出 Shot Recipe，包含成本预估和需要用户确认的节点。
+4. **Plan（路由）**：读取 [能力地图](../rea_video/capabilities/README.md)，把每个生成单元路由到原语和模型，输出 Shot Recipe，包含成本预估和需要用户确认的节点。
 5. **Reconstruct（重建）**：代码层用 Remotion 等渲染，生成层调用模型，音频层用 TTS、音乐、音效，最后合成。
 6. **Verify（验证）**：检查切点对齐、OCR 文本一致性、布局 IoU、感知相似度、主体一致性、运动轨迹、节拍和口型，输出 scorecard，由 agent 循环修复得分最差的镜头。
 7. **Remix（改写）**：换人、换货、换文案、换语言、换画幅时，只重新渲染受影响的层。

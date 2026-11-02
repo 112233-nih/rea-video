@@ -16,31 +16,15 @@ description: 逆向拆解一条视频是怎么做出来的——逐镜头判断�
 
 核心原则：**每个结论都要有证据，确定不了就如实写"待确认"并说明还缺什么。**宁可写"实拍还是 AI 待确认（倾向 AI 70%）"，也不要编一个确定的答案。
 
-## 0. 环境（一次性）
+## 0. 环境
 
-```bash
-cd <rea-video 仓库>
-pip install -e ".[ocr]"          # 需要 ffmpeg；Python ≥ 3.10
-rea-video --help
-```
+先跑 `rea-video --help`。没装就按 `references/setup.md` 安装（需要 ffmpeg、Python ≥ 3.10）。
 
-**VLM（建议配置，不强制）**：VLM 是能看图/看视频的多模态大模型（Gemini、GPT-4o、豆包、Qwen-VL 等）。不开 VLM，工具只靠像素统计、帧率、OCR、元数据判断，照样能跑完、出报告，但**实拍 / AI / 3D 的区分明显变弱**，音效清单也只有信号层的低置信候选。开了 VLM，工具会把每个镜头的短片段和关键帧发给它，再和确定性结果融合。
+VLM（能看图的多模态模型）建议配，不强制，配置方法也在 `references/setup.md`。没配也照常跑，不要因此中止：
+- 你自己能看图：你就是这次的"VLM"，按下面的「看图复核并入」做。
+- 你看不了图：遵守 `references/review.md` 的「看不了图时的规则」，回复末尾一句话建议配置 VLM。
 
-配置走 OpenAI 兼容接口，按以下顺序读取：
-
-1. `REA_VLM_BASE_URL` / `REA_VLM_API_KEY` / `REA_VLM_MODEL`（`REA_VLM_MODEL` 可写多个模型、逗号分隔，前一个失败自动换下一个）
-2. 如果没有，回落到 capsule-cinema 的 `VIDEO_ANALYSIS_*` 或 `GEMINI3_*`
-
-用 `--env-file <某个 .env>` 读取配置（例如复用 capsule-cinema 的）。**不要把密钥写进对话、仓库或报告，也不要打开 .env 看内容。**
-
-用户没配 VLM 时：照常不加 `--vlm` 跑，不要因此中止任务。
-
-- **你自己能看图（多模态 agent）**：你就是这次的"VLM"，不需要建议用户另配。按第 1 节的「看图复核并入」做：`rea-video review` → 逐镜看图填答案 → `rea-video apply-review`，你的判断会并入工具结论和报告。结论里写"未开 VLM，由 agent 看图复核"。
-- **你看不了图**：遵守下面「看不了图时的规则」，并在回复末尾用一句话建议配置 VLM（说明能提升实拍/AI/3D 的区分和音效识别）。
-- 实测（2026-10-30，eval/RESULTS.md）：agent 看图复核并入比单开 Gemini VLM 更准；Gemini 容易把卡通 3D 风格的 AI 视频判成 3D 渲染、把画进画面的游戏界面判成录屏。所以能看图时**一定要做看图复核**，开了 VLM 也要做，并且独立判断，不要照抄 VLM。
-- 外部 VLM 仍有你替代不了的部分：它能直接看视频片段的运动、听音轨。你只能看静帧、听不了声音时，音效和人声来源照样标"待确认"。
-
-**VLM 是否真的生效，以 `rea-video summary` 的 `VLM:` 一行为准**（也在 `breakdown.json` 的 `analysis.vlm.status`）：`ok` 已生效、`partial` 部分镜头有结果、`failed` 请求了但全部调用失败（例如服务端 503）、`not_configured` 请求了但没找到配置、`off` 没请求。`failed` / `not_configured` 等同没开 VLM，报告里要如实写，不能写"已开 VLM"。
+**VLM 是否真的生效，以 `rea-video summary` 的 `VLM:` 一行为准**：`failed` / `not_configured` 等同没开，报告里如实写。
 
 ## 1. 标准流程
 
@@ -48,7 +32,7 @@ rea-video --help
 # ⓪ 先看记住了什么：用户偏好（默认引擎、是否开 VLM、给你的偏好说明）和常见纠正类型
 rea-video memory
 # ① 拆解（产出 out/<名>/breakdown.json、report.html、report.md、storyboard.jpg、audio.png、shots/、stems/）
-rea-video --env-file ~/code/github/capsule-cinema/.env decompose ref.mp4 -o out/ref --vlm   # 没有 VLM 配置就去掉 --env-file 和 --vlm
+rea-video --env-file <你的 .env> decompose ref.mp4 -o out/ref --vlm   # 没有 VLM 配置就去掉 --env-file 和 --vlm
 # ② 看紧凑摘要：低置信镜头会被标出；先看 VLM: 那一行确认 VLM 是否生效
 rea-video summary out/ref/breakdown.json
 ```
@@ -64,11 +48,7 @@ rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
 
 没看过的镜头保持 label_probs 全 0，会被跳过。你的答案会和确定性结果融合（不是直接覆盖），所以帧率、AIGC 标识这类强证据仍然起作用；如果并入后的结论和你的看法不同，在回复里写明理由。
 
-融合规则（实测得来，见 `eval/RESULTS.md`）：
-- 只有一个看图来源（只有 VLM 或只有你）时，看图结果只能在工具前两名候选里选。工具对"AI / 实拍 / 数字人"有把握时不改；转码的 24fps 素材不会仅凭"看起来真"改成实拍。看图结果在 3D / 代码动效 / 录屏之间的区分最有用。
-- VLM 和你都答了：先判大类（生成 / 渲染 / 实拍 / 录屏 / 静图），再判细类。工具首选只要有你们其中一方支持（同细类或同大类，比如工具判 AI 视频、你判数字人），就按工具首选的大类；你们两个一致反对工具时，按正常融合。
-- 标了「有分歧」的镜头（工具和 VLM 对是不是实拍意见相反）必看：核对 VLM 写的证据在截图里是否真的看得见，VLM 会编理由。
-- review_tasks.json 里写着"用户过去 n 次把工具判的 X 改成 Y"的镜头，是用户反复纠正过的类型，要重点看。
+融合规则、看不了图时怎么办、原片 / 转码视频的特殊规则，见 `references/review.md`。能看图时**一定要做看图复核**，开了 VLM 也要做，并且独立判断，不要照抄 VLM。
 
 然后**一定要自己复核**，不要直接转述工具输出：
 
@@ -88,87 +68,30 @@ rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
    - 贴纸：标了「需要看图确认」的，看 `packaging/sticker_XX.jpg` 和 `review_tasks.json` 里的 `frame_cmd`，在 `review_answers.json` 的 `packaging.stickers` 里填 `is_overlay` 和 `what`；工具漏掉的写进 `packaging.missed`。3D / 动画 / 版式画面里突然出现的物体工具不算贴纸，你看到是后期贴的再补。
    - 花字和标签分错类时在 `packaging.text` 里改 `kind`。
    - 音效「对应画面」一列是按时间就近对齐的，没开 VLM 时补出的候选（来源 `deterministic_anchored`）实测只有约四成是真音效，写成"可能"。
-7. 如果你的判断和工具不同，以你的复核为准，在回复里写明理由；有价值的话，把这条视频按 `references/evaluation.md` 加进评测集。
+7. 如果你的判断和工具不同，以你的复核为准，在回复里写明理由；有价值的话，建议用户把这条视频加进评测集（仓库 `docs/dev/evaluation.md`）。
 
-### 看不了图时的规则（重要）
-
-先确认你自己能不能看图（能不能读 `storyboard.jpg`、`shots/*.jpg` 并描述画面内容）。**看不了图、又没开 VLM 时：**
-
-- **不要推翻工具对制作方式的判断**（实拍 / AI / 3D / 代码 / 录屏）。像素统计（用色数、平坦块、噪声）正是工具已经用过的证据，你再用一遍只会得出同样或更差的结论。实测：看不了图的 agent 把 AI 生成的铅笔素描判成"白底版式卡"、把玻璃质感 3D 元素判成"代码界面"。
-- 你能做、也应该做的：核对时间轴和切点、读 OCR 文字轨甄别误读、用 `stems/` 的电平判断有没有人声、读元数据（AIGC 标识、平台转码标记）、把工具的低置信镜头列进"不确定点"。
-- 一句话结论里写明"未开 VLM、未看画面"，并把工具标了"实拍还是 AI 待确认"的镜头原样保留为待确认。
-
-### 原片 / 参考片：判 AI 前先写反方证据
-
-只有一个连续镜头、没有 AIGC 标识、也没有 24→30 重复帧的写实或手作质感视频（定格动画、俯拍生活片、手作微缩场景），工具常会判成 AI。看图后如果找不到明确的 AI 破绽（形变、纹理闪烁、物理错误、文字乱码），**不要给高置信度**：写成"AI 还是实拍 / 定格动画待确认（倾向 X）"，列出正反两方的证据，置信度不超过 0.7。
-
-### 平台转码视频（微信 / 抖音 / TikTok 下载的文件）
-
-元数据里有 `Tencent CAPD MTS`、`Wxmm_`、`vid:v…` 时，工具会标 `video_context.transcoded`。二次压缩会抹掉传感器噪声、带来假的插帧节奏，所以：
-
-- 噪声类证据失效，"没有噪声"不再说明是 AI；工具会把这类镜头标成"实拍还是 AI 待确认"。
-- 仍然可靠的证据：24→30 的重复帧（生成模型多输出 24fps；整片原生 30fps、没有重复帧更像手机直出）、AIGC 隐式标识、画面内容（真手、真实环境、物理是否自然——这一条必须看图或开 VLM）。
-- 证据冲突时的优先级：**规律的 24→30 重复帧 + AIGC 隐式标识**同时存在时，比"看图没发现 AI 破绽"更有分量，不要据此把镜头改判成实拍；最多写"倾向 AI，实拍待确认"。反过来，整片原生 30fps、无重复帧、无 AIGC 标识，再加上看图画面正常，才判实拍。
-
-### 记住用户的纠正和偏好
-
-- 用户指出某个镜头判错（"这是定格动画不是 AI"、"这段是我自己拍的素材"）：运行
-  `rea-video correct out/ref --shots 3,5 --label still_motion --note "<用户原话>"`（也可用 `--start/--end` 指定时间段，`--shots all` 表示整条；真实素材用 `--real yes|no`）。
-  这会立刻改结论和报告，并记入 `~/.rea-video/corrections.jsonl`；以后拆同一个文件会自动套用，同类镜头会在复核任务里提示。
-- 用户说出长期偏好：能对应参数的用 `rea-video prefs engine kling2.1`、`prefs vlm on`、`prefs env_file <路径>`、`prefs reviewer <名字>`；其余的用 `rea-video prefs --note "报告尽量短，重点写复刻方案"` 记下，下次 `rea-video memory` 会显示，按它调整回复。
-- 只记用户明确说的，不要把你自己的猜测写成纠正。纠正不会自动改分类权重；积累到几条以后，用 `rea-video memory --export-labels eval/user_labels.yaml` 导出成评测样本，再按开发约定评测、改规则。
+用户指出判错或说出长期偏好时，按 `references/memory.md` 记下来（`rea-video correct` / `rea-video prefs`）。
 
 ## 2. 交付给用户
 
-按 `references/output-template.md` 的结构回复：
-
-- 先给一句话结论（这条视频是怎么做出来的），再给**复刻方案**（`breakdown.json` 的 `production_plan`，报告里「复刻方案」一节），然后才是分镜表。
-- 复刻方案按实际制作的组织方式写，不按剪辑镜头逐个写：
-  - AI 镜头 → **生成单元**：几个连续镜头一次生成、用哪个模型、参考素材（`@图片` 产品/人物、`@视频` 原片片段）、合并后的多镜头提示词、单元之间怎么衔接。默认引擎不支持一次多镜头时，照抄 `engine_note`，说明换模型能省几次调用。
-  - 实拍镜头 → **拍摄场次**：哪些镜头是同一场景、同一机位，一起拍；每个场景的布光；先大景别后特写。分镜表本身仍然逐镜写细。
-  - 代码渲染 → 几段代码合成；静图推拉 → 本地重建。
-- 提示词缺失（未开 VLM）时，你看图补写：`rea-video review` 的答案里每镜填 `replication.image_prompt / video_prompt / video_prompt_en`，`apply-review` 后生成单元会自动带上。
-- 然后写剪辑包装（字幕样式和时间轴文件、花字 / 贴纸清单、音效卡点）、声音拆解、真实素材清单，最后写不确定点。
-- 报告文件路径（`report.html`）写给用户。不要把 breakdown.json 整段贴进对话。
+按 `references/output-template.md` 回复：先一句话结论，再复刻方案（按生成单元 / 拍摄场次组织），然后分镜表、剪辑包装、声音、真实素材清单、不确定点，最后给 `report.html` 路径。不要把 breakdown.json 整段贴进对话。
 
 ## 3. 复刻（需要时）
 
-见 `references/capsule-cinema.md`，要点：
+见 `references/remake.md`：AI 镜头走 capsule-cinema（会计费，先 `rea-video remake-run --dry-run` 并征得用户同意）；实拍给拍摄方案；代码渲染用 Remotion；用户自己的素材用 `rea-video assemble` 拼回原时间线。
 
-- **AI 类镜头**：用原镜头首尾帧加 VLM 提示词，通过 capsule-cinema 生成（会计费，先 `--dry-run`，并征得用户同意）。
-- **静态图推拉、静帧**：本地按测得的运动参数重建。
-- **代码渲染**：给出文字轨和版式，用 Remotion 重建。
-- **真实素材**：列清单让用户提供。
-- **声音**：TTS、BGM（按 BPM / 调性 / 情绪）、音效（按时间点）三条轨分别准备。
+## 参考文件
 
-**用户自己拍的素材、或在网页上手动生成的视频，拼回原时间线**（不需要 capsule-cinema）：
-
-1. 按分镜表（`report.md` 的镜头号和时长）把素材对应到镜头。一条长素材覆盖多个镜头时，先用 ffmpeg 按动作切开；拿不准对应关系时给用户看截图确认。
-2. 写一个 `results.json`：`{"results": {"<镜头号>": {"video": "<素材绝对路径>"}, ...}}`。手动生成的「生成单元」视频覆盖多个镜头时，同样先按单元提示词里的「镜头i（a–b s）」时间切开再填。
-3. `rea-video assemble out/ref/breakdown.json <results.json 路径>`：每段素材裁到原镜头时长，没填的镜头暂时用原片占位，声音沿用原片；输出 `remake.mp4` 和左右对比的 `compare.mp4`。告诉用户哪些镜头还是原片占位、声音还要换。
-
-**自动生成的限制**：`remake-plan` 和 capsule-cinema 目前还是一个镜头调一次模型；报告里「生成单元」的多镜头提示词要用户手动贴到支持多镜头的模型（如即梦 / Seedance 2.5）上用。向用户说明这一点，并给出两种做法的调用次数。
-
-## 4. 判断要点速查（详见 references/taxonomy.md）
-
-| 现象 | 指向 |
+| 文件 | 什么时候看 |
 |---|---|
-| 相邻帧逐像素重复、首尾无变化 | 静帧；如果是平涂渲染卡片，归为代码渲染 |
-| 整帧按一个刚体变换缩放/平移，补偿后无残差，且**没有** 24fps 源的帧率痕迹 | 静态图推拉 |
-| 平涂色块多、用色少、横竖直边多 | 渲染（代码或 3D）；背景像素逐帧完全不变、只有局部在动 → 2D 代码动效 |
-| 约 20% 帧重复、周期 4–6（24→30），或清晰度按周期起伏（插帧） | 源是 24fps：AI 生成 / 3D / 电影素材，不是手机原生拍摄 |
-| 原生 ≥48fps 且无重复、无插帧周期 | 多为手机/相机实拍 |
-| 传感器噪声和时域噪声明显、手持抖动 | 实拍 |
-| 平台转码文件：整片原生 30fps、实拍类镜头没有重复帧 | 倾向手机实拍（转码后噪声证据失效，以帧率为准） |
-| 几乎无彩色、只用个位数颜色的平面画面 | 界面/文档动效（代码渲染），不是 3D |
-| 整片铺满音乐、人声在唱（持续音高多） | 音乐 MV → 歌大概率 AI 生成 |
-| 旁白说话 + 垫底 BGM | 普通配乐 → 倾向现成曲库（待确认，AI 工作流常用 Suno） |
-| 切镜处底噪跳变 | 声音跟着片段走：AI 视频原生出声或实拍同期声 |
-| 文件带 GB 45438 AIGC 隐式标识 Label=1 | 声明为 AI 生成（只说明整片声明过，具体镜头仍要逐个判断） |
-| 浅色面板内有大量小字号文字 | 嵌入的界面截图 → 真实素材 |
-| 人声间隙里仍有响亮且有音调的声音 | 有 BGM 垫底 |
-| 大面积近黑但带颗粒、亮部不平坦、有人脸 | 夜景/弱光实拍（转码压暗部造成的平坦块不是渲染特征） |
-| 人脸占画面 ≥6%、整镜都在、说话 | 人物近景实拍或数字人；墙面/衣服的平坦块不算渲染证据 |
+| `references/setup.md` | 安装、配置 VLM |
+| `references/review.md` | 看图复核：融合规则、看不了图、原片判 AI、平台转码 |
+| `references/taxonomy.md` | 10 类画面、AI 加工、判断要点速查、易混对照 |
+| `references/audio.md` | 声音复核 |
+| `references/materials.md` | 真实素材复核 |
+| `references/output-template.md` | 交付格式 |
+| `references/remake.md` | 复刻、对接 capsule-cinema |
+| `references/memory.md` | 记住纠正和偏好 |
 
 ## 5. 不要做的事
 

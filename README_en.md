@@ -42,8 +42,6 @@ Besides how the picture was made, every video also gets:
 - Audio: human or AI voice, AI or library music and its BPM, where each sound effect lands
 - Material you'll supply yourself: screen recordings, screenshots, product photos
 
-Anything it isn't sure about is marked as unconfirmed.
-
 ## Quick start
 
 rea-video is built for AI agents. In Claude Code, Codex or any agent that can run commands, say:
@@ -60,7 +58,7 @@ You get:
 - a remake plan, split into what to film, what to generate and what to code
 - a full `report.html` with per-shot frames, evidence, prompts, camera and lighting notes, and the audio breakdown
 
-A vision model (Gemini, GPT-4o, Doubao, Qwen-VL, etc.) is recommended: give the agent the endpoint and key. It makes live/AI/3D calls more accurate and writes a reverse-engineered prompt for every shot. Without one it still works; if your agent can see images, it will check the uncertain shots itself.
+Add a video-capable model — Gemini or Doubao both work: give the agent the endpoint and key. It makes live/AI/3D calls more accurate and writes a reverse-engineered prompt for every shot. Without one it still works; if your agent can see images, it will check the uncertain shots itself.
 
 ## Examples
 
@@ -95,33 +93,19 @@ Correctly flags the song as AI-generated (it was made with Suno). The vision mod
 </tr>
 </table>
 
-Shot-by-shot details for every case, including the juicer clip above and its prompts, are in [docs/cases.md](docs/cases.md).
-
 ## Accuracy
 
 How-it-was-made accuracy, weighted by shot duration:
 
 | | Tuning set (15) | Holdout (16) | Re-encoded WeChat videos (10) |
 |---|---|---|---|
-| Tools only (offline, free) | 99.9% | 99.6% / 99.8% | 88.6% |
+| Tools only (offline, free) | 98.3% | 99.6% / 98.9% | 88.6% |
 | + vision model (Gemini) | — | 99.6% / 99.8% | 99.6% |
 | + agent visual review | — | 99.6% / 99.8% | 100% |
 
+The tools-only row was measured on 2026-11-02 with a fresh decode; the two vision rows were measured on 11-01, before the packaging layer was added, and haven't been re-run yet.
+
 On original files the tools alone are mostly enough. Videos downloaded from platforms have been recompressed, which wipes out the noise evidence, so it takes a vision check to get back above 99%. Real-asset detection is 97–99%, and shot boundaries are all correct. Numbers and how to reproduce them: [eval/RESULTS.md](eval/RESULTS.md).
-
-<details>
-<summary>Known weak spots</summary>
-
-- Small sample: 43 labeled videos, only 5 of them live footage. No eval videos yet for avatars, 2D animation, stop-motion or AI edits on live footage.
-- The newer lighting setups (outdoor, low-key, high-key, colored ambient, product still life) and grade styles have only been tested on synthetic images; thresholds still need calibrating on real video. Lighting overall has been checked on just 2 talking-head videos.
-- 2D animation, stop-motion and AI edits rely entirely on vision. Without a vision model, and with an agent that can't see images, they won't be detected.
-- Stock live footage can't be told apart from your own; green-screen keying only shows up visually.
-- Live vs AI is hardest on compressed video. Vision models get it wrong and sometimes invent reasons (on the juicer original it claimed "the wall clock digits are garbled"; they're perfectly clear). When tools and the model disagree, the shot is flagged for agent review, but the final call rests on vision.
-- Live footage shot at 24fps on a cinema or mirrorless camera and exported at 30fps leaves the same frame-cadence trace as AI video, so with tools only it's marked uncertain until a vision check.
-- AI vs library music: currently 2 of 5 correct.
-- The "how many generations" split in the remake plan is a recommendation; usually you can't tell how the original creator actually split it.
-
-</details>
 
 ## How it works
 
@@ -143,14 +127,12 @@ It doesn't ask how the original was made. A live-action source goes through the 
 
 rea-video doesn't render a video. It works out shot by shot whether something was filmed, AI-generated or built in code, then gives a shooting plan, prompts or a code approach for each. For a quick lookalike, Hypit is faster. To understand how the original was made and remake it cheaply, use rea-video. They work fine together.
 
-More detail (in Chinese): [docs/vs-hypit.md](docs/vs-hypit.md), based on Hypit's main branch as of 2026-10-29.
-
 </details>
 
 <details>
-<summary>Do I need a vision model? What does it cost?</summary>
+<summary>Do I need a video-capable model? What does it cost?</summary>
 
-No. Tools-only mode is offline and free, and already accurate on original files. For recompressed platform downloads, add a vision model or use an agent that can see images; you pay whatever that service charges. Automatic video generation (capsule-cinema) does a free dry run first and only calls paid models after you confirm.
+No. Tools-only mode is offline and free, and already accurate on original files. For recompressed platform downloads, add a video-capable model (Gemini or Doubao both work) or use an agent that can see images; you pay whatever that service charges. Automatic video generation (capsule-cinema) does a free dry run first and only calls paid models after you confirm.
 
 </details>
 
@@ -175,7 +157,7 @@ No. rea-video is for learning a video's structure, pacing and techniques, then r
 - [docs/cases.md](docs/cases.md): case details
 - [docs/decompose.md](docs/decompose.md): detection rules
 - [docs/cli.md](docs/cli.md): CLI usage and capsule-cinema integration
-- [capabilities/](capabilities/README.md): capability tables for video / image / audio models, used to pick models for the remake plan
+- [rea_video/capabilities/](rea_video/capabilities/README.md): capability tables for video / image / audio models, used to pick models for the remake plan
 - [eval/RESULTS.md](eval/RESULTS.md): eval results
 
 The docs are in Chinese for now.

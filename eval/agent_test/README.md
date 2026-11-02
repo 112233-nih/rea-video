@@ -14,9 +14,9 @@ pip install -e ".[ocr]"             # 需要 ffmpeg；首次分离人声会从 G
 
 # 0.1 确定性回归（不需要 agent）
 export CAPSULE_CINEMA_ROOT=~/code/github/capsule-cinema
-rea-video eval eval/labels.yaml   -o out/eval_main     # 期望 duration_weighted_accuracy ≈ 0.999
+rea-video eval eval/labels.yaml   -o out/eval_main     # 期望 duration_weighted_accuracy ≈ 0.983（2026-11-02 从头解码）
 rea-video eval eval/holdout.yaml  -o out/eval_hold     # ≈ 0.996
-rea-video eval eval/holdout2.yaml -o out/eval_hold2    # ≈ 0.998
+rea-video eval eval/holdout2.yaml -o out/eval_hold2    # ≈ 0.989
 rea-video eval eval/articles.yaml -o out/eval_articles # ≈ 0.886（逐条见下表"工具 v0.3"列）
 python3 -m pytest -q                                   # 26 passed
 

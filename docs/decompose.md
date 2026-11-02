@@ -4,7 +4,7 @@
 
 ## 1. 分类体系
 
-| 标签 | 含义 | 复刻路线（capabilities/routing.yaml） |
+| 标签 | 含义 | 复刻路线（rea_video/capabilities/routing.yaml） |
 |---|---|---|
 | `live_action` | 实拍 | R07：AI 图生视频近似，或重新拍摄 |
 | `ai_video` | AI 生成视频 | R07：首尾帧 + 提示词，由 capsule-cinema 生成 |
