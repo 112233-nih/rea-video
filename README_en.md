@@ -2,7 +2,10 @@
 
 # rea-video
 
-Give it a video. It tells you, shot by shot, whether each shot was filmed, AI-generated, 3D-rendered or built with code, then gives you a plan to make one yourself.
+Reverse-engineer any video.
+
+Talking-head, tabletop, AI video, 3D, motion graphics, mixed edits: give it any of them,<br>
+and it tells you shot by shot how the visuals, styled text, editing and audio were made, then gives you a plan to make one yourself.
 
 [中文](README.md) | English
 
@@ -19,14 +22,26 @@ rea-video's verdict: the left is all live footage, one set and two camera positi
 
 > The reports and detailed docs are currently in Chinese. Your agent can read them and answer in English.
 
-## What it tells you
+## What it can break down
 
-- Visuals: whether each shot is live footage, AI video, a talking-head avatar, 3D, 2D animation, code/template, screen recording or a pan-and-zoom on a still. For live footage it also works out framing, camera, lighting and color grade.
-- Assets: which parts are real material (screen recordings, screenshots, product photos) that you'll need to supply yourself.
+| Video type | Examples | What you get |
+|---|---|---|
+| Live footage | Talking-head, tabletop, handheld product demo, vlog, store visit | Setups and camera positions, framing, camera moves, lighting (12 setups with gear lists), color grade |
+| AI video | Text/image-to-video, AI short drama, AI music video | Evidence, a reverse-engineered prompt per shot, how to batch into generations and which model to use |
+| Avatar | A portrait driven by audio, lip-sync | Which shots are avatar shots, what portrait and audio you need |
+| 3D / animation | Blender / C4D explainers, product animation, 2D animation, stop-motion | Whether to generate with a video model or render from 3D code |
+| Code / template | Kinetic type, UI demos, charts, slide-style cards | Text, layout and motion timing, ready to rebuild as a Remotion project |
+| Screen recording | Software tutorials, web demos | Which parts are real material you'll need to record yourself |
+| Mixed / edits | AI characters + code UI + real screen capture; live footage with AI edits | Each shot judged separately, then reassembled on the original timeline |
+
+For every video type it also breaks out:
+
+- Styled text and captions: where and when text appears, telling captions, titles and on-object text (packaging, signs) apart; font, outline, color, word-by-word highlight and other styling.
+- Editing: cut points and pacing, jump cuts, punch-ins, multi-camera switching, cuts on pauses, share of inserted material, whether cuts land on the beat.
+- Real assets: screen recordings, screenshots, product photos and other material you'll need to supply yourself.
 - Audio: human or AI voice-over, AI-generated or library music, BPM and key, and when each sound effect hits.
-- Remake plan: which shots go to a video model (with prompts, and consecutive shots grouped into one generation), which need to be filmed (how many setups, how to light them), and which can be done in code.
 
-Every call comes with evidence you can check. When it isn't sure, it says so.
+Every call comes with evidence you can check. When it isn't sure, it says so. Full list: [docs/what-it-detects.md](docs/what-it-detects.md).
 
 ## Quick start
 
@@ -171,10 +186,10 @@ No. rea-video is for learning a video's structure, pacing and techniques, then r
 
 The docs are in Chinese for now.
 
-## Credits and community
+## Community
+
+Come share breakdowns and remake ideas on [linux.do](https://linux.do/) (Chinese-language community).
+
+## Credits
 
 Inspired by [REA (Reverse Engineer Anything)](https://github.com/morluto/rea): trace from what you see back to how it was made, back every claim with evidence, and verify by measurement.
-
-Questions, breakdowns and remake ideas are welcome in [Issues](https://github.com/JuneYaooo/rea-video/issues).
-
-[![Star History Chart](https://api.star-history.com/svg?repos=JuneYaooo/rea-video&type=Date)](https://star-history.com/#JuneYaooo/rea-video&Date)
