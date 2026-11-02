@@ -4,7 +4,7 @@
 
 - 时长 19.042s · 1080×1920 · 24.0fps · 9:16
 - 镜头 10 个，平均 1.9s；转场：cut×9、start×1
-- 判断置信度（按时长加权）：75%；判定方式：确定性取证 + VLM 融合
+- 判断置信度（按时长加权）：74%；判定方式：确定性取证 + VLM 融合
 - VLM 已生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview）；由 claude 看图复核 1/10 个镜头，已并入结论
 
 ![storyboard](storyboard.jpg)
@@ -73,6 +73,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 - 机位：固定机位（三脚架/支架/放在桌上） 66%、移动机位（稳定器/手持平移） 34%
 - 打光：夜景/弱光环境光，没有专门补光。主光 正面（光从镜头方向来，主体两侧亮度接近），从下往上（屏幕/桌面反光/低位光源）；光比 约 1.3:1（相差 0.4 档）；中等柔度；色温偏冷（日光/冷白 LED）；主体下半部偏亮：可能有来自下方的光（屏幕、桌面反光）；主体和背景色温不一致：混合光源（例如暖色灯 + 冷色窗光/屏幕）；背景略虚
 - （画面不是实拍：以上是画面里的光影，用于写生成提示词，不是拍摄方案）
+- 调色：自然（接近原色）；饱和度正常、对比正常、黑位正常、整体中性
 - 剪辑：每分钟 28.4 刀，平均镜头 1.9s；没有实拍镜头
 
 | 维度 | 项目 | 结论 | 来源 |
@@ -94,6 +95,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 | 打光 | 色温 | 偏冷（日光/冷白 LED） | 测量：偏冷（日光/冷白 LED）；VLM：暖 |
 | 打光 | 布光方案 | 左前方柔光主灯 + 背景暖色台灯点缀 | VLM：左前方柔光主灯 + 背景暖色台灯点缀 |
 | 打光 | 整体布光 | 温馨的居家夜间暖调照明，背景有台灯点缀暖光源，人物面部有大面积柔光箱打出通透柔和的主光 | VLM：温馨的居家夜间暖调照明，背景有台灯点缀暖光源，人物面部有大面积柔光箱打出通透柔和的主光 |
+| 调色 | 调色风格 | 自然（接近原色） | 测量：自然（接近原色） |
 
 - 说明：光比、软硬、色温、景别由主体像素测得（有人脸用人脸，没有用画面清晰区域，后者是估算）；平台转码会压暗部，软硬和补光偏保守；机位角度、光源种类、眼神光、轮廓光以看图结果为准。测量和看图不一致时两者都列出。
 
@@ -172,14 +174,14 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 | # | 时间 | 时长 | 底层画面 | 置信度 | 素材来源 | 叠加层 | 运镜 | 复刻路线 |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 00:00.000 | 1.38s | 代码/模板渲染 | 92% | 混合（含真实素材）：录屏素材 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
-| 2 | 00:01.375 | 1.46s | AI 生成视频 | 73% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
-| 3 | 00:02.833 | 1.04s | AI 生成视频 | 59% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
+| 2 | 00:01.375 | 1.46s | AI 生成视频 | 72% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
+| 3 | 00:02.833 | 1.04s | AI 生成视频 | 58% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
 | 4 | 00:03.875 | 1.96s | 代码/模板渲染 | 91% | 混合（含真实素材）：录屏素材 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
-| 5 | 00:05.833 | 1.71s | AI 生成视频 | 73% | AI 生成 | 文字、标题 | 固定 | R07-product-hero → capsule_cinema |
+| 5 | 00:05.833 | 1.71s | AI 生成视频 | 72% | AI 生成 | 文字、标题 | 固定 | R07-product-hero → capsule_cinema |
 | 6 | 00:07.542 | 3.00s | 代码/模板渲染 | 99% | 混合（含真实素材）：录屏素材 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
 | 7 | 00:10.542 | 1.00s | AI 生成视频 | 92% | AI 生成 | 文字、标题 | 固定（主体在动） | R07-product-hero → capsule_cinema |
-| 8 | 00:11.542 | 1.92s | 代码/模板渲染 | 60% | 混合（含真实素材）：录屏素材、界面截图 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
-| 9 | 00:13.458 | 2.67s | AI 生成视频 | 67% | AI 生成 | 字幕、标题 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 8 | 00:11.542 | 1.92s | 代码/模板渲染 | 59% | 混合（含真实素材）：录屏素材、界面截图 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
+| 9 | 00:13.458 | 2.67s | AI 生成视频 | 66% | AI 生成 | 字幕、标题 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 10 | 00:16.125 | 2.92s | 代码/模板渲染 | 50% | 混合（含真实素材）：界面截图 | — | 平滑运镜 | R01-code-graphics → code_render_spec |
 
 ## 逐镜详情
@@ -208,7 +210,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_002](shots/shot_002.jpg)
 
-- 概率：AI 生成视频 73%，数字人口播 21%，3D 渲染 2%（fused）
+- 概率：AI 生成视频 72%，数字人口播 21%，3D 渲染 2%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Hailuo
 - 低照度画面：36% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -231,7 +233,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_003](shots/shot_003.jpg)
 
-- 概率：AI 生成视频 55%，实拍 38%，数字人口播 4%（fused）
+- 概率：AI 生成视频 54%，实拍 38%，数字人口播 4%（fused）
 - 素材来源：AI 生成
 - 低照度画面：47% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.38、用色 98 种、平坦块 8%
@@ -253,7 +255,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_004](shots/shot_004.jpg)
 
-- 概率：代码/模板渲染 91%，屏幕录制/截图 8%，3D 渲染 1%（fused）
+- 概率：代码/模板渲染 90%，屏幕录制/截图 8%，3D 渲染 1%（fused）
 - 素材来源：混合（含真实素材）：录屏素材
   - 录屏素材：浅色界面面板内有 10 处文字（其中 10 处小字号）
 - 可能的工具：剪映
@@ -273,7 +275,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_005](shots/shot_005.jpg)
 
-- 概率：AI 生成视频 73%，数字人口播 21%，3D 渲染 2%（fused）
+- 概率：AI 生成视频 72%，数字人口播 21%，3D 渲染 2%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling
 - 低照度画面：37% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -338,7 +340,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_008](shots/shot_008.jpg)
 
-- 概率：代码/模板渲染 60%，屏幕录制/截图 18%，3D 渲染 10%（fused）
+- 概率：代码/模板渲染 59%，屏幕录制/截图 18%，3D 渲染 10%（fused）
 - 素材来源：混合（含真实素材）：录屏素材、界面截图
   - 录屏素材：浅色界面面板内有 10 处文字（其中 10 处小字号）
 - 可能的工具：剪映
@@ -358,7 +360,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_009](shots/shot_009.jpg)
 
-- 概率：AI 生成视频 67%，实拍 17%，数字人口播 9%（fused）
+- 概率：AI 生成视频 66%，实拍 16%，数字人口播 9%（fused）
 - 素材来源：AI 生成
 - 可能的工具：HeyGen / D-ID / 剪映数字人
 - 低照度画面：46% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -378,7 +380,7 @@ Shot 5 (5.2-7.9s): Audio-driven avatar from image, lip sync, slight head movemen
 
 ![shot_010](shots/shot_010.jpg)
 
-- 概率：代码/模板渲染 50%，3D 渲染 26%，屏幕录制/截图 21%（fused）
+- 概率：代码/模板渲染 50%，3D 渲染 25%，屏幕录制/截图 21%（fused）
 - 素材来源：混合（含真实素材）：界面截图
   - 界面截图：浅色界面面板内有 30 处文字（其中 29 处小字号）
 - 可能的工具：剪映

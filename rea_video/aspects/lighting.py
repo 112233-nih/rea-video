@@ -20,9 +20,12 @@ import math
 import cv2
 import numpy as np
 
-from .base import FILMED, PHOTOGRAPHIC, Aspect, Field, ShotCtx, field_table, register, seen, weighted_median, weighted_mode
+from .base import (FILMED, PHOTOGRAPHIC, Aspect, Field, ShotCtx, field_table, mode_seen, register, seen, video_seen,
+                   weighted_median, weighted_mode)
 
-MEASURES = ("ratio", "top_bottom", "transition", "subject_luma", "bg_luma", "dark_share", "warmth", "bg_warmth", "bg_blur", "point_lights")
+MEASURES = ("ratio", "top_bottom", "transition", "subject_luma", "bg_luma", "dark_share", "warmth", "bg_warmth", "bg_blur", "point_lights",
+            "bg_std")
+OUTDOOR_WORDS = ("户外", "室外", "街", "公园", "海边", "沙滩", "山", "田野", "操场", "天台", "阳台外", "outdoor")
 
 
 def _lin(gray: np.ndarray) -> np.ndarray:
@@ -77,9 +80,10 @@ def frame_light(bgr: np.ndarray, subj: dict) -> dict | None:
     out = {"ratio": ratio, "key_side": key_side, "top_bottom": top / bottom, "transition": transition,
            "subject_luma": float(np.median(region)), "dark_share": float((gray < 28).mean()),
            "warmth": float(lab[y0:y1, x0:x1, 2].astype(np.float32).mean() - 128),
-           "bg_luma": None, "bg_warmth": None, "bg_blur": None, "point_lights": 0}
+           "bg_luma": None, "bg_warmth": None, "bg_blur": None, "point_lights": 0, "bg_std": None}
     if has_bg:
         out["bg_luma"] = float(np.median(gray[mask]))
+        out["bg_std"] = float(gray[mask].std())  # a seamless backdrop / plain wall is nearly one tone
         out["bg_blur"] = float(lap[mask].mean()) / subj_sharp
         lit_bg = mask & (gray > 50)
         if lit_bg.sum() > 200:
@@ -119,6 +123,47 @@ def words(m: dict) -> dict:
 # Lighting set-ups, first match wins. `when(m, w)` gets the measurements and their reading.
 # gear: per subject kind ("face" = people, "other" = desk / product / hands).
 SETUPS = [
+    # ---- outdoor (needs an image reader to say "outdoor"; pixels cannot tell a window from the sky)
+    {"key": "outdoor_backlit", "name": "户外逆光（太阳或亮天空在主体后方）",
+     "when": lambda m, w: w.get("outdoor") and not w["low_light"] and m.get("bg_luma") is not None and m["bg_luma"] - m.get("subject_luma", 0) > 25,
+     "detail": "太阳在主体后方或侧后方，头发和肩膀有亮边，脸靠天空和地面反光照亮；常在日出日落前后拍（黄金时刻）",
+     "gear": {"face": ["傍晚太阳低时拍，人背对太阳", "正面用反光板（金色更暖）或补光灯提亮脸", "曝光按脸测，天空允许过曝一点"],
+              "other": ["物品背光放，边缘会被勾亮", "正面用白卡/反光板补光"]}},
+    {"key": "outdoor_sun", "name": "户外直射阳光（硬光）",
+     "when": lambda m, w: w.get("outdoor") and not w["low_light"] and (m["ratio"] >= 2.0 or w["quality"].startswith("硬光")),
+     "detail": "晴天阳光直接照在主体上，阴影边缘清楚、反差大",
+     "gear": {"face": ["让太阳在人物侧前方 45°，避开正午顶光", "暗部用反光板补，或拍摄时站到有反光的浅色墙边"],
+              "other": ["阳光斜射时拍，影子更长更有质感", "暗部用白卡补光"]}},
+    {"key": "outdoor_soft", "name": "户外阴天/背阴处柔光",
+     "when": lambda m, w: w.get("outdoor") and not w["low_light"],
+     "detail": "阴天或站在建筑阴影里，天空当一盏大柔光灯，几乎没有硬阴影",
+     "gear": {"face": ["阴天或找建筑的阴影处，面朝开阔的天空", "可选：反光板从下方补一点眼神光"],
+              "other": ["放在阴影里、面朝开阔天空", "白色泡沫板反光让暗部更亮"]}},
+    # ---- studio looks
+    {"key": "low_key", "name": "低调光（主体被单独照亮，背景压黑）",
+     "when": lambda m, w: (m.get("bg_luma") is not None and m["bg_luma"] < 22 and not m.get("point_lights")
+                           and m.get("subject_luma", 0) >= 100 and (m.get("dark_share") or 0) > 0.4),
+     "detail": "一盏控制得很窄的主光只照主体，背景不打光、保持全黑，戏剧感强",
+     "gear": {"face": ["一盏 LED + 带蜂巢/束光筒的柔光箱，从侧前方打", "背景用黑布或离墙远一点，不要补光", "可选：背后加一盏弱轮廓灯"],
+              "other": ["黑色背景布 + 一盏带束光筒的灯从侧上方打物品", "用黑卡挡住溢到背景的光"]}},
+    {"key": "high_key", "name": "高调光（整体明亮、几乎没有暗部）",
+     "when": lambda m, w: (w.get("g") or {}).get("mean_l", 0) > 68 and ((w.get("g") or {}).get("dark_share") or 0) < 0.02 and m["ratio"] < 1.6,
+     "detail": "主体和背景都打得很亮，白色或浅色背景，阴影几乎被补光抹掉；常见于美妆、产品、清新风",
+     "gear": {"face": ["两盏大柔光箱在人物两侧 45°，再加一盏打亮白色背景", "或白天大窗户 + 白墙，曝光稍微加一点"],
+              "other": ["白色无缝背景纸 + 两侧柔光箱 + 一盏打背景", "白色泡沫板围住物品补光"]}},
+    {"key": "colored_ambient", "name": "彩色氛围光（RGB 灯 / 霓虹）",
+     "when": lambda m, w: ((w.get("g") or {}).get("bright_sat", 0) > 0.5 and ((w.get("g") or {}).get("hue_bins") or 0) >= 2
+                           and not w["low_light"]),
+     "detail": "画面里的光带明显颜色（蓝紫、粉红等），通常是 RGB 灯带、彩色补光灯或霓虹招牌，主体可能被两种颜色从两侧夹打",
+     "gear": {"face": ["主光仍用白光柔光箱照脸，避免肤色发怪", "背景或侧后方放 RGB 灯棒 / 灯带，选两种对比色（蓝 + 粉、青 + 橙）"],
+              "other": ["两盏 RGB 灯从左右两侧打不同颜色", "背景墙用灯带洗出渐变色"]}},
+    {"key": "product_still", "name": "产品静物布光（无缝背景）",
+     "when": lambda m, w: (w.get("subject_kind") == "other" and m.get("bg_std") is not None and m["bg_std"] < 12
+                           and not w["low_light"]),
+     "detail": "物品放在干净的纯色背景上，背景几乎没有纹理，光从上方或两侧柔和地包住物品",
+     "gear": {"other": ["静物台或无缝背景纸（白/灰/彩色）", "顶部一盏大柔光箱，两侧各一盏或白卡", "亮面物品（玻璃、金属、手机）用柔光布围起来，避免反射出灯和人"],
+              "face": ["纯色背景纸 + 两侧柔光箱", "人离背景 1 米以上，避免影子落在背景上"]}},
+    # ---- the original set-ups
     {"key": "ambient_low_light", "name": "夜景/弱光环境光，没有专门补光",
      "when": lambda m, w: w["low_light"],
      "detail": "主光来自环境（路灯、招牌、室内顶灯、屏幕），主体偏暗、反差由环境决定",
@@ -146,11 +191,17 @@ SETUPS = [
 ]
 
 
-def setup_for(m: dict, w: dict, subject_kind: str = "face") -> dict:
+def setup_for(m: dict, w: dict, subject_kind: str = "face", location: str | None = None, grade: dict | None = None) -> dict:
+    """location: what an image reader said about the place ("户外 白天 街边"); grade: the grade aspect's measurements."""
     if not w:
         return {}
-    s = next(s for s in SETUPS if s["when"](m, w))
+    ctx = {**w, "outdoor": bool(location) and any(k in location for k in OUTDOOR_WORDS) and "室内" not in location,
+           "g": grade or {}, "subject_kind": subject_kind}
+    s = next(s for s in SETUPS if s["when"](m, ctx))
     notes = []
+    g = grade or {}
+    if s["key"] == "ambient_low_light" and g.get("bright_sat", 0) > 0.5 and (g.get("hue_bins") or 0) >= 2:
+        notes.append("暗处的光带明显颜色：霓虹招牌或 RGB 氛围灯")
     if w["vertical"].startswith("从下往上"):
         notes.append("主体下半部偏亮：可能有来自下方的光（屏幕、桌面反光）")
     if w["mixed_color"]:
@@ -201,7 +252,9 @@ class Lighting(Aspect):
         w = words(m)
         if not w:
             return {}
-        st = setup_for(m, w, m.get("subject", "face"))
+        loc = seen(shot, self.key, "location")
+        g = ((shot.get("aspects") or {}).get("grade") or {}).get("measured")
+        st = setup_for(m, w, m.get("subject", "face"), loc.get("agent") or loc.get("vlm"), g)
         return {**w, "setup": st.get("key"), "setup_name": st.get("name")}
 
     def summarize(self, shots: list[dict], b: dict) -> dict:
@@ -215,7 +268,10 @@ class Lighting(Aspect):
         med["key_side"], _ = weighted_mode([(m.get("key_side"), w) for m, w in ms])
         kind, _ = weighted_mode([(m.get("subject"), w) for m, w in ms])
         w = words(med)
-        st = setup_for(med, w, kind or "face")
+        loc = {**mode_seen(main, self.key, "location"), **video_seen(b, self.key, "location")}
+        gm = [(((r.get("aspects") or {}).get("grade") or {}).get("measured") or {}, r["duration"]) for r in main]
+        g = {k: weighted_median([(x.get(k), d) for x, d in gm]) for k in ("mean_l", "dark_share", "bright_sat", "hue_bins")}
+        st = setup_for(med, w, kind or "face", loc.get("agent") or loc.get("vlm"), {k: v for k, v in g.items() if v is not None})
         lines = [f"打光：{st['name']}。主光 {w['key_direction']}，{w['vertical']}；光比 {w['ratio']}；{w['quality']}；色温{w['color_temp']}"
                  + (f"；{'；'.join(st['notes'])}" if st.get("notes") else "")]
         if not filmed:

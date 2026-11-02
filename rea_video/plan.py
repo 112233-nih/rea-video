@@ -19,6 +19,8 @@ LABEL_ROUTE = {
     "screen_capture": ("R02-screen-demo", "code_render_spec", None),
     "still_motion": ("R17-still-motion", "local_ffmpeg", None),
     "static_hold": ("R18-static-hold", "local_ffmpeg", None),
+    "anim_2d": ("R19-2d-animation", "capsule_cinema", "first_last_frame"),
+    "stop_motion": ("R20-stop-motion", "capsule_cinema", "image_to_video"),
 }
 NOTE = {
     "ai_video": "原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧",
@@ -29,6 +31,18 @@ NOTE = {
     "screen_capture": "录屏/截图：用真实界面录屏或网页截图重建",
     "still_motion": "静态图推拉：用一张图 + 测得的缩放/平移参数在本地 ffmpeg 精确复刻",
     "static_hold": "静帧：一张图定格即可",
+    "anim_2d": "2D 动画：先出角色设定图定画风，再首尾帧生成；要精确口型和动作时做 AE / Live2D / Spine 工程",
+    "stop_motion": "定格动画：首选真的拍（手机固定 + 定格 App，每秒约 12 张）；AI 生成只能近似顿挫感",
+}
+# AI edits on filmed footage: what was done, which routing rule rebuilds it, how in one line
+AI_EDITS = {
+    "face_swap": ("换脸", "R12-owned-footage-edit", "拍好后用视频编辑模型换人，保留动作"),
+    "lip_sync": ("对口型/改台词", "R13-redub", "拍好后配新台词，再用口型重配模型改嘴型"),
+    "restyle": ("整段风格化重绘", "R12-owned-footage-edit", "拍好后用视频编辑模型按参考风格重绘，保留动作和构图"),
+    "outfit_swap": ("AI 换装", "R05-garment", "先出试穿图确认，再用视频模型或编辑模型换装"),
+    "bg_replace": ("抠像换背景", "R12-owned-footage-edit", "绿幕拍摄后抠像合成；没有绿幕时用视频编辑模型换背景"),
+    "object_edit": ("加/删/换物体", "R12-owned-footage-edit", "拍好后用视频编辑模型改画面里的物体"),
+    "beautify": ("美颜/瘦脸", None, "剪映、美颜相机等的美颜功能即可，不需要生成模型"),
 }
 CAPSULE_ENGINES = {"seedance2.0": (4, 15), "minimax-h3": (4, 15)}
 
@@ -54,6 +68,19 @@ class Planner:
         for f in sorted((CAP / "models").glob("*.yaml")):
             for m in (yaml.safe_load(f.read_text(encoding="utf-8")) or {}).get("models", []):
                 self.models[m["id"]] = m
+
+    def edit_steps(self, edits: list | None) -> list[dict]:
+        """Image readers' list of AI edits on a filmed shot -> post-production steps with candidate models."""
+        out = []
+        for e in edits or []:
+            if not isinstance(e, dict) or e.get("kind") not in AI_EDITS or any(x["kind"] == e["kind"] for x in out):
+                continue
+            zh, rule_id, how = AI_EDITS[e["kind"]]
+            names = [self.models[m]["name"] for m in (self.rules.get(rule_id) or {}).get("prefer", [])
+                     if m in self.models and self.models[m]["status"] != "shutdown"][:3]
+            out.append({"kind": e["kind"], "kind_zh": zh, "evidence": str(e.get("evidence", ""))[:120], "rule": rule_id,
+                        "how": how + (f"（{' / '.join(names)}）" if names else "")})
+        return out
 
     def plan_shot(self, label: str, shot: dict, video: dict, engine: str = "seedance2.0") -> dict:
         rule_id, executor, gen_type = LABEL_ROUTE.get(label, ("R14-ambient-broll", "capsule_cinema", "text_to_video"))

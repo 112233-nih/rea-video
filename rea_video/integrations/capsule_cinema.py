@@ -20,7 +20,7 @@ FORMAT_MAP = {"口播": "short_video", "剧情": "story", "商品展示": "produ
               "MV": "music_mv", "混剪": "short_video"}
 CAMERA_ZH = {"static": "固定机位", "static_with_subject_motion": "固定机位、主体运动", "planar_zoom_pan": "整图推拉/平移",
              "handheld_like": "手持晃动", "smooth_move": "平滑运镜", "unknown": "未知"}
-AI_LABELS = ("ai_video", "cg_3d", "live_action", "avatar")
+AI_LABELS = ("ai_video", "cg_3d", "live_action", "avatar", "anim_2d", "stop_motion")
 
 
 def _aspect(b: dict) -> str:

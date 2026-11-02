@@ -4,7 +4,7 @@
 
 - 时长 164.958s · 1080×1920 · 24.0fps · 9:16
 - 镜头 86 个，平均 1.92s；转场：cut×85、start×1
-- 判断置信度（按时长加权）：72%；判定方式：确定性取证 + VLM 融合
+- 判断置信度（按时长加权）：71%；判定方式：确定性取证 + VLM 融合
 - VLM 部分生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview：60/60 个镜头有结果，整片分析失败）；由 claude 看图复核 9/86 个镜头，已并入结论
 
 ![storyboard](storyboard.jpg)
@@ -680,6 +680,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 - 取景：景别 特写 55%、大特写 45%；机位角度 平视；主体是人脸（按脸高算景别）
 - 机位：固定机位（三脚架/支架/放在桌上） 57%、移动机位（稳定器/手持平移） 43%；常见运镜 拉
 - 打光：夜景/弱光环境光，没有专门补光。主光 画面右侧偏前方，从上往下（顶灯/路灯/高位光源）；光比 约 1.5:1（相差 0.6 档）；柔光（明暗过渡宽）；色温中性（约 5000K）；背景明显虚化（浅景深/人像模式）
+- 调色：暗调低饱和（电影感）；低饱和、对比正常、黑位正常、整体偏冷
 - 剪辑：每分钟 30.9 刀，实拍镜头平均 2.27s；机位/场景 5 个；同机位跳切 0 处、推近切 0 处；插入画面（截图/录屏/卡片/素材）占 84%；50% 的切点落在说话停顿处
 
 **复刻拍摄方案**
@@ -710,6 +711,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 | 打光 | 可见光源 | 无 | VLM：无 |
 | 打光 | 色温 | 中性（约 5000K） | 测量：中性（约 5000K）；VLM：中性偏冷 |
 | 打光 | 布光方案 | 左侧主灯柔光 + 右侧微弱轮廓光 | VLM：左侧主灯柔光 + 右侧微弱轮廓光 |
+| 调色 | 调色风格 | 暗调低饱和（电影感） | 测量：暗调低饱和（电影感） |
 
 - 说明：光比、软硬、色温、景别由主体像素测得（有人脸用人脸，没有用画面清晰区域，后者是估算）；平台转码会压暗部，软硬和补光偏保守；机位角度、光源种类、眼神光、轮廓光以看图结果为准。测量和看图不一致时两者都列出。
 
@@ -814,92 +816,92 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 | # | 时间 | 时长 | 底层画面 | 置信度 | 素材来源 | 叠加层 | 运镜 | 复刻路线 |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 00:00.000 | 7.25s | 3D 渲染 | 48% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 1 | 00:00.000 | 7.25s | 3D 渲染 | 47% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
 | 2 | 00:07.250 | 8.50s | 数字人口播 | 99% | AI 生成 | 字幕 | 固定 | R03-talking-head → capsule_cinema |
-| 3 | 00:15.750 | 2.33s | 静态图 + 推拉动效 | 99% | 用户真实素材：真实照片 | 字幕、文字 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 4 | 00:18.083 | 1.38s | AI 生成视频 | 85% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 3 | 00:15.750 | 2.33s | 静态图 + 推拉动效 | 98% | 用户真实素材：真实照片 | 字幕、文字 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 4 | 00:18.083 | 1.38s | AI 生成视频 | 84% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 5 | 00:19.458 | 0.67s | 数字人口播 | 99% | AI 生成 | 字幕、图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 6 | 00:20.125 | 0.71s | 静态图 + 推拉动效 | 87% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 7 | 00:20.833 | 0.67s | AI 生成视频 | 46% | AI 生成；复刻参考：人物/场景参考图 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 6 | 00:20.125 | 0.71s | 静态图 + 推拉动效 | 86% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 7 | 00:20.833 | 0.67s | AI 生成视频 | 45% | AI 生成；复刻参考：人物/场景参考图 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 8 | 00:21.500 | 0.67s | AI 生成视频 | 98% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 9 | 00:22.167 | 0.71s | AI 生成视频 | 65% | AI 生成 | 图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 10 | 00:22.875 | 0.67s | 静态图 + 推拉动效 | 90% | 制作方渲染 | 图形贴片 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 9 | 00:22.167 | 0.71s | AI 生成视频 | 64% | AI 生成 | 图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 10 | 00:22.875 | 0.67s | 静态图 + 推拉动效 | 88% | 制作方渲染 | 图形贴片 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
 | 11 | 00:23.542 | 0.67s | 静态图 + 推拉动效 | 93% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
 | 12 | 00:24.208 | 0.71s | 静态图 + 推拉动效 | 99% | 用户真实素材：真实照片、商品实拍图 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 13 | 00:24.917 | 0.67s | 3D 渲染 | 68% | 制作方渲染 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
-| 14 | 00:25.583 | 0.67s | 3D 渲染 | 70% | 制作方渲染 | 图形贴片 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 13 | 00:24.917 | 0.67s | 3D 渲染 | 67% | 制作方渲染 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 14 | 00:25.583 | 0.67s | 3D 渲染 | 69% | 制作方渲染 | 图形贴片 | 平滑运镜 | R08-product-multiview → capsule_cinema |
 | 15 | 00:26.250 | 0.67s | 静态图 + 推拉动效 | 99% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
 | 16 | 00:26.917 | 0.71s | 静态图 + 推拉动效 | 91% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
 | 17 | 00:27.625 | 0.33s | 静态图 + 推拉动效 | 99% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 18 | 00:27.958 | 0.33s | 静态图 + 推拉动效 | 86% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 19 | 00:28.292 | 0.33s | 3D 渲染 | 36% | 制作方渲染；复刻参考：商品参考图 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 18 | 00:27.958 | 0.33s | 静态图 + 推拉动效 | 85% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 19 | 00:28.292 | 0.33s | 3D 渲染 | 35% | 制作方渲染；复刻参考：商品参考图 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
 | 20 | 00:28.625 | 0.38s | 静态图 + 推拉动效 | 99% | AI 生成 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 21 | 00:29.000 | 2.62s | AI 生成视频 | 86% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 21 | 00:29.000 | 2.62s | AI 生成视频 | 85% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 22 | 00:31.625 | 0.54s | AI 生成视频 | 82% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 23 | 00:32.167 | 2.46s | AI 生成视频 | 82% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 24 | 00:34.625 | 2.04s | AI 生成视频 | 50% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 25 | 00:36.667 | 2.88s | AI 生成视频 | 81% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 23 | 00:32.167 | 2.46s | AI 生成视频 | 80% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 24 | 00:34.625 | 2.04s | AI 生成视频 | 49% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 25 | 00:36.667 | 2.88s | AI 生成视频 | 80% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 26 | 00:39.542 | 0.71s | AI 生成视频 | 63% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 27 | 00:40.250 | 2.62s | AI 生成视频 | 52% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 27 | 00:40.250 | 2.62s | AI 生成视频 | 50% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 28 | 00:42.875 | 0.71s | 数字人口播 | 89% | AI 生成 | 文字 | 平滑运镜 | R03-talking-head → capsule_cinema |
 | 29 | 00:43.583 | 1.21s | AI 生成视频 | 43% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 30 | 00:44.792 | 0.62s | AI 生成视频 | 99% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 31 | 00:45.417 | 1.54s | AI 生成视频 | 77% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 32 | 00:46.958 | 0.62s | AI 生成视频 | 50% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 31 | 00:45.417 | 1.54s | AI 生成视频 | 76% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 32 | 00:46.958 | 0.62s | AI 生成视频 | 49% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 33 | 00:47.583 | 0.62s | 静态图 + 推拉动效 | 99% | AI 生成 | 文字 | 平滑运镜 | R17-still-motion → local_ffmpeg |
-| 34 | 00:48.208 | 0.58s | 数字人口播 | 91% | AI 生成 | 文字 | 平滑运镜 | R03-talking-head → capsule_cinema |
+| 34 | 00:48.208 | 0.58s | 数字人口播 | 90% | AI 生成 | 文字 | 平滑运镜 | R03-talking-head → capsule_cinema |
 | 35 | 00:48.792 | 1.58s | 数字人口播 | 99% | AI 生成 | 文字 | 固定（主体在动） | R03-talking-head → capsule_cinema |
 | 36 | 00:50.375 | 3.08s | AI 生成视频 | 46% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 37 | 00:53.458 | 0.75s | AI 生成视频 | 63% | AI 生成 | 文字、图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 38 | 00:54.208 | 2.00s | AI 生成视频 | 61% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 38 | 00:54.208 | 2.00s | AI 生成视频 | 60% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 39 | 00:56.208 | 0.71s | AI 生成视频 | 98% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 40 | 00:56.917 | 1.50s | AI 生成视频 | 75% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 41 | 00:58.417 | 0.50s | AI 生成视频 | 42% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 40 | 00:56.917 | 1.50s | AI 生成视频 | 74% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 41 | 00:58.417 | 0.50s | AI 生成视频 | 41% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 42 | 00:58.917 | 0.58s | 数字人口播 | 98% | AI 生成 | 文字、图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 43 | 00:59.500 | 3.04s | AI 生成视频 | 85% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 43 | 00:59.500 | 3.04s | AI 生成视频 | 84% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 44 | 01:02.542 | 2.12s | AI 生成视频 | 81% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 45 | 01:04.667 | 0.71s | 数字人口播 | 98% | AI 生成 | 图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 46 | 01:05.375 | 1.79s | AI 生成视频 | 47% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 47 | 01:07.167 | 3.38s | AI 生成视频 | 76% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 46 | 01:05.375 | 1.79s | AI 生成视频 | 46% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 47 | 01:07.167 | 3.38s | AI 生成视频 | 73% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 48 | 01:10.542 | 1.25s | 数字人口播 | 94% | AI 生成 | 文字、图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
 | 49 | 01:11.792 | 2.79s | 数字人口播 | 99% | AI 生成 | 字幕、图形贴片 | 固定（主体在动） | R03-talking-head → capsule_cinema |
 | 50 | 01:14.583 | 2.71s | 数字人口播 | 99% | AI 生成 | 字幕 | 固定（主体在动） | R03-talking-head → capsule_cinema |
 | 51 | 01:17.292 | 2.92s | 数字人口播 | 90% | AI 生成 | 字幕、图形贴片 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 52 | 01:20.208 | 1.00s | AI 生成视频 | 54% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 53 | 01:21.208 | 4.25s | 数字人口播 | 97% | AI 生成 | 字幕 | 平滑运镜 | R03-talking-head → capsule_cinema |
-| 54 | 01:25.458 | 1.67s | 3D 渲染 | 59% | 制作方渲染 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 52 | 01:20.208 | 1.00s | AI 生成视频 | 52% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 53 | 01:21.208 | 4.25s | 数字人口播 | 96% | AI 生成 | 字幕 | 平滑运镜 | R03-talking-head → capsule_cinema |
+| 54 | 01:25.458 | 1.67s | 3D 渲染 | 58% | 制作方渲染 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
 | 55 | 01:27.125 | 1.21s | AI 生成视频 | 81% | AI 生成 | 图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 56 | 01:28.333 | 2.42s | AI 生成视频 | 79% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 57 | 01:30.750 | 0.67s | AI 生成视频 | 54% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 58 | 01:31.417 | 1.92s | AI 生成视频 | 91% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 56 | 01:28.333 | 2.42s | AI 生成视频 | 77% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 57 | 01:30.750 | 0.67s | AI 生成视频 | 53% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 58 | 01:31.417 | 1.92s | AI 生成视频 | 90% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 59 | 01:33.333 | 0.67s | AI 生成视频 | 84% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 60 | 01:34.000 | 5.21s | AI 生成视频 | 54% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 61 | 01:39.208 | 1.12s | AI 生成视频 | 58% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 60 | 01:34.000 | 5.21s | AI 生成视频 | 53% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 61 | 01:39.208 | 1.12s | AI 生成视频 | 57% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 62 | 01:40.333 | 2.79s | AI 生成视频 | 38% | AI 生成 | 文字、图形贴片 | 手持晃动 | R07-product-hero → capsule_cinema |
-| 63 | 01:43.125 | 3.00s | AI 生成视频 | 66% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 64 | 01:46.125 | 1.79s | AI 生成视频 | 80% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 65 | 01:47.917 | 7.79s | AI 生成视频 | 61% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 66 | 01:55.708 | 3.50s | 静态图 + 推拉动效 | 86% | 待确认；待确认是否真实：照片/图片素材 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 67 | 01:59.208 | 2.38s | 静态图 + 推拉动效 | 77% | 制作方渲染 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 68 | 02:01.583 | 0.71s | 静态图 + 推拉动效 | 84% | 制作方渲染 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 69 | 02:02.292 | 1.92s | 静态图 + 推拉动效 | 81% | 待确认；待确认是否真实：照片/图片素材 | 文字 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 70 | 02:04.208 | 0.62s | AI 生成视频 | 41% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 71 | 02:04.833 | 0.62s | 3D 渲染 | 51% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
-| 72 | 02:05.458 | 1.62s | AI 生成视频 | 85% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 73 | 02:07.083 | 2.12s | 3D 渲染 | 38% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
-| 74 | 02:09.208 | 0.92s | 静态图 + 推拉动效 | 78% | 制作方渲染 | 文字、图形贴片 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 75 | 02:10.125 | 3.88s | AI 生成视频 | 60% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 76 | 02:14.000 | 3.25s | AI 生成视频 | 62% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 77 | 02:17.250 | 1.62s | AI 生成视频 | 63% | AI 生成 | 图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 78 | 02:18.875 | 3.46s | AI 生成视频 | 52% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 63 | 01:43.125 | 3.00s | AI 生成视频 | 64% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 64 | 01:46.125 | 1.79s | AI 生成视频 | 79% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 65 | 01:47.917 | 7.79s | AI 生成视频 | 60% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 66 | 01:55.708 | 3.50s | 静态图 + 推拉动效 | 85% | 待确认；待确认是否真实：照片/图片素材 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 67 | 01:59.208 | 2.38s | 静态图 + 推拉动效 | 76% | 制作方渲染 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 68 | 02:01.583 | 0.71s | 静态图 + 推拉动效 | 83% | 制作方渲染 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 69 | 02:02.292 | 1.92s | 静态图 + 推拉动效 | 80% | 待确认；待确认是否真实：照片/图片素材 | 文字 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 70 | 02:04.208 | 0.62s | AI 生成视频 | 40% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 71 | 02:04.833 | 0.62s | 3D 渲染 | 50% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 72 | 02:05.458 | 1.62s | AI 生成视频 | 83% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 73 | 02:07.083 | 2.12s | 3D 渲染 | 37% | 制作方渲染 | 文字 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 74 | 02:09.208 | 0.92s | 静态图 + 推拉动效 | 77% | 制作方渲染 | 文字、图形贴片 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 75 | 02:10.125 | 3.88s | AI 生成视频 | 59% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 76 | 02:14.000 | 3.25s | AI 生成视频 | 60% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 77 | 02:17.250 | 1.62s | AI 生成视频 | 62% | AI 生成 | 图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 78 | 02:18.875 | 3.46s | AI 生成视频 | 50% | AI 生成 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
 | 79 | 02:22.333 | 0.71s | AI 生成视频 | 41% | AI 生成 | 文字、图形贴片 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 80 | 02:23.042 | 0.96s | 静态图 + 推拉动效 | 69% | 制作方渲染 | 图形贴片 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 81 | 02:24.000 | 4.04s | 3D 渲染 | 61% | 制作方渲染 | 字幕 | 平滑运镜 | R08-product-multiview → capsule_cinema |
-| 82 | 02:28.042 | 1.12s | AI 生成视频 | 50% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 83 | 02:29.167 | 2.83s | 静态图 + 推拉动效 | 77% | 待确认；待确认是否真实：照片/图片素材 | 文字 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 84 | 02:32.000 | 6.12s | 静态图 + 推拉动效 | 79% | 待确认；待确认是否真实：照片/图片素材 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
-| 85 | 02:38.125 | 2.25s | 3D 渲染 | 45% | 制作方渲染 | 图形贴片 | 平滑运镜 | R08-product-multiview → capsule_cinema |
-| 86 | 02:40.375 | 4.58s | 3D 渲染 | 47% | 制作方渲染 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 80 | 02:23.042 | 0.96s | 静态图 + 推拉动效 | 68% | 制作方渲染 | 图形贴片 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 81 | 02:24.000 | 4.04s | 3D 渲染 | 60% | 制作方渲染 | 字幕 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 82 | 02:28.042 | 1.12s | AI 生成视频 | 49% | AI 生成 | 字幕 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 83 | 02:29.167 | 2.83s | 静态图 + 推拉动效 | 75% | 待确认；待确认是否真实：照片/图片素材 | 文字 | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 84 | 02:32.000 | 6.12s | 静态图 + 推拉动效 | 77% | 待确认；待确认是否真实：照片/图片素材 | — | 整图推拉/平移 | R17-still-motion → local_ffmpeg |
+| 85 | 02:38.125 | 2.25s | 3D 渲染 | 44% | 制作方渲染 | 图形贴片 | 平滑运镜 | R08-product-multiview → capsule_cinema |
+| 86 | 02:40.375 | 4.58s | 3D 渲染 | 46% | 制作方渲染 | — | 平滑运镜 | R08-product-multiview → capsule_cinema |
 
 ## 逐镜详情
 
@@ -907,7 +909,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_001](shots/shot_001.jpg)
 
-- 概率：3D 渲染 48%，代码/模板渲染 25%，AI 生成视频 18%（fused）
+- 概率：3D 渲染 47%，代码/模板渲染 24%，AI 生成视频 17%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Midjourney + Kling/Hailuo
 - 纹理呈渲染特征：平坦色块 66%、95% 像素仅用 5 种颜色、横竖直边 19%
@@ -952,7 +954,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_003](shots/shot_003.jpg)
 
-- 概率：静态图 + 推拉动效 99%，实拍 0%，AI 生成视频 0%（fused）
+- 概率：静态图 + 推拉动效 98%，实拍 1%，定格动画 0%（fused）
 - 静帧来源：photo
 - 素材来源：用户真实素材：真实照片
 - 可能的工具：剪映
@@ -971,7 +973,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_004](shots/shot_004.jpg)
 
-- 概率：AI 生成视频 85%，数字人口播 8%，3D 渲染 2%（fused）
+- 概率：AI 生成视频 84%，数字人口播 8%，3D 渲染 2%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + Kling / Hailuo
 - 低照度画面：39% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 1%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -991,7 +993,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_005](shots/shot_005.jpg)
 
-- 概率：数字人口播 63%，AI 生成视频 35%，3D 渲染 1%（fused）
+- 概率：数字人口播 64%，AI 生成视频 35%，3D 渲染 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + HeyGen/SadTalker/剪映数字人
 - 人脸占画面 30%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1009,7 +1011,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_006](shots/shot_006.jpg)
 
-- 概率：静态图 + 推拉动效 87%，3D 渲染 6%，AI 生成视频 6%（fused）
+- 概率：静态图 + 推拉动效 86%，3D 渲染 6%，AI 生成视频 6%（fused）
 - 静帧来源：ai_image
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + 剪映
@@ -1025,7 +1027,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_007](shots/shot_007.jpg)
 
-- 概率：AI 生成视频 46%，3D 渲染 33%，实拍 8%（fused）
+- 概率：AI 生成视频 45%，3D 渲染 32%，实拍 8%（fused）
 - 素材来源：AI 生成；复刻参考：人物/场景参考图
 - 可能的工具：剪映/PR 关键帧平移动效
 - [VLM] 木板纹理、木节、麻绳纤维及锈蚀铁钉细节高度真实
@@ -1040,7 +1042,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_008](shots/shot_008.jpg)
 
-- 概率：AI 生成视频 97%，3D 渲染 1%，静态图 + 推拉动效 1%（fused）
+- 概率：AI 生成视频 97%，静态图 + 推拉动效 1%，3D 渲染 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney (底图) + Kling / Runway Gen-2
 - [VLM] 画面呈现高度风格化的静物摄影质感，光影完美但缺乏真实物理细节（如纸张边缘厚度）
@@ -1055,13 +1057,13 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_009](shots/shot_009.jpg)
 
-- 概率：AI 生成视频 64%，3D 渲染 34%，实拍 0%（fused）
+- 概率：AI 生成视频 64%，3D 渲染 34%，2D 动画 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling/Runway/Hailuo
 - [VLM] 水波运动略显粘稠和形变，缺乏真实流体动力学的复杂高频细节
 - [VLM] 天空云层完全静止，仅水面局部运动，符合 AI 视频常见特征
 - 画面：黑白水面特写，波纹荡漾，带弧度地平线，阴沉天空，镜头固定。
-- 拍法/打光：特写；平视；三脚架/支架固定；正面柔光（平光）；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.3 档）；柔光（几乎没有明暗分界）
+- 拍法/打光：特写；平视；三脚架/支架固定；户外阴天/背阴处柔光；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.3 档）；柔光（几乎没有明暗分界）
 - 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
   - 首帧图像提示词：黑白摄影，水面波纹特写，微弧地平线，阴沉天空，极简，高对比。
   - 视频提示词：黑白画面，水面泛起涟漪，波纹缓缓推进，天空静止，镜头固定。
@@ -1070,7 +1072,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_010](shots/shot_010.jpg)
 
-- 概率：静态图 + 推拉动效 90%，3D 渲染 9%，实拍 1%（fused）
+- 概率：静态图 + 推拉动效 88%，3D 渲染 10%，实拍 1%（fused）
 - 静帧来源：cg_3d
 - 素材来源：制作方渲染
 - 可能的工具：剪映
@@ -1116,7 +1118,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_013](shots/shot_013.jpg)
 
-- 概率：3D 渲染 67%，AI 生成视频 18%，实拍 14%（fused）
+- 概率：3D 渲染 66%，AI 生成视频 18%，实拍 14%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - [VLM] 极简三维暗黑灰调空间，无缝纯色渐变地面与雾气环境
@@ -1194,7 +1196,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_018](shots/shot_018.jpg)
 
-- 概率：静态图 + 推拉动效 86%，AI 生成视频 9%，屏幕录制/截图 2%（fused）
+- 概率：静态图 + 推拉动效 85%，AI 生成视频 9%，屏幕录制/截图 2%（fused）
 - 静帧来源：ai_image
 - 素材来源：AI 生成
 - 可能的工具：Midjourney / Stable Diffusion
@@ -1209,7 +1211,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_019](shots/shot_019.jpg)
 
-- 概率：3D 渲染 36%，AI 生成视频 32%，实拍 19%（fused）
+- 概率：3D 渲染 35%，AI 生成视频 31%，实拍 18%（fused）
 - 素材来源：制作方渲染；复刻参考：商品参考图
 - [VLM] 画面内容为静态图像，没有任何内部运动（如珠子的滚动、光影的变化等），这是still_motion的典型特征
 - [VLM] 提供的时间轴切片图（file_2.jpg）显示，在不同时间点，画面内容完全一致，仅通过推拉或平移来产生运动感
@@ -1237,7 +1239,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_021](shots/shot_021.jpg)
 
-- 概率：AI 生成视频 86%，3D 渲染 11%，实拍 3%（fused）
+- 概率：AI 生成视频 85%，3D 渲染 10%，实拍 3%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + Kling/Runway
 - 逐帧清晰度呈周期性起伏（周期 2 帧，相关 0.36）：画面经过插帧/帧率转换，原始帧率更低
@@ -1275,7 +1277,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_023](shots/shot_023.jpg)
 
-- 概率：AI 生成视频 82%，数字人口播 8%，实拍 5%（fused）
+- 概率：AI 生成视频 80%，数字人口播 8%，实拍 5%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling / Runway / Luma
 - 低照度画面：43% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1296,7 +1298,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_024](shots/shot_024.jpg)
 
-- 概率：AI 生成视频 50%，实拍 35%，数字人口播 7%（fused）
+- 概率：AI 生成视频 49%，实拍 34%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 可能的工具：LivePortrait / SadTalker / HeyGen
 - 低照度画面：28% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 2%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1315,7 +1317,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_025](shots/shot_025.jpg)
 
-- 概率：AI 生成视频 80%，3D 渲染 10%，实拍 9%（fused）
+- 概率：AI 生成视频 80%，3D 渲染 9%，实拍 9%（fused）
 - 画面里物体上的字（不是后期字幕）：光港流、光港海、光张、乖来染流库烧林子安、聚流摩烧林子安、项洗
 - 素材来源：AI 生成
 - 可能的工具：Kling
@@ -1337,7 +1339,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_026](shots/shot_026.jpg)
 
-- 概率：AI 生成视频 37%，实拍 29%，数字人口播 27%（fused）
+- 概率：AI 生成视频 36%，实拍 29%，数字人口播 26%（fused）
 - 素材来源：AI 生成
 - 人脸占画面 25%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.15、用色 35 种、平坦块 37%
@@ -1357,7 +1359,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_027](shots/shot_027.jpg)
 
-- 概率：AI 生成视频 50%，3D 渲染 26%，实拍 18%（fused）
+- 概率：AI 生成视频 48%，3D 渲染 24%，实拍 21%（fused）
 - 画面里物体上的字（不是后期字幕）：道枝憶花、杨况機光心、植税流横清热境福土文
 - 素材来源：AI 生成
 - 纹理呈渲染特征：平坦色块 34%、95% 像素仅用 25 种颜色、横竖直边 12%
@@ -1381,7 +1383,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_028](shots/shot_028.jpg)
 
-- 概率：数字人口播 67%，AI 生成视频 22%，代码/模板渲染 9%（fused）
+- 概率：数字人口播 67%，AI 生成视频 22%，代码/模板渲染 8%（fused）
 - 素材来源：AI 生成
 - 可能的工具：LivePortrait / SadTalker / Midjourney
 - 人脸占画面 25%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1400,7 +1402,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_029](shots/shot_029.jpg)
 
-- 概率：AI 生成视频 41%，实拍 33%，3D 渲染 21%（fused）
+- 概率：AI 生成视频 41%，实拍 32%，3D 渲染 21%（fused）
 - 画面里物体上的字（不是后期字幕）：文理太浅、臣遒枝槎协、臣枝槎说、治国之道趙挞挂播、治国之道趙洼、治国之道挞洼
 - 素材来源：AI 生成
 - [VLM] 手指皮肤纹理、指甲与褶皱极其逼真自然
@@ -1422,7 +1424,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_030](shots/shot_030.jpg)
 
-- 概率：AI 生成视频 86%，数字人口播 12%，实拍 1%（fused）
+- 概率：AI 生成视频 86%，数字人口播 12%，实拍 0%（fused）
 - 画面里物体上的字（不是后期字幕）：福
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + Kling/Hailuo/Hedra
@@ -1460,7 +1462,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_032](shots/shot_032.jpg)
 
-- 概率：AI 生成视频 50%，实拍 35%，数字人口播 7%（fused）
+- 概率：AI 生成视频 49%，实拍 34%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 可能的工具：HeyGen / D-ID / SadTalker
 - 低照度画面：33% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 3%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1512,7 +1514,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_035](shots/shot_035.jpg)
 
-- 概率：数字人口播 80%，AI 生成视频 19%，3D 渲染 1%（fused）
+- 概率：数字人口播 80%，AI 生成视频 19%，3D 渲染 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：HeyGen/D-ID/剪映数字人 (底图可能来自 Midjourney)
 - 人脸占画面 21%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1532,7 +1534,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_036](shots/shot_036.jpg)
 
-- 概率：AI 生成视频 44%，实拍 34%，3D 渲染 16%（fused）
+- 概率：AI 生成视频 44%，实拍 35%，3D 渲染 16%（fused）
 - 素材来源：AI 生成
 - 纹理呈渲染特征：平坦色块 23%、95% 像素仅用 25 种颜色、横竖直边 21%
 - [VLM] 影视剧实拍摄影质感，群演与服装道具细节真实且具有自然动态
@@ -1551,7 +1553,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_037](shots/shot_037.jpg)
 
-- 概率：AI 生成视频 37%，实拍 29%，数字人口播 27%（fused）
+- 概率：AI 生成视频 36%，实拍 29%，数字人口播 26%（fused）
 - 素材来源：AI 生成
 - 人脸占画面 24%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.16、用色 37 种、平坦块 36%
@@ -1572,7 +1574,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_038](shots/shot_038.jpg)
 
-- 概率：AI 生成视频 59%，实拍 31%，3D 渲染 6%（fused）
+- 概率：AI 生成视频 58%，实拍 32%，3D 渲染 6%（fused）
 - 素材来源：AI 生成
 - 低照度画面：50% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 1%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.58、用色 41 种、平坦块 2%
@@ -1593,7 +1595,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_039](shots/shot_039.jpg)
 
-- 概率：AI 生成视频 78%，数字人口播 21%，实拍 1%（fused）
+- 概率：AI 生成视频 78%，数字人口播 21%，实拍 0%（fused）
 - 画面里物体上的字（不是后期字幕）：一、一
 - 素材来源：AI 生成
 - 可能的工具：Kling / Hailuo / Hedra (图生视频或音频驱动)
@@ -1615,7 +1617,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_040](shots/shot_040.jpg)
 
-- 概率：AI 生成视频 75%，3D 渲染 14%，实拍 4%（fused）
+- 概率：AI 生成视频 73%，3D 渲染 13%，实拍 4%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling/Runway/Hailuo
 - 纹理呈照片/视频特征：噪声 σ=0.46、用色 80 种、平坦块 6%
@@ -1635,7 +1637,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_041](shots/shot_041.jpg)
 
-- 概率：AI 生成视频 42%，实拍 28%，3D 渲染 17%（fused）
+- 概率：AI 生成视频 41%，实拍 27%，3D 渲染 16%（fused）
 - 素材来源：AI 生成
 - 可能的工具：HeyGen/D-ID
 - 人脸占画面 45%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1655,7 +1657,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_042](shots/shot_042.jpg)
 
-- 概率：数字人口播 97%，AI 生成视频 1%，实拍 1%（fused）
+- 概率：数字人口播 97%，AI 生成视频 1%，3D 渲染 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Hedra / D-ID
 - 人脸占画面 32%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1674,7 +1676,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_043](shots/shot_043.jpg)
 
-- 概率：AI 生成视频 85%，数字人口播 8%，3D 渲染 2%（fused）
+- 概率：AI 生成视频 84%，数字人口播 8%，3D 渲染 2%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling / Hailuo
 - 低照度画面：45% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1694,7 +1696,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_044](shots/shot_044.jpg)
 
-- 概率：AI 生成视频 81%，3D 渲染 18%，数字人口播 0%（fused）
+- 概率：AI 生成视频 81%，3D 渲染 17%，2D 动画 1%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling/Hailuo/Runway
 - 纹理呈渲染特征：平坦色块 34%、95% 像素仅用 27 种颜色、横竖直边 13%
@@ -1711,7 +1713,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_045](shots/shot_045.jpg)
 
-- 概率：数字人口播 97%，AI 生成视频 1%，3D 渲染 1%（fused）
+- 概率：数字人口播 97%，AI 生成视频 1%，3D 渲染 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：HeyGen / D-ID / SadTalker / 剪映数字人
 - 人脸占画面 12%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1730,7 +1732,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_046](shots/shot_046.jpg)
 
-- 概率：AI 生成视频 45%，实拍 30%，3D 渲染 19%（fused）
+- 概率：AI 生成视频 43%，实拍 31%，3D 渲染 18%（fused）
 - 素材来源：AI 生成
 - 纹理呈渲染特征：平坦色块 35%、95% 像素仅用 27 种颜色、横竖直边 13%
 - [VLM] 泥土飞溅与挥锤劳作的物理动态极其真实无形变
@@ -1749,7 +1751,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_047](shots/shot_047.jpg)
 
-- 概率：AI 生成视频 46%，数字人口播 30%，实拍 16%（fused）
+- 概率：AI 生成视频 44%，数字人口播 28%，实拍 19%（fused）
 - 素材来源：AI 生成
 - 人脸占画面 24%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.12、用色 32 种、平坦块 40%
@@ -1789,7 +1791,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_049](shots/shot_049.jpg)
 
-- 概率：数字人口播 74%，AI 生成视频 25%，3D 渲染 1%（fused）
+- 概率：数字人口播 74%，AI 生成视频 25%，3D 渲染 0%（fused）
 - 画面里物体上的字（不是后期字幕）：2
 - 素材来源：AI 生成
 - 可能的工具：LivePortrait / SadTalker / Hedra
@@ -1811,7 +1813,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_050](shots/shot_050.jpg)
 
-- 概率：数字人口播 80%，AI 生成视频 19%，3D 渲染 1%（fused）
+- 概率：数字人口播 80%，AI 生成视频 19%，3D 渲染 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney (生成底图) + D-ID / HeyGen / SadTalker (音频驱动)
 - 人脸占画面 23%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -1853,7 +1855,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_052](shots/shot_052.jpg)
 
-- 概率：AI 生成视频 54%，实拍 28%，数字人口播 7%（fused）
+- 概率：AI 生成视频 52%，实拍 28%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney (底图) + Hedra / HeyGen / 剪映数字人
 - 低照度画面：37% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 6%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1892,7 +1894,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_054](shots/shot_054.jpg)
 
-- 概率：3D 渲染 59%，AI 生成视频 24%，代码/模板渲染 12%（fused）
+- 概率：3D 渲染 58%，AI 生成视频 24%，代码/模板渲染 12%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Midjourney + 剪映
 - 纹理呈渲染特征：平坦色块 30%、95% 像素仅用 27 种颜色、横竖直边 8%
@@ -1909,7 +1911,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_055](shots/shot_055.jpg)
 
-- 概率：AI 生成视频 81%，3D 渲染 19%，数字人口播 0%（fused）
+- 概率：AI 生成视频 80%，3D 渲染 18%，2D 动画 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling/Runway
 - 逐帧清晰度呈周期性起伏（周期 5 帧，相关 0.56）：画面经过插帧/帧率转换，原始帧率更低
@@ -1918,7 +1920,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 - [VLM] 光影反射平滑完美，具AI质感
 - [VLM] 地平线弧度不自然
 - 画面：暗黑水面特写，水波荡漾，天空阴沉，镜头缓推。
-- 拍法/打光：近景；平视略俯拍；稳定器 (模拟)；侧前方主光 + 补光（标准布光）；主光画面左侧偏前方；光比约 1.6:1（相差 0.6 档）；柔光（明暗过渡宽）
+- 拍法/打光：近景；平视略俯拍；稳定器 (模拟)；户外阴天/背阴处柔光；主光画面左侧偏前方；光比约 1.6:1（相差 0.6 档）；柔光（明暗过渡宽）
 - 复刻：原片为 AI 生成：取原镜头首尾帧做首尾帧生成，可高度还原构图与动作；换主体时先用图像模型改首帧
   - 首帧图像提示词：黑白暗黑风，波纹水面，阴沉天空，微光穿云，弧形地平线，极简电影感。
   - 视频提示词：黑白暗黑水面，水波缓荡，阴沉天空，光影随波流动，镜头缓推。
@@ -1927,7 +1929,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_056](shots/shot_056.jpg)
 
-- 概率：AI 生成视频 79%，实拍 8%，数字人口播 8%（fused）
+- 概率：AI 生成视频 77%，实拍 8%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling
 - 低照度画面：62% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1948,7 +1950,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_057](shots/shot_057.jpg)
 
-- 概率：AI 生成视频 54%，实拍 28%，数字人口播 7%（fused）
+- 概率：AI 生成视频 53%，实拍 27%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 可能的工具：LivePortrait / SadTalker / HeyGen
 - 低照度画面：44% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 6%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -1966,7 +1968,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_058](shots/shot_058.jpg)
 
-- 概率：AI 生成视频 90%，实拍 8%，3D 渲染 1%（fused）
+- 概率：AI 生成视频 90%，实拍 8%，定格动画 0%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + Kling
 - 逐帧清晰度呈周期性起伏（周期 6 帧，相关 0.10）：画面经过插帧/帧率转换，原始帧率更低
@@ -1985,7 +1987,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_059](shots/shot_059.jpg)
 
-- 概率：AI 生成视频 77%，实拍 16%，数字人口播 7%（fused）
+- 概率：AI 生成视频 76%，实拍 15%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Midjourney + Kling
 - 低照度画面：21% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 1%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
@@ -2003,7 +2005,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_060](shots/shot_060.jpg)
 
-- 概率：AI 生成视频 46%，实拍 43%，数字人口播 7%（fused）
+- 概率：AI 生成视频 46%，实拍 42%，数字人口播 7%（fused）
 - 素材来源：AI 生成
 - 低照度画面：34% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.56、用色 56 种、平坦块 1%
@@ -2024,7 +2026,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_061](shots/shot_061.jpg)
 
-- 概率：AI 生成视频 58%，实拍 26%，数字人口播 8%（deterministic）
+- 概率：AI 生成视频 57%，实拍 25%，数字人口播 8%（deterministic）
 - 素材来源：AI 生成
 - 低照度画面：53% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 3%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.27、用色 36 种、平坦块 28%
@@ -2036,7 +2038,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_062](shots/shot_062.jpg)
 
-- 概率：AI 生成视频 39%，3D 渲染 27%，实拍 18%（deterministic）
+- 概率：AI 生成视频 38%，3D 渲染 27%，实拍 18%（deterministic）
 - 素材来源：AI 生成
 - 人脸占画面 10%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.11、用色 30 种、平坦块 39%
@@ -2048,7 +2050,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_063](shots/shot_063.jpg)
 
-- 概率：AI 生成视频 66%，3D 渲染 20%，实拍 6%（deterministic）
+- 概率：AI 生成视频 65%，3D 渲染 19%，实拍 6%（deterministic）
 - 素材来源：AI 生成
 - 纹理呈照片/视频特征：噪声 σ=0.54、用色 69 种、平坦块 7%
 - 逐帧清晰度呈周期性起伏（周期 None 帧，相关 0.00）：画面经过插帧/帧率转换，原始帧率更低
@@ -2061,7 +2063,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_064](shots/shot_064.jpg)
 
-- 概率：AI 生成视频 80%，数字人口播 8%，实拍 7%（deterministic）
+- 概率：AI 生成视频 79%，数字人口播 8%，实拍 7%（deterministic）
 - 素材来源：AI 生成
 - 低照度画面：31% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 0%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.40、用色 42 种、平坦块 15%
@@ -2075,7 +2077,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_065](shots/shot_065.jpg)
 
-- 概率：AI 生成视频 61%，3D 渲染 25%，数字人口播 6%（deterministic）
+- 概率：AI 生成视频 60%，3D 渲染 24%，数字人口播 6%（deterministic）
 - 素材来源：AI 生成
 - 镜头内动效节拍：108.46s、111.12s、112.96s
 - 人脸占画面 7%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
@@ -2091,7 +2093,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_066](shots/shot_066.jpg)
 
-- 概率：静态图 + 推拉动效 86%，AI 生成视频 9%，屏幕录制/截图 2%（deterministic）
+- 概率：静态图 + 推拉动效 85%，AI 生成视频 9%，屏幕录制/截图 2%（deterministic）
 - 静帧来源：unknown
 - 素材来源：待确认；待确认是否真实：照片/图片素材
 - 整帧按单一刚体变换运动（拟合内点 100%，残差 0.03px，无局部运动）→ 静态图推拉：缩放 +1.8%/s，平移 9px/s
@@ -2102,7 +2104,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_067](shots/shot_067.jpg)
 
-- 概率：静态图 + 推拉动效 77%，AI 生成视频 14%，屏幕录制/截图 4%（deterministic）
+- 概率：静态图 + 推拉动效 76%，AI 生成视频 14%，屏幕录制/截图 4%（deterministic）
 - 静帧来源：graphic
 - 素材来源：制作方渲染
 - 整帧按单一刚体变换运动（拟合内点 99%，残差 0.15px，无局部运动）→ 静态图推拉：缩放 +6.9%/s，平移 39px/s
@@ -2113,7 +2115,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_068](shots/shot_068.jpg)
 
-- 概率：静态图 + 推拉动效 84%，AI 生成视频 10%，屏幕录制/截图 3%（deterministic）
+- 概率：静态图 + 推拉动效 83%，AI 生成视频 10%，屏幕录制/截图 3%（deterministic）
 - 静帧来源：graphic
 - 素材来源：制作方渲染
 - 整帧按单一刚体变换运动（拟合内点 100%，残差 0.08px，无局部运动）→ 静态图推拉：缩放 -0.3%/s，平移 4px/s
@@ -2124,7 +2126,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_069](shots/shot_069.jpg)
 
-- 概率：静态图 + 推拉动效 81%，AI 生成视频 12%，屏幕录制/截图 3%（deterministic）
+- 概率：静态图 + 推拉动效 80%，AI 生成视频 12%，屏幕录制/截图 3%（deterministic）
 - 静帧来源：unknown
 - 素材来源：待确认；待确认是否真实：照片/图片素材
 - 整帧按单一刚体变换运动（拟合内点 98%，残差 0.16px，无局部运动）→ 静态图推拉：缩放 +2.9%/s，平移 14px/s
@@ -2135,7 +2137,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_070](shots/shot_070.jpg)
 
-- 概率：AI 生成视频 41%，3D 渲染 23%，实拍 20%（deterministic）
+- 概率：AI 生成视频 40%，3D 渲染 23%，实拍 20%（deterministic）
 - 素材来源：AI 生成
 - 人脸占画面 21%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.30、用色 40 种、平坦块 25%
@@ -2147,7 +2149,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_071](shots/shot_071.jpg)
 
-- 概率：3D 渲染 51%，AI 生成视频 24%，代码/模板渲染 12%（deterministic）
+- 概率：3D 渲染 50%，AI 生成视频 24%，代码/模板渲染 12%（deterministic）
 - 素材来源：制作方渲染
 - 纹理呈渲染特征：平坦色块 22%、95% 像素仅用 22 种颜色、横竖直边 24%
 - 拍法/打光：中景；移动机位（稳定器/手持平移）；夜景/弱光环境光，没有专门补光；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.3:1（相差 0.4 档）；柔光（几乎没有明暗分界）
@@ -2158,7 +2160,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_072](shots/shot_072.jpg)
 
-- 概率：AI 生成视频 85%，3D 渲染 5%，实拍 4%（deterministic）
+- 概率：AI 生成视频 83%，3D 渲染 5%，实拍 4%（deterministic）
 - 素材来源：AI 生成
 - 低照度画面：38% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 6%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.32、用色 39 种、平坦块 21%
@@ -2171,7 +2173,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_073](shots/shot_073.jpg)
 
-- 概率：3D 渲染 38%，AI 生成视频 30%，实拍 18%（deterministic）
+- 概率：3D 渲染 37%，AI 生成视频 29%，实拍 18%（deterministic）
 - 素材来源：制作方渲染
 - 拍法/打光：中景；移动机位（稳定器/手持平移）；夜景/弱光环境光，没有专门补光；主光画面左侧（侧光）；光比约 3.9:1（相差 2.0 档）；柔光（明暗过渡宽）
 - 文字轨（文字/bottom）：幼童出洋的折子我签了
@@ -2181,7 +2183,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_074](shots/shot_074.jpg)
 
-- 概率：静态图 + 推拉动效 78%，AI 生成视频 13%，屏幕录制/截图 4%（deterministic）
+- 概率：静态图 + 推拉动效 77%，AI 生成视频 13%，屏幕录制/截图 4%（deterministic）
 - 静帧来源：graphic
 - 素材来源：制作方渲染
 - 整帧按单一刚体变换运动（拟合内点 97%，残差 0.19px，无局部运动）→ 静态图推拉：缩放 -3.5%/s，平移 37px/s
@@ -2193,7 +2195,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_075](shots/shot_075.jpg)
 
-- 概率：AI 生成视频 60%，3D 渲染 26%，数字人口播 6%（deterministic）
+- 概率：AI 生成视频 59%，3D 渲染 25%，数字人口播 6%（deterministic）
 - 素材来源：AI 生成
 - 人脸占画面 12%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.10、用色 27 种、平坦块 40%
@@ -2208,7 +2210,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_076](shots/shot_076.jpg)
 
-- 概率：AI 生成视频 61%，3D 渲染 24%，数字人口播 6%（deterministic）
+- 概率：AI 生成视频 60%，3D 渲染 24%，数字人口播 6%（deterministic）
 - 素材来源：AI 生成
 - 人脸占画面 23%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.22、用色 33 种、平坦块 30%
@@ -2223,7 +2225,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_077](shots/shot_077.jpg)
 
-- 概率：AI 生成视频 63%，3D 渲染 23%，数字人口播 6%（deterministic）
+- 概率：AI 生成视频 62%，3D 渲染 22%，数字人口播 6%（deterministic）
 - 素材来源：AI 生成
 - 人脸占画面 28%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.30、用色 34 种、平坦块 27%
@@ -2237,7 +2239,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_078](shots/shot_078.jpg)
 
-- 概率：AI 生成视频 52%，实拍 33%，数字人口播 7%（deterministic）
+- 概率：AI 生成视频 50%，实拍 32%，数字人口播 7%（deterministic）
 - 素材来源：AI 生成
 - 低照度画面：38% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 3%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.40、用色 34 种、平坦块 18%
@@ -2249,7 +2251,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_079](shots/shot_079.jpg)
 
-- 概率：AI 生成视频 41%，3D 渲染 25%，实拍 18%（deterministic）
+- 概率：AI 生成视频 41%，3D 渲染 24%，实拍 18%（deterministic）
 - 素材来源：AI 生成
 - 人脸占画面 27%、100% 的采样帧都有：是人物近景画面，平坦色块多来自墙面/衣服，渲染特征降权
 - 纹理呈照片/视频特征：噪声 σ=0.27、用色 34 种、平坦块 28%
@@ -2262,7 +2264,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_080](shots/shot_080.jpg)
 
-- 概率：静态图 + 推拉动效 69%，屏幕录制/截图 15%，AI 生成视频 12%（deterministic）
+- 概率：静态图 + 推拉动效 68%，屏幕录制/截图 15%，AI 生成视频 12%（deterministic）
 - 静帧来源：graphic
 - 素材来源：制作方渲染
 - 整帧按单一刚体变换运动（拟合内点 96%，残差 0.18px，无局部运动）→ 静态图推拉：缩放 +0.1%/s，平移 15px/s
@@ -2273,7 +2275,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_081](shots/shot_081.jpg)
 
-- 概率：3D 渲染 61%，AI 生成视频 21%，代码/模板渲染 12%（deterministic）
+- 概率：3D 渲染 60%，AI 生成视频 20%，代码/模板渲染 12%（deterministic）
 - 素材来源：制作方渲染
 - 纹理呈渲染特征：平坦色块 37%、95% 像素仅用 29 种颜色、横竖直边 16%
 - 逐帧清晰度呈周期性起伏（周期 2 帧，相关 0.02）：画面经过插帧/帧率转换，原始帧率更低
@@ -2287,7 +2289,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_082](shots/shot_082.jpg)
 
-- 概率：AI 生成视频 50%，实拍 32%，数字人口播 7%（deterministic）
+- 概率：AI 生成视频 49%，实拍 32%，数字人口播 7%（deterministic）
 - 素材来源：AI 生成
 - 低照度画面：27% 的区域接近全黑但带颗粒（不是纯色底），亮部平坦块只有 6%、且有人脸：平坦块/少色是暗部被压缩造成的，不按渲染特征算
 - 纹理呈照片/视频特征：噪声 σ=0.49、用色 33 种、平坦块 13%
@@ -2299,7 +2301,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_083](shots/shot_083.jpg)
 
-- 概率：静态图 + 推拉动效 77%，AI 生成视频 16%，屏幕录制/截图 3%（deterministic）
+- 概率：静态图 + 推拉动效 75%，AI 生成视频 15%，屏幕录制/截图 3%（deterministic）
 - 静帧来源：unknown
 - 素材来源：待确认；待确认是否真实：照片/图片素材
 - 整帧按单一刚体变换运动（拟合内点 100%，残差 0.14px，无局部运动）→ 静态图推拉：缩放 +0.1%/s，平移 2px/s
@@ -2312,7 +2314,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_084](shots/shot_084.jpg)
 
-- 概率：静态图 + 推拉动效 79%，AI 生成视频 14%，屏幕录制/截图 3%（deterministic）
+- 概率：静态图 + 推拉动效 77%，AI 生成视频 14%，屏幕录制/截图 3%（deterministic）
 - 静帧来源：unknown
 - 素材来源：待确认；待确认是否真实：照片/图片素材
 - 镜头内动效节拍：155.00s
@@ -2323,7 +2325,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_085](shots/shot_085.jpg)
 
-- 概率：3D 渲染 45%，AI 生成视频 41%，代码/模板渲染 9%（deterministic）
+- 概率：3D 渲染 44%，AI 生成视频 41%，代码/模板渲染 9%（deterministic）
 - 素材来源：制作方渲染
 - 逐帧清晰度呈周期性起伏（周期 4 帧，相关 0.39）：画面经过插帧/帧率转换，原始帧率更低
 - 重复帧呈 interpolated 规律（0%，周期 None）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材
@@ -2334,7 +2336,7 @@ Cinematic shot of an elderly Qing dynasty Chinese official in official robe sitt
 
 ![shot_086](shots/shot_086.jpg)
 
-- 概率：3D 渲染 47%，AI 生成视频 37%，代码/模板渲染 11%（deterministic）
+- 概率：3D 渲染 46%，AI 生成视频 37%，代码/模板渲染 11%（deterministic）
 - 素材来源：制作方渲染
 - 逐帧清晰度呈周期性起伏（周期 4 帧，相关 0.64）：画面经过插帧/帧率转换，原始帧率更低
 - 重复帧呈 interpolated 规律（0%，周期 None）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材

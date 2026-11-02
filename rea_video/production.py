@@ -18,7 +18,9 @@ from .classify import LABEL_ZH
 from .aspects.camera import SUPPORT_ZH
 from .plan import Planner, shot_prompts
 
-GEN_LABELS = ("ai_video", "cg_3d")
+GEN_LABELS = ("ai_video", "cg_3d", "anim_2d")
+SHOOT_LABELS = ("live_action", "stop_motion")
+GEN_ZH = {"ai_video": "AI 视频", "cg_3d": "3D 渲染", "anim_2d": "2D 动画"}
 CODE_LABELS = ("code_render", "screen_capture")
 LOCAL_LABELS = ("still_motion", "static_hold")
 SIZE_ORDER = {"远景": 0, "全景": 1, "中景": 2, "近景": 3, "特写": 4}
@@ -231,6 +233,9 @@ def _unit(seg: list[dict], k: int, lim: dict, model: dict | None, style: str, ca
     if not contiguous:
         unit["note"] = (unit.get("note", "") + "；" if unit.get("note") else "") + \
             "这几镜在成片里被插入画面隔开：生成时连着出，剪辑时再把插入画面放回去"
+    if label == "anim_2d" or "anim_2d" in votes:
+        unit["alt"] = ("另一条路：2D 动画工程。角色拆层做 Live2D / Spine 骨骼动画，或在 AE 里做；简单的扁平风格动画也可以让 LLM 写 "
+                       "Lottie / Canvas 代码。口型、动作要逐帧精确时比视频模型可控（R19）")
     if label == "cg_3d" or "cg_3d" in votes:
         unit["alt"] = ("另一条路：3D 工程。让 LLM 写 Blender 脚本或 Three.js 场景，角色/道具建模一次、按镜头设机位渲染，"
                        "多角度和角色一致性最好，改文案和镜头也只是改代码（R08）")
@@ -239,7 +244,7 @@ def _unit(seg: list[dict], k: int, lim: dict, model: dict | None, style: str, ca
 
 # ---------------------------------------------------------------- shooting setups
 def _setups(shots: list[dict], sig: dict, thr: float, b: dict) -> list[dict]:
-    filmed = [r for r in shots if r["base"]["label"] == "live_action"]
+    filmed = [r for r in shots if r["base"]["label"] in SHOOT_LABELS]
     scenes: list[list[dict]] = []
     for r in filmed:
         d = [(min(scene_distance(sig[r["index"]], sig[m["index"]]) for m in sc), i) for i, sc in enumerate(scenes)]
@@ -267,7 +272,9 @@ def _setups(shots: list[dict], sig: dict, thr: float, b: dict) -> list[dict]:
                            "screen_s": round(sum(r["duration"] for r in rs), 2),
                            "take_s": round(sum(r["duration"] for r in rs) + 2.0 * len(rs), 1),
                            "moves": sorted({((r.get("aspects") or {}).get("camera") or {}).get("result", {}).get("move") or "固定" for r in rs})})
-        out.append({"id": f"S{si}", "kind": "shoot", "shots": [r["index"] for r in sc],
+        post = [dict(e, shot=r["index"]) for r in sc for e in (r.get("ai_edits") or [])]
+        out.append({"id": f"S{si}", "kind": "shoot", "shots": [r["index"] for r in sc], "post": post,
+                    "stop_motion": [r["index"] for r in sc if r["base"]["label"] == "stop_motion"],
                     "screen_s": round(sum(r["duration"] for r in sc), 2), "description": desc,
                     "lighting": "，".join(x for x in (light.get("setup_name"), light.get("key_direction"), light.get("ratio"), light.get("color_temp")) if x),
                     "setups": setups})
@@ -347,12 +354,17 @@ def summary_line(plan: dict, b: dict) -> str:
             for i in u["shots"]:
                 lab = plan["_labels"][i]
                 kinds[lab] = kinds.get(lab, 0) + 1
-        what = " + ".join(f"{ {'ai_video': 'AI 视频', 'cg_3d': '3D 渲染'}.get(k, k)} {v} 镜" for k, v in kinds.items())
+        what = " + ".join(f"{GEN_ZH.get(k, k)} {v} 镜" for k, v in kinds.items())
         bits.append(f"{what} → {len(plan['units'])} 个生成单元、{plan['calls']} 次 {plan['model_name']} 调用")
     if plan["shoot"]:
         n_set = sum(len(s["setups"]) for s in plan["shoot"])
         n_shot = sum(len(s["shots"]) for s in plan["shoot"])
-        bits.append(f"实拍 {n_shot} 镜 → {len(plan['shoot'])} 个场景、{n_set} 个机位")
+        n_stop = sum(len(s.get("stop_motion", [])) for s in plan["shoot"])
+        what = "实拍" if not n_stop else ("定格动画" if n_stop == n_shot else "实拍 / 定格")
+        bits.append(f"{what} {n_shot} 镜 → {len(plan['shoot'])} 个场景、{n_set} 个机位")
+        n_post = len({e["shot"] for s in plan["shoot"] for e in s.get("post", [])})
+        if n_post:
+            bits.append(f"其中 {n_post} 镜拍完还要 AI 加工（" + "、".join(dict.fromkeys(e["kind_zh"] for s in plan["shoot"] for e in s["post"])) + "）")
     if plan["code"]:
         n = sum(len(c["shots"]) for c in plan["code"])
         bits.append(f"代码渲染/录屏 {n} 镜 → 1 个代码工程" + (f"（{len(plan['code'])} 段）" if len(plan["code"]) > 1 else ""))
@@ -408,6 +420,12 @@ def report_md(plan: dict) -> list[str]:
             for st in s["setups"]:
                 L.append(f"- 机位 {st['shot_size']} · {st['support']} · {'/'.join(st['moves'])}：镜头 {'、'.join('#' + str(i) for i in st['shots'])}，"
                          f"成片 {st['screen_s']}s，建议拍 {st['take_s']}s")
+            if s.get("stop_motion"):
+                L.append(f"- 定格动画（{'、'.join('#' + str(i) for i in s['stop_motion'])}）：相机固定，每秒约 12 张逐帧拍；用定格 App 的洋葱皮对位，"
+                         "灯光全程不动（避免闪烁）")
+            for e in s.get("post", []):
+                L.append(f"- 拍完后 #{e['shot']} 要 AI 加工：{e['kind_zh']}" + (f"（{e['evidence']}）" if e.get("evidence") else "")
+                         + (f" → {e['how']}" if e.get("how") else ""))
             L.append("")
     if plan["code"]:
         L += ["", "### 代码合成", "", "一个 Remotion/HTML 工程，按文字轨和版式重建（文字、界面 100% 可控，改文案只改数据）；"

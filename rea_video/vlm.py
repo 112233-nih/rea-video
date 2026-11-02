@@ -171,6 +171,8 @@ SHOT_PROMPT = """你是视频制作逆向工程专家。判断这个镜头的「
 - screen_capture：屏幕录制或网页/应用截图（真实界面元素、光标、滚动）
 - still_motion：一张静态图片做推拉摇移（Ken Burns），画面内部无独立运动
 - static_hold：静帧定格（图片或卡片停留不动）
+- anim_2d：2D 动画（手绘逐帧、Live2D、AE/Spine 角色动画、扁平插画风动画）：线条和平涂色块、角色有骨骼或逐帧动作，常见"一拍二"（每两帧才变一次）
+- stop_motion：定格动画（黏土、毛毡、纸偶、乐高等实物逐帧拍摄）：真实材质和灯光、动作一顿一顿、帧间轻微闪烁、指纹和纹理细节
 
 如果画面是实拍或写实画面，再拆「怎么拍、怎么打光」（aspects 里各项），纯图形/文字/界面画面这些字段写"不适用"。
 
@@ -179,14 +181,18 @@ SHOT_PROMPT = """你是视频制作逆向工程专家。判断这个镜头的「
 只是复刻要准备的参考（照样列出，系统会归为「参考素材」）；只有贴进版式里的录屏、截图、照片、视频片段才是真实像素。
 
 注意区分：卡通/3D 风格的 AI 视频（形变、闪烁、不精确）与真正的 3D 渲染（几何稳定、精确）；
-AI 生成的写实视频与实拍（看手、文字、背景细节、物理）。
+AI 生成的写实视频与实拍（看手、文字、背景细节、物理）；AI 生成的动画风视频（形变、线条游移）与真正的 2D 动画（线条稳定、按帧精确）；
+AI 仿定格风格（材质在帧间漂移）与真正的定格动画（同一实物、光照不变、只有逐帧位移）。
+
+实拍（或定格）画面如果被 AI 二次加工过，在 ai_edits 里逐个列出：换脸、对口型/改台词、整段风格化重绘、AI 换装、抠像换背景/绿幕、
+加删换物体、美颜瘦脸。依据要写看得到的破绽（脸部边缘、嘴型和下巴不跟、头发与背景交界、光线不一致）。没有就写 []。
 
 确定性分析给出的参考信号（可能有误，以画面为准）：
 {hints}
 
 只返回 JSON，不要任何其他文字：
 {{
-  "label_probs": {{"live_action": 0, "ai_video": 0, "avatar": 0, "cg_3d": 0, "code_render": 0, "screen_capture": 0, "still_motion": 0, "static_hold": 0}},
+  "label_probs": {{"live_action": 0, "ai_video": 0, "avatar": 0, "cg_3d": 0, "code_render": 0, "screen_capture": 0, "still_motion": 0, "static_hold": 0, "anim_2d": 0, "stop_motion": 0}},
   "image_source": "ai_image|photo|graphic|screenshot|unknown",
   "evidence": ["具体可见证据，尽量指明位置/时间"],
   "generator_guess": "可能的生成模型或工具（如 Seedance/Kling/Veo/Hailuo/Blender/Remotion/剪映 模板），无法判断写 unknown",
@@ -198,6 +204,7 @@ AI 生成的写实视频与实拍（看手、文字、背景细节、物理）�
   "aspects": <<SHOT_ASPECTS>>,
   "material_origin": "real|ai_generated|rendered|mixed（画面主要来自真实素材 / AI 生成 / 制作方渲染 / 混合）",
   "embedded_assets": [{{"kind": "real_footage|photo|screenshot|screen_recording|product_photo|logo|ai_image", "description": "是什么、在画面哪里", "is_real_material": true}}],
+  "ai_edits": [{{"kind": "face_swap|lip_sync|restyle|outfit_swap|bg_replace|object_edit|beautify", "evidence": "看到的破绽"}}],
   "replication": {{
     "image_prompt": "复刻首帧的中文图像提示词（主体、构图、光线、风格，具体可执行）",
     "video_prompt": "复刻该镜头的中文视频提示词：写清动作过程和结束状态、运镜；只写想要的内容，不写否定句",

@@ -31,6 +31,9 @@ signals:
   reusable_footage:    {detected_by: [], desc: 用户自有素材可直接复用}
   still_image_motion:  {detected_by: [analyze.camera_motion], desc: 整帧是一张静态图做推拉摇移（Ken Burns），可测出缩放/平移参数}
   static_hold:         {detected_by: [analyze.shot_boundary], desc: 静帧定格（图片或卡片停留）}
+  anim_2d:             {detected_by: [analyze.video_understanding], desc: 2D 动画（手绘逐帧、Live2D、AE/Spine 角色动画），工具测不出，靠看图}
+  stop_motion:         {detected_by: [analyze.video_understanding], desc: 定格动画（实物/黏土/纸偶逐帧拍摄），工具测不出，靠看图}
+  ai_edited_footage:   {detected_by: [analyze.video_understanding], desc: 实拍画面被 AI 二次加工（换脸、对口型、风格化、换装、换背景）}
 
 # ---------------------------------------------------------------- 拆分
 segmentation:
@@ -193,6 +196,22 @@ rules:
     route: [image.edit_multi_ref, render.compose]
     prefer: [gpt-image-2.5, seedream-5.0, ffmpeg]
     verify: [perceptual_similarity]
+
+  - id: R19-2d-animation
+    layer: base
+    when: [anim_2d]
+    route: [image.t2i, video.i2v_first_last, video.multi_reference]
+    prefer: [kling-3.0, seedance-2.5, vidu-q3]
+    verify: [identity_consistency, perceptual_similarity]
+    why: 先用图像模型定角色和画风（一张设定图），再首尾帧生成；要逐帧精确的口型和动作时，改走 AE / Live2D / Spine 工程
+
+  - id: R20-stop-motion
+    layer: base
+    when: [stop_motion]
+    route: [video.i2v_first_frame]
+    prefer: [kling-3.0, seedance-2.5, vidu-q3]
+    verify: [perceptual_similarity]
+    why: 首选真的拍：手机固定 + 定格 App 每秒 12 张；AI 生成只能近似定格的顿挫感，提示词写明 stop-motion、12fps
 
   - id: R16-dialogue-coupled
     layer: base

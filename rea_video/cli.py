@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from .util import LOG, load_env_files, read_json, setup_logging
+from .classify import LABELS
 from .vlm import vlm_note
 
 DEFAULT_CAPSULE_ROOT = os.getenv("CAPSULE_CINEMA_ROOT", str(Path.home() / "code/github/capsule-cinema"))
@@ -364,7 +365,7 @@ def main(argv: list[str] | None = None) -> int:
     co.add_argument("--shots", help="镜头编号，逗号分隔（如 3,5 或 shot_003），all 表示整条；也可用 --start/--end 指定时间段")
     co.add_argument("--start", type=float)
     co.add_argument("--end", type=float)
-    co.add_argument("--label", help="正确的底层类别：" + "、".join(["live_action", "ai_video", "avatar", "cg_3d", "code_render", "screen_capture", "still_motion", "static_hold"]))
+    co.add_argument("--label", help="正确的底层类别：" + "、".join(LABELS))
     co.add_argument("--real", choices=["yes", "no"], help="是否用了用户真实素材")
     co.add_argument("--note", help="用户的原话或理由，例如「这是定格动画，不是 AI」")
     co.set_defaults(func=cmd_correct)

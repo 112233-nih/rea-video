@@ -9,6 +9,10 @@ Base layer labels (what produced the moving picture of the shot):
   screen_capture 屏幕录制/网页截图
   still_motion   静态图片 + 推拉摇移（Ken Burns 图片动效）
   static_hold    静帧停留（图片或卡片定格，无运动）
+  anim_2d        2D 动画（手绘逐帧、Live2D、AE/Spine 角色动画、Flash 风格）
+  stop_motion    定格动画（实物/黏土/纸偶逐帧拍摄）
+The last two have no pixel test yet (held frames "on twos" look like a frame-rate conversion); only an image reader
+(VLM or agent) can call them, see UNMEASURED.
 Overlays (composited on top): subtitle / title / label text, static graphics, layout template.
 
 Deterministic evidence is decisive for *temporal* questions (is anything moving? is the
@@ -21,7 +25,10 @@ import math
 import re
 from difflib import SequenceMatcher
 
-LABELS = ["live_action", "ai_video", "avatar", "cg_3d", "code_render", "screen_capture", "still_motion", "static_hold"]
+LABELS = ["live_action", "ai_video", "avatar", "cg_3d", "code_render", "screen_capture", "still_motion", "static_hold",
+          "anim_2d", "stop_motion"]
+# labels the deterministic layer cannot score: decided by image readers only (see pipeline._vlm_gate)
+UNMEASURED = ("anim_2d", "stop_motion")
 LABEL_ZH = {
     "live_action": "实拍",
     "ai_video": "AI 生成视频",
@@ -31,11 +38,13 @@ LABEL_ZH = {
     "screen_capture": "屏幕录制/截图",
     "still_motion": "静态图 + 推拉动效",
     "static_hold": "静帧停留",
+    "anim_2d": "2D 动画",
+    "stop_motion": "定格动画",
 }
 IMAGE_SOURCE_ZH = {"ai_image": "AI 生成图", "photo": "真实照片", "graphic": "设计/渲染图形", "screenshot": "截图", "unknown": "未知"}
 # how much to trust the deterministic layer per label (VLM weight is 1.0)
 DET_WEIGHT = {"static_hold": 1.6, "still_motion": 1.4, "code_render": 1.0, "screen_capture": 0.6,
-              "cg_3d": 0.5, "live_action": 0.6, "ai_video": 0.6, "avatar": 0.4}
+              "cg_3d": 0.5, "live_action": 0.6, "ai_video": 0.6, "avatar": 0.4, "anim_2d": 0.3, "stop_motion": 0.3}
 
 
 # weight of the model's opinion (VLM or an agent's review) relative to the deterministic layer
@@ -299,7 +308,8 @@ def image_source_guess(f: dict, facts: dict) -> str:
 # Labels that answer the same first question ("how was the picture made?") and differ only in subtype.
 # Fusion decides the group first, then the subtype inside it: when the tools say "AI video" and an agent says
 # "digital avatar", both are votes for "generated" and must not be outvoted by a third source's "live action".
-GROUPS = {"ai_video": "generated", "avatar": "generated", "cg_3d": "rendered", "code_render": "rendered"}
+GROUPS = {"ai_video": "generated", "avatar": "generated", "cg_3d": "rendered", "code_render": "rendered", "anim_2d": "rendered",
+          "stop_motion": "live_action"}
 
 
 def group_of(label: str) -> str:
@@ -326,7 +336,7 @@ def fuse(det: dict[str, float], vlm: dict[str, float] | None, family: str, major
     # hard temporal constraints: a frozen shot cannot be a generated *video*
     mult = {k: 1.0 for k in LABELS}
     if family == "frozen":
-        for k in ("ai_video", "live_action", "avatar", "cg_3d", "still_motion"):
+        for k in ("ai_video", "live_action", "avatar", "cg_3d", "still_motion", "anim_2d", "stop_motion"):
             mult[k] = 0.05
     if family == "planar":
         for k in ("live_action", "avatar"):
@@ -408,7 +418,7 @@ def overlay_layers(overlay: dict | None, text: dict | None, template: dict | Non
 
 # bases whose picture can carry printed words (packaging, signs, screens in the scene) that OCR also reads
 # (a still image is often a screenshot or a poster whose words are its content: left alone)
-SCENE_TEXT_BASES = ("live_action", "ai_video", "avatar", "cg_3d")
+SCENE_TEXT_BASES = ("live_action", "ai_video", "avatar", "cg_3d", "stop_motion")
 SCENE_TEXT_DRIFT = 0.04  # the same words moved more than 4% of the frame: they sit on an object
 
 

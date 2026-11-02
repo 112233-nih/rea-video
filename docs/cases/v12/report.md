@@ -4,7 +4,7 @@
 
 - 时长 21.033s · 480×854 · 30.0fps · 9:16
 - 镜头 8 个，平均 2.63s；转场：cut×7、start×1
-- 判断置信度（按时长加权）：81%；判定方式：确定性取证 + VLM 融合
+- 判断置信度（按时长加权）：80%；判定方式：确定性取证 + VLM 融合
 - VLM 已生效（gemini-3.1-pro-preview,gemini-3.1-pro-preview-pc,gcp-gemini-3-pro-preview）；由 claude 看图复核 3/8 个镜头，已并入结论
 
 ![storyboard](storyboard.jpg)
@@ -101,6 +101,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 - 机位：手持 38%、移动机位（稳定器/手持平移） 37%、固定机位（三脚架/支架/放在桌上） 25%；常见运镜 拉
 - 打光：正面柔光（平光）。主光 正面（光从镜头方向来，主体两侧亮度接近），从上往下（顶灯/路灯/高位光源）；光比 约 1.2:1（相差 0.3 档）；柔光（明暗过渡宽）；色温偏冷（日光/冷白 LED）；背景明显虚化（浅景深/人像模式）
 - （画面不是实拍：以上是画面里的光影，用于写生成提示词，不是拍摄方案）
+- 调色：自然（接近原色）；饱和度正常、对比正常、黑位正常、整体中性
 - 剪辑：每分钟 20.0 刀，平均镜头 2.63s；没有实拍镜头
 
 | 维度 | 项目 | 结论 | 来源 |
@@ -121,6 +122,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 | 打光 | 色温 | 偏冷（日光/冷白 LED） | 测量：偏冷（日光/冷白 LED）；VLM：中性偏暖 |
 | 打光 | 布光方案 | 室内均匀柔和自然光与顶灯照明 | VLM：室内均匀柔和自然光与顶灯照明 |
 | 打光 | 整体布光 | 室内自然光或柔和的顶部照明，光线均匀，大理石桌面有轻微反光，水果色彩还原度高，整体明亮通透。 | VLM：室内自然光或柔和的顶部照明，光线均匀，大理石桌面有轻微反光，水果色彩还原度高，整体明亮通透。 |
+| 调色 | 调色风格 | 自然（接近原色） | 测量：自然（接近原色） |
 
 - 说明：光比、软硬、色温、景别由主体像素测得（有人脸用人脸，没有用画面清晰区域，后者是估算）；平台转码会压暗部，软硬和补光偏保守；机位角度、光源种类、眼神光、轮廓光以看图结果为准。测量和看图不一致时两者都列出。
 
@@ -195,14 +197,14 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 | # | 时间 | 时长 | 底层画面 | 置信度 | 素材来源 | 叠加层 | 运镜 | 复刻路线 |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 00:00.000 | 1.83s | AI 生成视频 | 74% | AI 生成；复刻参考：商品参考图 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 2 | 00:01.833 | 0.97s | AI 生成视频 | 85% | AI 生成 | — | 固定 | R07-product-hero → capsule_cinema |
-| 3 | 00:02.800 | 0.93s | AI 生成视频 | 86% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 4 | 00:03.733 | 2.50s | AI 生成视频 | 86% | AI 生成；复刻参考：商品参考图 | — | 手持晃动 | R07-product-hero → capsule_cinema |
-| 5 | 00:06.233 | 2.80s | AI 生成视频 | 76% | AI 生成；复刻参考：Logo/品牌参考 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
-| 6 | 00:09.033 | 5.53s | AI 生成视频 | 81% | AI 生成 | — | 手持晃动 | R07-product-hero → capsule_cinema |
-| 7 | 00:14.567 | 4.30s | AI 生成视频 | 84% | AI 生成 | — | 固定 | R07-product-hero → capsule_cinema |
-| 8 | 00:18.867 | 2.17s | AI 生成视频 | 78% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 1 | 00:00.000 | 1.83s | AI 生成视频 | 72% | AI 生成；复刻参考：商品参考图 | 文字 | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 2 | 00:01.833 | 0.97s | AI 生成视频 | 84% | AI 生成 | — | 固定 | R07-product-hero → capsule_cinema |
+| 3 | 00:02.800 | 0.93s | AI 生成视频 | 85% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 4 | 00:03.733 | 2.50s | AI 生成视频 | 85% | AI 生成；复刻参考：商品参考图 | — | 手持晃动 | R07-product-hero → capsule_cinema |
+| 5 | 00:06.233 | 2.80s | AI 生成视频 | 74% | AI 生成；复刻参考：Logo/品牌参考 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
+| 6 | 00:09.033 | 5.53s | AI 生成视频 | 80% | AI 生成 | — | 手持晃动 | R07-product-hero → capsule_cinema |
+| 7 | 00:14.567 | 4.30s | AI 生成视频 | 83% | AI 生成 | — | 固定 | R07-product-hero → capsule_cinema |
+| 8 | 00:18.867 | 2.17s | AI 生成视频 | 75% | AI 生成 | — | 平滑运镜 | R07-product-hero → capsule_cinema |
 
 ## 逐镜详情
 
@@ -210,7 +212,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_001](shots/shot_001.jpg)
 
-- 概率：AI 生成视频 71%，实拍 22%，数字人口播 3%（fused）
+- 概率：AI 生成视频 69%，实拍 23%，数字人口播 3%（fused）
 - 画面里物体上的字（不是后期字幕）：mochyrichoct、pcyayhydow、pouayhydow
 - 素材来源：AI 生成；复刻参考：商品参考图
 - 纹理呈照片/视频特征：噪声 σ=0.49、用色 167 种、平坦块 1%
@@ -233,7 +235,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_002](shots/shot_002.jpg)
 
-- 概率：AI 生成视频 85%，数字人口播 10%，3D 渲染 1%（fused）
+- 概率：AI 生成视频 84%，数字人口播 10%，3D 渲染 1%（fused）
 - 画面里物体上的字（不是后期字幕）：oo、mophyriohocs、mophynchoids
 - 素材来源：AI 生成
 - 可能的工具：Kling / Gen-3 / Hailuo
@@ -254,7 +256,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_003](shots/shot_003.jpg)
 
-- 概率：AI 生成视频 86%，数字人口播 9%，3D 渲染 1%（fused）
+- 概率：AI 生成视频 85%，数字人口播 9%，3D 渲染 1%（fused）
 - 画面里物体上的字（不是后期字幕）：mophyrichods、spiouyhydow、spioyouhydow
 - 素材来源：AI 生成
 - 可能的工具：Kling/Hailuo
@@ -276,7 +278,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_004](shots/shot_004.jpg)
 
-- 概率：AI 生成视频 86%，数字人口播 9%，3D 渲染 1%（fused）
+- 概率：AI 生成视频 85%，数字人口播 9%，3D 渲染 1%（fused）
 - 画面里物体上的字（不是后期字幕）：mophyriohords、mophyrohords、mophy rohords
 - 素材来源：AI 生成；复刻参考：商品参考图
 - 可能的工具：Kling/Veo/Hailuo
@@ -296,7 +298,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_005](shots/shot_005.jpg)
 
-- 概率：AI 生成视频 72%，实拍 20%，数字人口播 3%（fused）
+- 概率：AI 生成视频 70%，实拍 22%，数字人口播 3%（fused）
 - 画面里物体上的字（不是后期字幕）：caoyyhydow、mophyrohords、mophyidtods
 - 素材来源：AI 生成；复刻参考：Logo/品牌参考
 - 纹理呈照片/视频特征：噪声 σ=0.39、用色 153 种、平坦块 2%
@@ -318,7 +320,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_006](shots/shot_006.jpg)
 
-- 概率：AI 生成视频 81%，数字人口播 9%，3D 渲染 5%（fused）
+- 概率：AI 生成视频 80%，数字人口播 9%，3D 渲染 4%（fused）
 - 画面里物体上的字（不是后期字幕）：mophyiclrods、mophy iclrods
 - 素材来源：AI 生成
 - 可能的工具：Hailuo
@@ -339,7 +341,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_007](shots/shot_007.jpg)
 
-- 概率：AI 生成视频 84%，数字人口播 10%，3D 渲染 2%（fused）
+- 概率：AI 生成视频 83%，数字人口播 10%，3D 渲染 2%（fused）
 - 素材来源：AI 生成
 - 可能的工具：Kling/Veo/Runway Gen-3
 - 纹理呈照片/视频特征：噪声 σ=0.52、用色 128 种、平坦块 0%
@@ -358,7 +360,7 @@ Shot 2 (4.3-6.5s): Close-up of a hand holding a glass of thick pink strawberry s
 
 ![shot_008](shots/shot_008.jpg)
 
-- 概率：AI 生成视频 74%，实拍 18%，数字人口播 3%（fused）
+- 概率：AI 生成视频 71%，实拍 20%，数字人口播 3%（fused）
 - 素材来源：AI 生成
 - 纹理呈照片/视频特征：噪声 σ=0.34、用色 159 种、平坦块 2%
 - 重复帧呈 24→30 规律（17%，周期 5）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材

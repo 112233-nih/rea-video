@@ -257,6 +257,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 - 机位：固定机位（三脚架/支架/放在桌上） 78%、移动机位（稳定器/手持平移） 22%；常见运镜 推
 - 打光：正面柔光（平光）。主光 正面（光从镜头方向来，主体两侧亮度接近），与主体同高；光比 约 1.0:1（相差 0.0 档）；中等柔度；色温中性（约 5000K）；背景明显虚化（浅景深/人像模式）
 - （画面不是实拍：以上是画面里的光影，用于写生成提示词，不是拍摄方案）
+- 调色：日系清新（明亮、低饱和、黑位抬高）；低饱和、低对比、黑位抬高（发灰的暗部）、整体中性
 - 剪辑：每分钟 18.0 刀，平均镜头 3.17s；没有实拍镜头
 
 | 维度 | 项目 | 结论 | 来源 |
@@ -278,6 +279,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 | 打光 | 色温 | 中性（约 5000K） | 测量：中性（约 5000K）；VLM：中性 |
 | 打光 | 布光方案 | 均匀柔光照明 | VLM：均匀柔光照明 |
 | 打光 | 整体布光 | 明亮柔和的三维卡通布光，偏暖色调，主光正面微侧，阴影柔和自然，具有毛绒材质质感漫反射。 | VLM：明亮柔和的三维卡通布光，偏暖色调，主光正面微侧，阴影柔和自然，具有毛绒材质质感漫反射。 |
+| 调色 | 调色风格 | 日系清新（明亮、低饱和、黑位抬高） | 测量：日系清新（明亮、低饱和、黑位抬高） |
 
 - 说明：光比、软硬、色温、景别由主体像素测得（有人脸用人脸，没有用画面清晰区域，后者是估算）；平台转码会压暗部，软硬和补光偏保守；机位角度、光源种类、眼神光、轮廓光以看图结果为准。测量和看图不一致时两者都列出。
 
@@ -378,7 +380,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_001](shots/shot_001.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，实拍 0%（fused）
+- 概率：3D 渲染 99%，2D 动画 0%，代码/模板渲染 0%（fused）
 - 画面里物体上的字（不是后期字幕）：咸
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
@@ -388,7 +390,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 - [VLM] 咸鸭蛋流油的动画为3D流体或粒子特效
 - [VLM] 画面几何结构稳定，无AI生成的形变或闪烁
 - 画面：3D动画：黄色毛绒角色敲开咸鸭蛋，红油涌出，棕色角色在一旁观看。固定镜头，多景别切换，柔和光线。
-- 拍法/打光：中景；平视；虚拟固定；正面柔光（平光）；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.2 档）；中等柔度
+- 拍法/打光：中景；平视；虚拟固定；户外阴天/背阴处柔光；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.2:1（相差 0.2 档）；中等柔度
 - 文字轨（字幕/bottom）：鸭宝磕开一枚腌好的咸鸭蛋 / 明明没往里加一滴油 / 花猫看得眼睛都直了
 - 文字轨（文字/middle）：咸
 - 文字轨（标题/top）：咸鸭蛋为什么会流油？
@@ -400,7 +402,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_002](shots/shot_002.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，AI 生成视频 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，代码/模板渲染 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 镜头内动效节拍：9.62s、10.46s、11.46s
@@ -420,7 +422,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_003](shots/shot_003.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，屏幕录制/截图 0%（fused）
+- 概率：3D 渲染 99%，代码/模板渲染 0%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 75%、95% 像素仅用 18 种颜色、横竖直边 41%
@@ -428,7 +430,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 - [VLM] 材质（木纹、磨砂白球）和光影（碗底柔和投影）呈现典型的3D渲染特征
 - [VLM] 小球弹出的动画轨迹精确、刚性，符合3D关键帧动画特征
 - 画面：极简3D场景，木碗中装有白色粉末，几个带眼睛的白色小球（拟人化盐粒）依次从粉末中弹出。固定镜头，柔和光照。
-- 拍法/打光：特写；略俯拍；三脚架/支架固定；正面柔光（平光）；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.0:1（相差 0.0 档）；柔光（几乎没有明暗分界）
+- 拍法/打光：特写；略俯拍；三脚架/支架固定；高调光（整体明亮、几乎没有暗部）；主光正面（光从镜头方向来，主体两侧亮度接近）；光比约 1.0:1（相差 0.0 档）；柔光（几乎没有明暗分界）
 - 文字轨（文字/bottom）：幕后导演是普普通通的盐
 - 文字轨（标题/top）：咸鸭蛋为什么会流油？
 - 复刻：3D 渲染：可用首尾帧 AI 生成近似；需要精确多角度时走 3D 建模 + Blender 渲染
@@ -439,7 +441,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_004](shots/shot_004.jpg)
 
-- 概率：3D 渲染 93%，代码/模板渲染 6%，屏幕录制/截图 0%（fused）
+- 概率：3D 渲染 93%，代码/模板渲染 6%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - 镜头内动效节拍：16.88s
@@ -459,7 +461,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_005](shots/shot_005.jpg)
 
-- 概率：3D 渲染 99%，AI 生成视频 0%，代码/模板渲染 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，AI 生成视频 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 31%、95% 像素仅用 51 种颜色、横竖直边 30%
@@ -482,7 +484,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_006](shots/shot_006.jpg)
 
-- 概率：3D 渲染 93%，代码/模板渲染 6%，屏幕录制/截图 0%（fused）
+- 概率：3D 渲染 93%，代码/模板渲染 6%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - 纹理呈渲染特征：平坦色块 67%、95% 像素仅用 20 种颜色、横竖直边 43%
@@ -502,7 +504,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_007](shots/shot_007.jpg)
 
-- 概率：3D 渲染 99%，AI 生成视频 0%，实拍 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，AI 生成视频 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - [VLM] 蛋黄呈现完美的正球体几何形状
@@ -522,7 +524,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_008](shots/shot_008.jpg)
 
-- 概率：3D 渲染 99%，AI 生成视频 0%，实拍 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，AI 生成视频 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - [VLM] 蛋黄呈现完美的几何球体
@@ -541,7 +543,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_009](shots/shot_009.jpg)
 
-- 概率：3D 渲染 95%，代码/模板渲染 4%，AI 生成视频 0%（fused）
+- 概率：3D 渲染 94%，代码/模板渲染 4%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - [VLM] 蛋壳截面、蛋清和蛋黄均为几何精确的3D建模对象
@@ -559,7 +561,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_010](shots/shot_010.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，实拍 0%（fused）
+- 概率：3D 渲染 99%，2D 动画 0%，代码/模板渲染 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 48%、95% 像素仅用 37 种颜色、横竖直边 36%
@@ -578,7 +580,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_011](shots/shot_011.jpg)
 
-- 概率：3D 渲染 99%，AI 生成视频 0%，实拍 0%（fused）
+- 概率：3D 渲染 98%，AI 生成视频 0%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - [VLM] 画面中的鸭蛋结构、半透明外壳、光滑的蛋黄和底部的编织材质均呈现出完美的几何形状和典型的3D渲染质感
@@ -596,7 +598,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_012](shots/shot_012.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，屏幕录制/截图 0%（fused）
+- 概率：3D 渲染 99%，代码/模板渲染 0%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 55%、95% 像素仅用 28 种颜色、横竖直边 43%
@@ -616,7 +618,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_013](shots/shot_013.jpg)
 
-- 概率：3D 渲染 90%，AI 生成视频 9%，数字人口播 0%（fused）
+- 概率：3D 渲染 89%，AI 生成视频 9%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - [VLM] 完全规整的3D几何体与半透明材质切片展示
@@ -634,7 +636,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_014](shots/shot_014.jpg)
 
-- 概率：3D 渲染 96%，代码/模板渲染 3%，屏幕录制/截图 0%（fused）
+- 概率：3D 渲染 96%，代码/模板渲染 3%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - 纹理呈渲染特征：平坦色块 67%、95% 像素仅用 20 种颜色、横竖直边 45%
@@ -653,7 +655,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_015](shots/shot_015.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，AI 生成视频 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，代码/模板渲染 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 44%、95% 像素仅用 65 种颜色、横竖直边 33%
@@ -672,7 +674,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_016](shots/shot_016.jpg)
 
-- 概率：3D 渲染 98%，AI 生成视频 0%，实拍 0%（fused）
+- 概率：3D 渲染 98%，AI 生成视频 0%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - [VLM] 画面中的鸭蛋、蛋黄、油脂和容器均为3D模型，几何形状完美，材质均匀
@@ -691,7 +693,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_017](shots/shot_017.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，实拍 0%（fused）
+- 概率：3D 渲染 99%，2D 动画 0%，代码/模板渲染 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 镜头内动效节拍：50.38s、51.29s
@@ -713,7 +715,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_018](shots/shot_018.jpg)
 
-- 概率：3D 渲染 99%，代码/模板渲染 0%，实拍 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，代码/模板渲染 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 41%、95% 像素仅用 89 种颜色、横竖直边 39%
@@ -734,7 +736,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_019](shots/shot_019.jpg)
 
-- 概率：3D 渲染 90%，AI 生成视频 9%，数字人口播 1%（fused）
+- 概率：3D 渲染 89%，AI 生成视频 9%，数字人口播 1%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - 镜头内动效节拍：58.33s、59.54s
@@ -755,7 +757,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_020](shots/shot_020.jpg)
 
-- 概率：3D 渲染 96%，代码/模板渲染 3%，屏幕录制/截图 0%（fused）
+- 概率：3D 渲染 96%，代码/模板渲染 3%，2D 动画 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender
 - 纹理呈渲染特征：平坦色块 61%、95% 像素仅用 31 种颜色、横竖直边 41%
@@ -774,7 +776,7 @@ Shot 3 (5.8-9.3s): Static camera, three fluffy cartoon animal characters standin
 
 ![shot_021](shots/shot_021.jpg)
 
-- 概率：3D 渲染 99%，AI 生成视频 0%，代码/模板渲染 0%（fused）
+- 概率：3D 渲染 98%，2D 动画 0%，AI 生成视频 0%（fused）
 - 素材来源：制作方渲染
 - 可能的工具：Blender/C4D
 - 纹理呈渲染特征：平坦色块 47%、95% 像素仅用 74 种颜色、横竖直边 35%

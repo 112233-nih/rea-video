@@ -17,6 +17,7 @@ class Camera(Aspect):
         super().__init__(key="camera", title="机位", shot_fields=[
             Field("camera_support", "拍摄方式", "手持自拍（前置镜头）|他人手持|三脚架/支架固定|稳定器|桌面俯拍支架|无法判断", prefer="seen"),
             Field("lens", "镜头", "手机前置广角|手机后置主摄|手机长焦|相机人像/长焦|无法判断（依据：透视变形、背景虚化）", prefer="seen"),
+            Field("speed", "速度", "正常|慢动作|延时摄影|变速（先快后慢等）|倒放；依据（水花、头发、人流、云的运动）", prefer="seen"),
         ], video_fields=[
             Field("setups", "机位/场景", "一共几个场景、几个机位，各拍什么", prefer="seen"),
             Field("gear_guess", "推测设备", "手机/相机档次、稳定器、麦克风（领夹麦/机顶麦）、补光灯等，写依据", prefer="seen"),

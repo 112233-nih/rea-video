@@ -8,7 +8,7 @@ from __future__ import annotations
 import html
 import json
 
-from . import framing, camera, lighting, editing, fmt  # noqa: F401  (registration order matters)
+from . import framing, camera, lighting, grade, editing, fmt  # noqa: F401  (registration order matters)
 from .base import FILMED, PHOTOGRAPHIC, REGISTRY, ShotCtx, get
 from .subject import subject
 

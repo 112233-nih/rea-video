@@ -269,6 +269,8 @@ def _production_html(plan: dict) -> str:
     for sc in plan.get("shoot", []):
         rows = "".join(f"<li>机位 {esc(st['shot_size'])} · {esc(st['support'])}：镜头 {esc('、'.join('#' + str(i) for i in st['shots']))}，"
                        f"成片 {st['screen_s']}s，建议拍 {st['take_s']}s</li>" for st in sc["setups"])
+        rows += "".join(f"<li>拍完后 #{e['shot']} 要 AI 加工：{esc(e['kind_zh'])}" + (f" → {esc(e['how'])}" if e.get("how") else "") + "</li>"
+                        for e in sc.get("post", []))
         P.append(f"<h4>场次 {esc(sc['id'])}：镜头 {esc('、'.join('#' + str(i) for i in sc['shots']))}（{sc['screen_s']}s）</h4>"
                  + (f"<p>{esc(sc['description'])}</p>" if sc.get("description") else "")
                  + (f"<p class='muted'>布光：{esc(sc['lighting'])}</p>" if sc.get("lighting") else "") + f"<ul>{rows}</ul>")

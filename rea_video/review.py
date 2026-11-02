@@ -13,6 +13,7 @@ from .vlm import SHOT_PROMPT, shot_hints
 
 AGENT_WEIGHT = 0.85  # agent answers are softened toward uniform before fusion
 IMAGE_SOURCES = ("ai_image", "photo", "graphic", "screenshot", "unknown")
+EDIT_KINDS = ("face_swap", "lip_sync", "restyle", "outfit_swap", "bg_replace", "object_edit", "beautify")
 ASSET_KINDS = ("real_footage", "photo", "screenshot", "screen_recording", "product_photo", "logo", "ai_image")
 
 # category definitions, taken from the VLM prompt so both paths ask the same question
@@ -39,6 +40,7 @@ INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画
 每个镜头要填：label_probs（8 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
 description（主体、动作、场景、运镜）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
 kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。
+实拍或定格镜头被 AI 二次加工过时填 ai_edits：[{{"kind": "{"|".join(EDIT_KINDS)}", "evidence": "看到的破绽"}}]（换脸、对口型、风格化、换装、换背景、加删物体、美颜）；没有就留空。
 AI 生成 / 3D / 实拍镜头再填 replication：image_prompt（复刻首帧的中文图像提示词：主体、构图、光线、风格，具体可执行）、
 video_prompt（复刻该镜头的中文视频提示词：写清动作过程和结束状态、运镜；只写想要的内容，不写否定句）、video_prompt_en（英文版）。
 这些提示词会被合并进「生成单元」的多镜头提示词，所以每镜只写这一镜的内容，统一的风格和场景描述写在 description 里即可。
@@ -104,7 +106,7 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
              "shots": shots}
     answers = {"by": "", "shots": [{"id": s["id"], "time": f"{s['start']:.2f}-{s['end']:.2f}",
                                      "label_probs": {k: 0 for k in LABELS}, "image_source": "unknown",
-                                     "evidence": [], "description": "", "embedded_assets": [],
+                                     "evidence": [], "description": "", "embedded_assets": [], "ai_edits": [],
                                      "replication": {"image_prompt": "", "video_prompt": "", "video_prompt_en": ""},
                                      "aspects": aspects.review_template()} for s in shots],
                "aspects": aspects.review_template(video=True)}
@@ -137,7 +139,9 @@ def _clean(ans: dict) -> tuple[dict | None, str | None]:
                            "is_real_material": bool(e.get("is_real_material", e["kind"] != "ai_image"))})
     return {"label_probs": soft, "raw_probs": {k: round(v / total, 3) for k, v in vals.items()}, "image_source": src,
             "evidence": [str(x) for x in (ans.get("evidence") or [])][:8], "description": str(ans.get("description", "")),
-            "embedded_assets": assets, "replication": rep, "aspects": aspects.clean_answers(ans.get("aspects"))}, None
+            "embedded_assets": assets, "replication": rep, "aspects": aspects.clean_answers(ans.get("aspects")),
+            "ai_edits": [{"kind": e["kind"], "evidence": str(e.get("evidence", ""))} for e in (ans.get("ai_edits") or [])
+                         if isinstance(e, dict) and e.get("kind") in EDIT_KINDS]}, None
 
 
 def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict:

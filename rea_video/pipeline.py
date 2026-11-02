@@ -12,7 +12,7 @@ from . import SCHEMA, __version__
 from .assets import detect_embedded, material_summary
 from .audio import analyze_audio, merge_audio_with_vlm
 from .sound_source import MUSIC_ZH, classify_sound_sources, per_clip_audio
-from .classify import LABEL_ZH, RULES, decide, deterministic, drop_scene_text, fuse, group_of, image_source_guess, overlay_layers, top, verdict_text, video_context
+from .classify import LABEL_ZH, RULES, UNMEASURED, decide, deterministic, drop_scene_text, fuse, group_of, image_source_guess, overlay_layers, top, verdict_text, video_context
 from .features import collect_samples, shot_features
 from .media import cut_clip, extract_frame, require_tools, video_info
 from .overlay import ocr_frames, persistent_template, static_overlays, summarize_text
@@ -260,6 +260,8 @@ def _vlm_gate(rec: dict, vprobs: dict | None, vctx: dict) -> dict | None:
     rendered_top = d not in AI_LIVE_AXIS or ranked[1][0] not in AI_LIVE_AXIS
     person = (v in AI_LIVE_AXIS and rendered_top
               and bool(facts.get("big_face") or facts.get("lowlight") or facts.get("face_area", 0) >= RULES["big_face"]["area"]))
+    if v in UNMEASURED:  # 2D animation / stop motion: the tools cannot score them, so they cannot back them either
+        return vprobs
     if v not in (d, ranked[1][0]) and not person:  # it must back one of the tools' two best guesses
         return None
     # the tools' confidence only protects the AI / live axis (frame-rate evidence), not a "rendered" texture call
@@ -363,6 +365,9 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         seen_live = (seen.get("label_probs") or {}).get("live_action", 0.0) / (sum((seen.get("label_probs") or {}).values()) or 1.0)
         doubt = None if decided == "user" else _ai_or_live_doubt(label, rec["deterministic"]["facts"], prov, vctx, seen_live,
                                                                   seen=bool(seen.get("label_probs")))
+        if not doubt and decided != "user" and label in UNMEASURED and not (rec.get("vlm") and rec.get("review")):
+            doubt = (f"{LABEL_ZH[label]}只有一方看图判断（工具测不出这一类）：" +
+                     ("定格动画和 AI 视频、实拍容易混" if label == "stop_motion" else "2D 动画和代码动效、AI 视频容易混") + "，请再看一眼")
         if doubt:
             rec["base"]["confidence"] = round(min(conf, DOUBT_CAP), 3)
             rec["base"]["uncertain"] = doubt
@@ -383,6 +388,16 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         if user.get("real_material") is not None:
             _user_real(rec["material"], bool(user["real_material"]))
         rec["verdict"] = verdict_text(label, img_src, rec["layers"])
+        rec.pop("ai_edits", None)
+        if label in ("live_action", "stop_motion"):
+            # filmed, then changed by AI (face swap, lip sync, restyle ...): only image readers can see it; the agent's
+            # answer replaces the VLM's when it gave one (an empty list from the agent means "looked, none")
+            rv = rec.get("review") or {}
+            raw = rv.get("ai_edits") if "ai_edits" in rv else (rec.get("vlm") or {}).get("ai_edits")
+            steps = planner.edit_steps(raw)
+            if steps:
+                rec["ai_edits"] = steps
+                rec["verdict"] += "；拍完后经 AI 加工（" + "、".join(e["kind_zh"] for e in steps) + "）"
         if rec["material"]["has_real_material"]:
             kinds = []
             for it in rec["material"]["items"]:
@@ -419,6 +434,12 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
             real_kinds[k] = real_kinds.get(k, 0.0) + r["duration"]
     if real_shots:
         verdict += "；用到真实素材：" + "、".join(f"{k}（{v:.1f}s）" for k, v in sorted(real_kinds.items(), key=lambda kv: -kv[1]))
+    edited: dict[str, int] = {}
+    for r in shot_records:
+        for e in r.get("ai_edits") or []:
+            edited[e["kind_zh"]] = edited.get(e["kind_zh"], 0) + 1
+    if edited:
+        verdict += "；实拍经 AI 二次加工：" + "、".join(f"{k} {v} 镜" for k, v in edited.items())
     refs: dict[str, list[int]] = {}
     for r in shot_records:
         for k in dict.fromkeys(x["kind_zh"] for x in (r.get("material") or {}).get("references", [])):
@@ -449,6 +470,16 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
                              r["start"], r["end"]))
     storyboard(sb_items, out / "storyboard.jpg")
 
+    from .aspects.base import PHOTOGRAPHIC
+    from .aspects.grade import measure_frames
+
+    for rec in shot_records:  # breakdowns made before the grade aspect existed: measure it from the saved frames
+        asp = rec.setdefault("aspects", {})
+        if rec["base"]["label"] in PHOTOGRAPHIC and not (asp.get("grade") or {}).get("measured"):
+            frames = [cv2.imread(str(out / rec["assets"][k])) for k in ("first_frame", "last_frame") if rec.get("assets", {}).get(k)]
+            m = measure_frames([f for f in frames if f is not None])
+            if m:
+                asp["grade"] = {"measured": m}
     aspects.finalize(breakdown)
     breakdown["aspects"] = round_floats(breakdown["aspects"])
     summary["aspects"] = aspects.summary_lines(breakdown)

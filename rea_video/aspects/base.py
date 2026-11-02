@@ -22,8 +22,8 @@ import numpy as np
 
 # shots whose picture is photographic enough for camera / light analysis. Live action gets a shooting plan; AI, 3D
 # and avatar shots get the same measurements as a description of the picture (useful for generation prompts).
-PHOTOGRAPHIC = ("live_action", "avatar", "ai_video", "cg_3d")
-FILMED = ("live_action", "avatar")
+PHOTOGRAPHIC = ("live_action", "avatar", "ai_video", "cg_3d", "stop_motion")
+FILMED = ("live_action", "avatar", "stop_motion")
 
 
 @dataclass
