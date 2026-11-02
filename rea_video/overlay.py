@@ -119,12 +119,13 @@ def summarize_text(items: list[dict]) -> dict:
                 hit = tr
                 break
         if hit is None:
-            hit = {"band": it["band"], "cy": cy, "cx": cx, "texts": [], "times": [], "heights": [], "axis_aligned": True}
+            hit = {"band": it["band"], "cy": cy, "cx": cx, "texts": [], "times": [], "heights": [], "axis_aligned": True, "pos": {}}
             tracks.append(hit)
         if it["text"] not in hit["texts"]:
             hit["texts"].append(it["text"])
         hit["times"].append(it["t"])
         hit["heights"].append(it["bbox"][3])
+        hit["pos"].setdefault(it["text"], []).append((it["bbox"][0], it["bbox"][1]))
         hit["axis_aligned"] = hit["axis_aligned"] and abs(it["angle"]) < 3
     out = []
     for tr in tracks:
@@ -132,9 +133,12 @@ def summarize_text(items: list[dict]) -> dict:
         kind = "subtitle" if tr["band"] == "bottom" and changing else ("title" if tr["band"] == "top" else "label")
         if tr["band"] == "middle" and changing:
             kind = "subtitle"
+        # the same words seen at different places = printed on something that moves (a cup, a sign), not an overlay
+        rep = [np.array(p) for p in tr["pos"].values() if len(p) >= 2]
+        drift = round(float(max(np.ptp(p, axis=0).max() for p in rep)), 3) if rep else None
         out.append({"kind": kind, "band": tr["band"], "texts": tr["texts"][:12], "changing": changing,
                     "axis_aligned": tr["axis_aligned"], "text_height": float(np.median(tr["heights"])),
-                    "y_center": round(tr["cy"], 3)})
+                    "y_center": round(tr["cy"], 3), "drift": drift})
     cov = float(sum(i["bbox"][2] * i["bbox"][3] for i in items) / max(1, len({i["t"] for i in items})))
     return {"tracks": out, "text_coverage": cov, "items": items[:80]}
 

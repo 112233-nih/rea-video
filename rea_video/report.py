@@ -8,6 +8,7 @@ from . import aspects
 from .classify import LABEL_ZH
 from .util import fmt_time
 from .visual import LABEL_COLOR
+from .production import report_md as production_md
 from .vlm import vlm_note
 
 KIND_ZH = {"subtitle": "字幕", "title": "标题", "label": "文字", "static_graphic": "图形贴片", "layout_template": "版式模板"}
@@ -33,8 +34,10 @@ def _origin(rec: dict) -> str:
         if it.get("real_material") and it["kind_zh"] not in kinds:
             kinds.append(it["kind_zh"])
     unsure = sorted({it["kind_zh"] for it in m.get("items", []) if it.get("real_material") is None})
+    refs = list(dict.fromkeys(x["kind_zh"] for x in m.get("references", [])))
     return (m.get("origin_zh", "—") + (f"：{'、'.join(kinds)}" if kinds else "")
-            + (f"；待确认是否真实：{'、'.join(unsure)}" if unsure else ""))
+            + (f"；待确认是否真实：{'、'.join(unsure)}" if unsure else "")
+            + (f"；复刻参考：{'、'.join(refs)}" if refs else ""))
 
 
 def markdown(b: dict) -> str:
@@ -49,6 +52,7 @@ def markdown(b: dict) -> str:
          "", "![storyboard](storyboard.jpg)", "", "## 制作方式占比", "", "| 底层画面 | 时长 | 占比 |", "|---|---|---|"]
     for m in s["production_mix"]:
         L.append(f"| {m['label_zh']} | {m['seconds']}s | {m['ratio']:.0%} |")
+    L += production_md(b.get("production_plan") or {})
     L += aspects.report_md(b)
     prov = b.get("provenance", {})
     if prov.get("hints") or prov.get("encoder"):
@@ -127,11 +131,18 @@ def markdown(b: dict) -> str:
             L.append(f"  - {seg.get('start')}–{seg.get('end')}s · {seg.get('beat', '')} · {seg.get('copy', '')}")
     rm = s.get("real_material") or {}
     if rm.get("shots"):
-        L += ["", "## 用户真实素材", "",
-              f"共 {len(rm['shots'])} 个镜头、{rm['seconds']}s（{rm['ratio']:.0%}）引入了真实素材，复刻时需要准备对应素材，不能用模型生成替代：", ""]
+        L += ["", "## 画面里的真实素材", "",
+              f"共 {len(rm['shots'])} 个镜头、{rm['seconds']}s（{rm['ratio']:.0%}）的画面里有真实素材（录屏、截图、照片、嵌入视频），"
+              "复刻时要拿到原文件，不能用模型生成替代：", ""]
         for r in b["shots"]:
             for a in r.get("replication", {}).get("user_assets", []):
                 L.append(f"- 镜头 #{r['index']}（{fmt_time(r['start'])}）：{a['kind_zh']}，{a['where']}" + (f"，{a['description']}" if a.get("description") else ""))
+    if s.get("references"):
+        L += ["", "## 复刻要准备的参考素材", "",
+              "这些镜头的画面是生成或拍摄出来的，下面是画面里出现、复刻时应作为参考图 / 道具准备的东西（不是嵌入的真实像素）：", ""]
+        for r in b["shots"]:
+            for a in (r.get("material") or {}).get("references", []):
+                L.append(f"- 镜头 #{r['index']}（{fmt_time(r['start'])}）：{a['kind_zh']}" + (f"，{a['description']}" if a.get("description") else ""))
     L += ["", "## 分镜表", "", "| # | 时间 | 时长 | 底层画面 | 置信度 | 素材来源 | 叠加层 | 运镜 | 复刻路线 |", "|---|---|---|---|---|---|---|---|---|"]
     for r in b["shots"]:
         base = r["base"]
@@ -144,6 +155,11 @@ def markdown(b: dict) -> str:
               f"![{r['id']}]({r['assets']['sheet']})", ""]
         probs = sorted(base["probs"].items(), key=lambda kv: -kv[1])[:3]
         L.append("- 概率：" + "，".join(f"{LABEL_ZH[k]} {v:.0%}" for k, v in probs) + f"（{base['decided_by']}）")
+        for key, name in (("uncertain", "待确认"), ("disputed", "有分歧")):
+            if base.get(key):
+                L.append(f"- ⚠️ {name}：{base[key]}")
+        if base.get("scene_text"):
+            L.append("- 画面里物体上的字（不是后期字幕）：" + "、".join(base["scene_text"][:6]))
         if base.get("image_source"):
             L.append(f"- 静帧来源：{base['image_source']}")
         L.append(f"- 素材来源：{_origin(r)}")
@@ -168,6 +184,8 @@ def markdown(b: dict) -> str:
             L.append(f"- 文字轨（{kind}/{tr['band']}）：" + " / ".join(t[:40] for t in tr["texts"][:4]))
         rep = r["replication"]
         L.append(f"- 复刻：{rep['note']}")
+        if rep.get("capsule", {}).get("image_prompt"):
+            L.append(f"  - 首帧图像提示词：{rep['capsule']['image_prompt']}")
         if rep.get("capsule", {}).get("prompt"):
             L.append(f"  - 视频提示词：{rep['capsule']['prompt']}")
         L.append("")
@@ -219,15 +237,45 @@ img.sb{{max-width:100%;border-radius:8px}} .real{{background:#0d9488;color:#fff;
 </style></head><body><main>
 <h1>视频拆解：{esc(b['source']['filename'])}</h1>
 <p><b>结论：</b>{esc(s['verdict'])}</p>
-{('<p><b>用户真实素材：</b>' + str(len(s['real_material']['shots'])) + ' 个镜头，' + str(s['real_material']['seconds']) + 's（' + format(s['real_material']['ratio'], '.0%') + '）——复刻时需要自备对应素材</p>') if (s.get('real_material') or {}).get('shots') else ''}
+{('<p><b>用户真实素材：</b>' + str(len(s['real_material']['shots'])) + ' 个镜头，' + str(s['real_material']['seconds']) + 's（' + format(s['real_material']['ratio'], '.0%') + '）——画面里嵌入的真实素材，复刻时需要原文件</p>') if (s.get('real_material') or {}).get('shots') else ''}
 <p class="muted">{b['source']['duration']}s · {b['source']['width']}×{b['source']['height']} · {b['source']['fps']}fps · {s['shots']} 个镜头 · 置信度 {s['confidence']:.0%} ·
 {esc(s.get('vlm') or vlm_note(b['analysis']['vlm'], b['analysis'].get('review')))}</p>
 <div class="mix">{mix}</div>
 <img class="sb" src="storyboard.jpg">
+{_production_html(b.get("production_plan") or {})}
 {aspects.report_html(b)}
 {_sound_html(b)}
 {''.join(rows)}
 </main></body></html>"""
+
+
+def _production_html(plan: dict) -> str:
+    if not plan:
+        return ""
+    esc = html.escape
+    P = [f"<section class='shot'><h3 style='margin:4px 0'>复刻方案</h3><p><b>{esc(plan['summary'])}</b></p>"]
+    if plan.get("engine_note"):
+        P.append(f"<p class='muted'>{esc(plan['engine_note'])}</p>")
+    if plan.get("audio_note"):
+        P.append(f"<p class='muted'>声音：{esc(plan['audio_note'])}</p>")
+    for u in plan.get("units", []):
+        refs = "".join(f"<li><code>{esc(r['tag'])}</code> {esc(r['what'])}</li>" for r in u["refs"])
+        P.append(f"<h4>{esc(u['id'])} · {esc(u['label_zh'])} · 镜头 {esc('、'.join('#' + str(i) for i in u['shots']))} · "
+                 f"{u['start']:.1f}–{u['end']:.1f}s（{u['duration']:.1f}s）</h4>"
+                 + (f"<ul>{refs}</ul>" if refs else "")
+                 + (f"<p class='muted'>{esc(u['continuity'])}</p>" if u.get("continuity") else "")
+                 + "".join(f"<p class='muted'>{esc(u[k])}</p>" for k in ("note", "alt") if u.get(k))
+                 + f"<pre class='prompt' style='white-space:pre-wrap'>{esc(u['prompt'])}</pre>")
+    for sc in plan.get("shoot", []):
+        rows = "".join(f"<li>机位 {esc(st['shot_size'])} · {esc(st['support'])}：镜头 {esc('、'.join('#' + str(i) for i in st['shots']))}，"
+                       f"成片 {st['screen_s']}s，建议拍 {st['take_s']}s</li>" for st in sc["setups"])
+        P.append(f"<h4>场次 {esc(sc['id'])}：镜头 {esc('、'.join('#' + str(i) for i in sc['shots']))}（{sc['screen_s']}s）</h4>"
+                 + (f"<p>{esc(sc['description'])}</p>" if sc.get("description") else "")
+                 + (f"<p class='muted'>布光：{esc(sc['lighting'])}</p>" if sc.get("lighting") else "") + f"<ul>{rows}</ul>")
+    for c in plan.get("code", []):
+        P.append(f"<h4>{esc(c['id'])} 代码合成：镜头 {esc('、'.join('#' + str(i) for i in c['shots']))}（{c['duration']:.1f}s）</h4>")
+    P.append("</section>")
+    return "".join(P)
 
 
 def _sound_html(b: dict) -> str:

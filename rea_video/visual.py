@@ -14,8 +14,13 @@ LABEL_COLOR = {
     "code_render": (245, 158, 11), "screen_capture": (100, 116, 139), "still_motion": (168, 85, 247),
     "static_hold": (148, 163, 184),
 }
+# short names for the storyboard strip (the full names are too long for a 200px cell)
+LABEL_SHORT = {
+    "live_action": "实拍", "ai_video": "AI 视频", "avatar": "数字人", "cg_3d": "3D 渲染", "code_render": "代码渲染",
+    "screen_capture": "录屏/截图", "still_motion": "静图推拉", "static_hold": "静帧",
+}
 _FONT_CANDIDATES = [
-    "/System/Library/Fonts/PingFang.ttc", "/System/Library/Fonts/STHeiti Light.ttc", "/System/Library/Fonts/Hiragino Sans GB.ttc",
+    "/System/Library/Fonts/PingFang.ttc", "/System/Library/Fonts/STHeiti Medium.ttc", "/System/Library/Fonts/STHeiti Light.ttc", "/System/Library/Fonts/Hiragino Sans GB.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
     "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
 ]
@@ -62,20 +67,21 @@ def storyboard(items: list[tuple[np.ndarray, str, str, float, float]], out: Path
     """items: (frame, label, title, start, end)."""
     if not items:
         return None
-    font = _font(15)
-    small = _font(13)
+    font = _font(21)
+    small = _font(15)
     cells = []
     for frame, label, title, st, en in items:
         im = _to_pil(frame)
         im = im.resize((cell_w, int(im.height * cell_w / im.width)))
-        bar = 40
+        bar = 56
         cell = Image.new("RGB", (cell_w, im.height + bar), (255, 255, 255))
         cell.paste(im, (0, 0))
         d = ImageDraw.Draw(cell)
         color = LABEL_COLOR.get(label, (80, 80, 80))
         d.rectangle([0, im.height, cell_w, im.height + bar], fill=color)
-        d.text((6, im.height + 2), title, fill=(255, 255, 255), font=font)
-        d.text((6, im.height + 21), f"{fmt_time(st)}–{fmt_time(en)}", fill=(255, 255, 255), font=small)
+        d.text((8, im.height + 4), title, fill=(255, 255, 255), font=font)
+        d.text((8, im.height + 33), f"{st:.1f}–{en:.1f}s", fill=(255, 255, 255), font=small)
+        d.line([(cell_w - 1, 0), (cell_w - 1, im.height + bar)], fill=(255, 255, 255), width=2)  # gap between cells
         cells.append(cell)
     ch = max(c.height for c in cells)
     rows = (len(cells) + cols - 1) // cols

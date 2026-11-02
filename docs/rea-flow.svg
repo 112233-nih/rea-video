@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 900" width="960" height="900" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK SC, Source Han Sans SC, sans-serif">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <filter id="sh" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <style>
+    .t{fill:#0f172a;font-size:15px}
+    .m{fill:#475569;font-size:13.5px}
+    .h{fill:#0f172a;font-size:17px;font-weight:700}
+    .n{fill:#fff;font-size:14px;font-weight:700}
+    .w{fill:#fff;font-size:15px;font-weight:700}
+    .ln{stroke:#64748b;stroke-width:1.8;fill:none}
+  </style>
+  <rect x="0" y="0" width="960" height="900" rx="18" fill="#f8fafc"/>
+
+  <text x="40" y="44" fill="#0f172a" font-size="23" font-weight="800">REA：逆推一条视频是怎么做出来的，再给出怎么重做</text>
+  <text x="40" y="70" class="m">逐镜头取证 → 融合判断 → 按真实制作方式组织复刻（AI 生成单元 / 实拍场次 / 代码合成）</text>
+
+  <!-- 1 input -->
+  <g filter="url(#sh)">
+    <rect x="40" y="94" width="250" height="62" rx="12" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="320" y="94" width="290" height="62" rx="12" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="640" y="94" width="280" height="62" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  </g>
+  <text x="60" y="121" class="h">一条视频</text>
+  <text x="60" y="143" class="m">抖音 / TikTok / 微信 / 自己的成片</text>
+  <text x="340" y="121" class="h">① 切镜</text>
+  <text x="340" y="143" class="m">按镜头切开，每镜抽首 / 中 / 尾帧</text>
+  <text x="660" y="121" class="h">分离音轨</text>
+  <text x="660" y="143" class="m">原声 / 人声干声 / 配乐</text>
+  <path class="ln" d="M290,125 H316" marker-end="url(#ah)"/>
+  <path class="ln" d="M610,125 H636" marker-end="url(#ah)"/>
+  <path class="ln" d="M480,156 V186" marker-end="url(#ah)"/>
+
+  <!-- 2 evidence -->
+  <rect x="40" y="190" width="880" height="214" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <text x="60" y="218" class="h">② 逐镜取证</text>
+  <text x="168" y="218" class="m">每个结论都附可复查的证据</text>
+
+  <rect x="60" y="234" width="262" height="154" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+  <rect x="60" y="234" width="262" height="32" rx="10" fill="#2563eb"/><rect x="60" y="254" width="262" height="12" fill="#2563eb"/>
+  <text x="76" y="256" class="w">画面取证（离线、免费）</text>
+  <text x="76" y="290" class="t">帧率与重复帧（24→30）</text>
+  <text x="76" y="314" class="t">噪声、纹理、运动、推拉</text>
+  <text x="76" y="338" class="t">元数据：AIGC 标识、设备</text>
+  <text x="76" y="362" class="t">OCR 文字轨、人脸与主体</text>
+
+  <rect x="349" y="234" width="262" height="154" rx="10" fill="#faf5ff" stroke="#e9d5ff"/>
+  <rect x="349" y="234" width="262" height="32" rx="10" fill="#9333ea"/><rect x="349" y="254" width="262" height="12" fill="#9333ea"/>
+  <text x="365" y="256" class="w">看图理解（VLM 或 agent）</text>
+  <text x="365" y="290" class="t">画面内容、类别与证据</text>
+  <text x="365" y="314" class="t">逆推首帧 / 视频提示词</text>
+  <text x="365" y="338" class="t">景别、机位、打光</text>
+  <text x="365" y="362" class="t">整片结构、钩子、文案</text>
+
+  <rect x="638" y="234" width="262" height="154" rx="10" fill="#f0fdfa" stroke="#99f6e4"/>
+  <rect x="638" y="234" width="262" height="32" rx="10" fill="#0d9488"/><rect x="638" y="254" width="262" height="12" fill="#0d9488"/>
+  <text x="654" y="256" class="w">声音拆解</text>
+  <text x="654" y="290" class="t">人声 · 配乐 · 音效时间点</text>
+  <text x="654" y="314" class="t">BPM、调性、段落、卡点</text>
+  <text x="654" y="338" class="t">口播文案与音色（TTS / 真人）</text>
+  <text x="654" y="362" class="t">AI 生成还是现成曲库</text>
+  <path class="ln" d="M480,404 V430" marker-end="url(#ah)"/>
+
+  <!-- 3 judge -->
+  <rect x="40" y="434" width="880" height="118" rx="14" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="60" y="462" class="h">③ 融合判断</text>
+  <text x="60" y="490" class="t">每镜：底层画面（实拍 / AI 视频 / 3D / 代码渲染 / 录屏 / 静图推拉 / 静帧 / 数字人）</text>
+  <text x="60" y="514" class="t">+ 后期叠加层 + 哪些是用户真实素材 + 怎么拍、怎么打光、怎么剪</text>
+  <text x="60" y="538" class="m">硬证据优先（AIGC 标识、帧率规律 &gt; 画面印象）；拿不准就标「待确认」，不硬判</text>
+  <g filter="url(#sh)"><rect x="736" y="452" width="166" height="44" rx="22" fill="#fff" stroke="#f59e0b"/></g>
+  <text x="756" y="479" fill="#b45309" font-size="14" font-weight="700">用户纠正 → 记忆</text>
+  <path class="ln" d="M480,552 V578" marker-end="url(#ah)"/>
+
+  <!-- 4 plan -->
+  <rect x="40" y="582" width="880" height="226" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <text x="60" y="610" class="h">④ 复刻方案</text>
+  <text x="168" y="610" class="m">按实际怎么做来组织，不是一镜一做</text>
+
+  <rect x="60" y="626" width="196" height="166" rx="10" fill="#fdf2f8" stroke="#fbcfe8"/>
+  <text x="76" y="654" fill="#be185d" font-size="16" font-weight="700">能力地图</text>
+  <text x="76" y="680" class="t">各模型单次时长</text>
+  <text x="76" y="704" class="t">能否一次多镜头</text>
+  <text x="76" y="728" class="t">参考图 / 视频数量</text>
+  <text x="76" y="752" class="t">原生音频、路由规则</text>
+  <text x="76" y="776" class="m">capabilities/</text>
+  <path class="ln" d="M256,709 H280" marker-end="url(#ah)"/>
+
+  <g font-size="15">
+    <rect x="286" y="626" width="616" height="30" rx="8" fill="#fae8ff"/>
+    <text x="300" y="646" fill="#86198f" font-weight="700">AI 镜头 → 生成单元</text>
+    <text x="462" y="646" class="t">连续同场景镜头一次生成：多镜头提示词 + @产品图 @原片</text>
+    <rect x="286" y="660" width="616" height="30" rx="8" fill="#dcfce7"/>
+    <text x="300" y="680" fill="#166534" font-weight="700">实拍镜头 → 拍摄场次</text>
+    <text x="462" y="680" class="t">同场景、同机位的镜头一起拍；布光与器材清单</text>
+    <rect x="286" y="694" width="616" height="30" rx="8" fill="#fef3c7"/>
+    <text x="300" y="714" fill="#92400e" font-weight="700">代码 / 录屏 → 合成</text>
+    <text x="462" y="714" class="t">Remotion / HTML 按文字轨和版式重建，100% 可控</text>
+    <rect x="286" y="728" width="616" height="30" rx="8" fill="#ede9fe"/>
+    <text x="300" y="748" fill="#5b21b6" font-weight="700">静图推拉 → 本地</text>
+    <text x="462" y="748" class="t">一张图 + 测得的缩放 / 平移参数，ffmpeg 直接出</text>
+    <rect x="286" y="762" width="616" height="30" rx="8" fill="#ccfbf1"/>
+    <text x="300" y="782" fill="#115e59" font-weight="700">声音 → 三条轨</text>
+    <text x="462" y="782" class="t">TTS 口播 · BGM（BPM / 调性 / 风格）· 音效时间表</text>
+  </g>
+  <path class="ln" d="M480,808 V826" marker-end="url(#ah)"/>
+
+  <!-- 5 output -->
+  <g filter="url(#sh)">
+    <rect x="40" y="830" width="290" height="52" rx="12" fill="#16a34a"/>
+    <rect x="370" y="830" width="250" height="52" rx="12" fill="#fff" stroke="#86efac"/>
+    <rect x="660" y="830" width="260" height="52" rx="12" fill="#fff" stroke="#86efac"/>
+  </g>
+  <text x="58" y="855" class="w">⑤ 报告</text>
+  <text x="122" y="855" fill="#dcfce7" font-size="13.5">结论 + 复刻方案 + 分镜表</text>
+  <text x="58" y="874" fill="#dcfce7" font-size="13">report.html · breakdown.json</text>
+  <text x="388" y="855" fill="#166534" font-size="15" font-weight="700">capsule-cinema 生成</text>
+  <text x="388" y="874" class="m">AI 镜头调用视频模型</text>
+  <text x="678" y="855" fill="#166534" font-size="15" font-weight="700">拼回原时间线</text>
+  <text x="678" y="874" class="m">输出复刻片 + 原片对比片</text>
+  <path class="ln" d="M330,856 H366" marker-end="url(#ah)"/>
+  <path class="ln" d="M620,856 H656" marker-end="url(#ah)"/>
+  <path d="M902,474 H936 V856 H924" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-dasharray="5 4" marker-start="url(#ah)"/>
+</svg>

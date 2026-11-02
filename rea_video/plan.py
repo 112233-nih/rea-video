@@ -33,6 +33,14 @@ NOTE = {
 CAPSULE_ENGINES = {"seedance2.0": (4, 15), "minimax-h3": (4, 15)}
 
 
+def shot_prompts(shot: dict) -> dict:
+    """Reverse-engineered prompts for one shot: the agent's review wins over the VLM (it is the later, checked pass)."""
+    out = {}
+    for src in ((shot.get("vlm") or {}).get("replication") or {}, (shot.get("review") or {}).get("replication") or {}):
+        out.update({k: v for k, v in src.items() if k in ("image_prompt", "video_prompt", "video_prompt_en") and v})
+    return out
+
+
 def _load(name: str):
     with (CAP / name).open(encoding="utf-8") as f:
         return yaml.safe_load(f)
@@ -66,10 +74,14 @@ class Planner:
         if user_assets:
             plan["user_assets"] = user_assets
             plan["note"] += "；需要用户提供真实素材：" + "、".join(f"{a['kind_zh']}（{a['where']}）" for a in user_assets)
+        refs = mat.get("references") or []
+        if refs:
+            plan["references"] = refs
+            plan["note"] += "；生成时作参考：" + "、".join(dict.fromkeys(r["kind_zh"] for r in refs))
         if executor == "capsule_cinema":
             lo, hi = CAPSULE_ENGINES.get(engine, (4, 15))
             gen_dur = int(min(hi, max(lo, round(dur + 0.49))))
-            rep = (shot.get("vlm") or {}).get("replication") or {}
+            rep = shot_prompts(shot)
             prompt = rep.get("video_prompt") or (shot.get("vlm") or shot.get("review") or {}).get("description") or ""
             plan["capsule"] = {
                 "engine": engine, "generation_type": gen_type, "duration": gen_dur,

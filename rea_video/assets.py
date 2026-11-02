@@ -2,6 +2,12 @@
 photos, screenshots / screen recordings) versus things the maker generated (AI) or
 rendered (code / 3D templates).
 
+Two different things are kept apart:
+  items       pixels in the frame that came from real material (footage, photos, screenshots, recordings,
+              a clip playing inside a UI). A remake must be given these files; a model cannot regenerate them.
+  references  what a *generated* picture depicts and a remake should be conditioned on (the product, its
+              logo, a person's look). The pixels were generated, so this is not real material in the frame.
+
 Full-frame material follows from the base label (live action = real footage, screen
 capture = real UI, still image = photo/AI image/graphic). Embedded material is found inside
 rendered layouts: rectangles or regions whose texture is photographic (high grey-level
@@ -17,6 +23,12 @@ KIND_ZH = {
     "screen_recording": "录屏素材", "video_clip": "嵌入视频片段", "ai_generated": "AI 生成", "rendered": "制作方渲染",
     "photo": "真实照片", "ai_image": "AI 生成图", "graphic": "设计图形", "logo": "Logo/品牌标识", "product_photo": "商品实拍图",
 }
+REF_ZH = {"product_photo": "商品参考图", "logo": "Logo/品牌参考", "photo": "人物/场景参考图", "real_footage": "动作/场景参考视频",
+          "screenshot": "界面参考图", "screen_recording": "界面参考录屏", "video_clip": "参考视频", "photo_or_image": "参考图"}
+# bases whose pixels a model / renderer produced: what the VLM "sees" in them is a reference, not embedded material
+GENERATED_BASES = ("ai_video", "avatar")
+# a 3D render can still carry a pasted screenshot or recording; products / logos / people in it are modelled
+RENDER_REF_KINDS = ("product_photo", "logo", "photo", "real_footage", "ai_image")
 REAL_KINDS = {"real_footage", "photo_or_image", "screenshot", "screen_recording", "video_clip", "photo", "logo", "product_photo"}
 
 
@@ -199,10 +211,22 @@ def material_summary(label: str, image_source: str | None, embedded: list[dict],
             continue  # already covered by the full-frame item
         items.append({"kind": e["kind"], "region": "embedded", "bbox": e["bbox"], "real_material": e.get("real_material", True), "moving": e.get("moving", False),
                       "evidence": e.get("evidence", "")})
+    refs: list[dict] = []
     for e in (vlm or {}).get("embedded_assets", []) or []:
-        if isinstance(e, dict) and e.get("is_real_material"):
-            items.append({"kind": e.get("kind", "photo_or_image"), "region": "embedded", "real_material": True,
-                          "description": e.get("description", ""), "source": "vlm"})
+        if not (isinstance(e, dict) and e.get("is_real_material")):
+            continue
+        kind = e.get("kind", "photo_or_image")
+        desc = e.get("description", "")
+        if label in GENERATED_BASES or (label == "cg_3d" and kind in RENDER_REF_KINDS) or label == "live_action":
+            # generated / modelled / filmed pixels: the product or person is something to supply as a reference
+            # (for live action the whole frame is already real footage)
+            # camera footage "in" a generated or filmed picture is not something a remake can be given
+            if kind not in ("ai_image", "real_footage", "video_clip") and (label != "live_action" or kind in ("product_photo", "logo")):
+                refs.append({"kind": kind, "kind_zh": REF_ZH.get(kind, "参考素材"), "description": desc, "source": "vlm"})
+            continue
+        if kind == "real_footage":
+            kind = "video_clip"  # a clip inside a layout: real file, but not necessarily camera footage
+        items.append({"kind": kind, "region": "embedded", "real_material": True, "description": desc, "source": "vlm"})
     vlm_origin = (vlm or {}).get("material_origin")
     real = [i for i in items if i.get("real_material")]
     uncertain = [i for i in items if i.get("real_material") is None]
@@ -227,4 +251,4 @@ def material_summary(label: str, image_source: str | None, embedded: list[dict],
         origin = "mixed"
     zh = {"real": "用户真实素材", "ai_generated": "AI 生成", "rendered": "制作方渲染", "mixed": "混合（含真实素材）", "unknown": "待确认"}[origin]
     return {"origin": origin, "origin_zh": zh, "has_real_material": bool(real), "uncertain": bool(uncertain),
-            "items": [dict(i, kind_zh=KIND_ZH.get(i["kind"], i["kind"])) for i in items]}
+            "items": [dict(i, kind_zh=KIND_ZH.get(i["kind"], i["kind"])) for i in items], "references": refs}

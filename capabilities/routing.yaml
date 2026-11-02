@@ -40,6 +40,8 @@ segmentation:
     layer: 同一画面内的纵向分层（代码层 / 生成层 / 素材层 / 字幕层）
   defaults:
     generation_unit_s: {min: 4, max: 15}
+    multishot_hardcut_s: {prefer: 8, max: 10}   # S06：单个生成单元内连续硬切的时长
+    same_scene_distance: 0.5                    # 相邻镜头首尾帧颜色分布距离（Bhattacharyya）低于它算同一场景
   rules:
     - id: S01-merge-multishot
       do: 同角色、同场景的连续镜头，若总时长不超过候选模型上限，就合并为一个生成单元，用 video.multi_shot 一次生成

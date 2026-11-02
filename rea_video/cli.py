@@ -198,6 +198,7 @@ def cmd_summary(args) -> int:
                      f"| 素材:{mat} | 叠加:{','.join(sorted({l['kind'] for l in r.get('layers', [])})) or '-'} | {r['features'].get('camera')}"
                      + ("  ← 低置信，需要复核" if base["confidence"] < 0.6 else "")
                      + (f"  ← {base['uncertain']}" if base.get("uncertain") else "")
+                     + (f"  ← 有分歧：{base['disputed']}" if base.get("disputed") else "")
                      + ("  ← 用户纠正过素材来源" if (r.get("material") or {}).get("user_corrected") else "")
                      + (f"  ← {past}" if past else "")
                      + (f" | {shot_text(r)}" if r["base"]["label"] in ("live_action", "avatar") and shot_text(r) else ""))

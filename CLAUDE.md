@@ -1,5 +1,6 @@
 # rea-video：给 Agent 的说明
 
+- 第一次使用：运行 `bash scripts/install_skill.sh`（安装 CLI 并把 skill 链接到常见 agent 目录；需要 ffmpeg、Python ≥ 3.10），再 `rea-video --help` 确认。
 - 用户要拆解视频、判断制作方式、标真实素材、拆音乐音效、复刻时，**先读 `skills/rea-video/SKILL.md`**，按里面的流程做，并复核低置信镜头。
 - 开发约定：
   - 拆解逻辑在 `rea_video/`

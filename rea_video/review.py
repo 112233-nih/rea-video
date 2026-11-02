@@ -39,6 +39,9 @@ INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画
 每个镜头要填：label_probs（8 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
 description（主体、动作、场景、运镜）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
 kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。
+AI 生成 / 3D / 实拍镜头再填 replication：image_prompt（复刻首帧的中文图像提示词：主体、构图、光线、风格，具体可执行）、
+video_prompt（复刻该镜头的中文视频提示词：写清动作过程和结束状态、运镜；只写想要的内容，不写否定句）、video_prompt_en（英文版）。
+这些提示词会被合并进「生成单元」的多镜头提示词，所以每镜只写这一镜的内容，统一的风格和场景描述写在 description 里即可。
 
 实拍/写实镜头再填 aspects（怎么拍、怎么打光；纯图形/界面画面不填），像素测不出的部分靠你看：
 {ASPECT_GUIDE}
@@ -56,6 +59,8 @@ def _priority(rec: dict, ctx: dict) -> tuple[str, list[str]]:
         why.append(f"置信度低（{conf:.0%}）")
     if len(probs) > 1 and probs[0][1] - probs[1][1] < 0.25:
         why.append(f"次选 {LABEL_ZH.get(probs[1][0], probs[1][0])} 接近（{probs[1][1]:.0%}）")
+    if (rec.get("base") or {}).get("disputed"):
+        why.append(rec["base"]["disputed"])
     facts = (rec.get("deterministic") or {}).get("facts", {})
     if facts.get("transcode_degraded") and label in ("ai_video", "live_action"):
         why.append("平台转码，实拍/AI 待确认")
@@ -98,6 +103,7 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
     answers = {"by": "", "shots": [{"id": s["id"], "time": f"{s['start']:.2f}-{s['end']:.2f}",
                                      "label_probs": {k: 0 for k in LABELS}, "image_source": "unknown",
                                      "evidence": [], "description": "", "embedded_assets": [],
+                                     "replication": {"image_prompt": "", "video_prompt": "", "video_prompt_en": ""},
                                      "aspects": aspects.review_template()} for s in shots],
                "aspects": aspects.review_template(video=True)}
     return tasks, answers
@@ -120,6 +126,8 @@ def _clean(ans: dict) -> tuple[dict | None, str | None]:
     u = 1.0 / len(LABELS)
     soft = {k: AGENT_WEIGHT * v / total + (1 - AGENT_WEIGHT) * u for k, v in vals.items()}
     src = ans.get("image_source") if ans.get("image_source") in IMAGE_SOURCES else "unknown"
+    rep_in = ans.get("replication") if isinstance(ans.get("replication"), dict) else {}
+    rep = {k: str(rep_in.get(k) or "").strip() for k in ("image_prompt", "video_prompt", "video_prompt_en") if str(rep_in.get(k) or "").strip()}
     assets = []
     for e in ans.get("embedded_assets") or []:
         if isinstance(e, dict) and e.get("kind") in ASSET_KINDS:
@@ -127,7 +135,7 @@ def _clean(ans: dict) -> tuple[dict | None, str | None]:
                            "is_real_material": bool(e.get("is_real_material", e["kind"] != "ai_image"))})
     return {"label_probs": soft, "raw_probs": {k: round(v / total, 3) for k, v in vals.items()}, "image_source": src,
             "evidence": [str(x) for x in (ans.get("evidence") or [])][:8], "description": str(ans.get("description", "")),
-            "embedded_assets": assets, "aspects": aspects.clean_answers(ans.get("aspects"))}, None
+            "embedded_assets": assets, "replication": rep, "aspects": aspects.clean_answers(ans.get("aspects"))}, None
 
 
 def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict:

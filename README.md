@@ -1,263 +1,130 @@
 # rea-video — Reverse Engineer Any Video
 
-> 拿到一条视频，逐镜头判断它**是怎么做出来的**：实拍、AI 生成、3D 渲染、代码渲染、录屏、静态图推拉，还是混合；字幕和贴片是不是后期叠加的；**哪些是用户真实素材**（实拍、截图、录屏、照片）；**声音怎么做的**（人声、BGM 的 BPM/调性/段落、音效、是否卡点），以及**音乐/人声/音效是 AI 生成的还是现成的**（先看视频形式：AI 音乐 MV 多为 AI 歌，普通配乐多为曲库）。实拍镜头（口播、桌拍、开箱、vlog）还会按维度拆**怎么拍、怎么打光、怎么剪**：形式、景别和机位角度、手持还是支架、机位数，主光方向/光比/软硬/色温/轮廓光，剪气口、跳切和插入素材的节奏，并给出拍摄方案和器材清单；维度可插拔（`rea_video/aspects/`）。每个结论都附可复查的证据。然后对其中的 AI 类镜头，交给 [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) 复刻。
+拿到一条视频，rea-video 逐个镜头查清它**是怎么做出来的**，再按实际的制作方式给出**怎么重做一遍**：AI 镜头怎么分批生成、提示词怎么写；实拍镜头哪些在同一个场景、同一个机位一起拍；界面和文字动效用代码怎么重建；声音分几条轨、各自怎么配。每个结论都附可以复查的证据，拿不准的地方会标「待确认」。
 
-**给 Agent 用**：`scripts/install_skill.sh` 会把 [`skills/rea-video`](skills/rea-video/SKILL.md) 链接到 Claude Code、Codex 等 agent 的 skills 目录。Agent 会按 Skill 里的流程拆解、复核低置信镜头、按模板交付。
+![rea-video 流程](docs/rea-flow.svg)
 
-## 安装
+## 它能回答什么
 
-需要 Python ≥ 3.10 和 ffmpeg（macOS：`brew install ffmpeg`；Ubuntu：`apt install ffmpeg`）。
+- **画面怎么来的**：每个镜头是实拍、AI 视频、3D 渲染、代码渲染、录屏截图、静图推拉、静帧还是数字人；字幕、标题、贴片是不是后期叠加的。
+- **哪些是真实素材**：画面里嵌入的实拍片段、截图、录屏、照片、视频片段，复刻时要你提供原文件，不能用模型凭空生成；AI 画面里出现的产品、Logo、人物单独列为「参考素材」，复刻时作为参考图喂给模型。
+- **声音怎么做的**：人声是真人还是 TTS，口播文案是什么；BGM 的 BPM、调性、段落，是 AI 生成还是曲库；音效出现在哪些时间点、对应什么画面。
+- **实拍怎么拍的**：景别、机位、手持还是支架，主光方向、光比、软硬、色温，剪辑节奏。
+- **怎么复刻**：AI 镜头合并成「生成单元」，按所选模型的单次时长、多镜头、参考图能力来分，每个单元给多镜头提示词和参考素材；实拍镜头整理成「拍摄场次」；代码画面合成一个 Remotion 工程。
 
-```bash
-git clone <本仓库> && cd rea-video
-pip install -e ".[ocr]"          # numpy / opencv / pillow / pyyaml / onnxruntime + 可选 OCR
-rea-video --help
-bash scripts/install_skill.sh    # 可选：装 CLI 并把 skill 链接到 ~/.claude/skills、~/.codex/skills、~/.agents/skills
+## 怎么用
+
+不用自己敲命令，交给你的 agent（Claude Code、Codex、zcode 等都可以）：
+
+1. **安装**：把仓库地址发给 agent，说「安装 https://github.com/JuneYaooo/rea-video 」。agent 会按 [AGENTS.md](AGENTS.md) 装好命令行工具，并把 [skill](skills/rea-video/SKILL.md) 链接到自己的 skills 目录。需要本机有 ffmpeg 和 Python ≥ 3.10。
+2. **拆解**：把视频交给 agent，说「拆解这条视频，告诉我是怎么做的、怎么复刻」。agent 会拆解、看图复核没把握的镜头，最后给你结论、复刻方案和一份完整报告（`report.html`）。
+3. **复刻**（可选）：配合 [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video)，agent 可以把 AI 镜头交给视频模型生成，再按原时间线拼回去，输出复刻片和原片的对比片。调用模型会产生费用，agent 会先跟你确认。
+
+**看图模型（VLM）建议配上**：任意 OpenAI 兼容的多模态模型都可以（Gemini、GPT-4o、豆包、Qwen-VL 等），把配置告诉 agent 即可。配上之后，实拍、AI、3D 分得更准，每个镜头还会逆推出提示词。不配也能用：工具只靠像素、帧率、元数据判断，能看图的 agent 会自己补看。
+
+想自己跑命令，见 [docs/cli.md](docs/cli.md)。
+
+## 案例
+
+下面 5 条都是开 VLM 跑完整流程的结果（拆解 → 看图复核没把握的镜头 → 复刻方案）：榨汁杯原片有 3 个镜头、MV 有 4 个镜头经 agent 看图复核。拼帧图每格是一个镜头，底部色条写着这一镜的制作方式、置信度和时间；点「完整报告」可以看逐镜证据、提示词和复刻方案。
+
+### 1. 混合片：AI 对话 + 代码界面 + 真实录屏（19s · 10 镜）
+
+![混合片拆解拼帧](docs/cases/dual_role/storyboard.jpg)
+
+▶ [原视频](docs/cases/videos/dual_role.mp4) · 📄 [完整报告](docs/cases/dual_role/report.md)
+
+**怎么做的**：两个 AI 生成的角色在夜晚客厅里正反打对话（5 镜），中间穿插 5 段代码渲染的诊断报告和 GitHub 页面，其中有真实录屏 8.2s、截图 4.8s；顶部标题和底部字幕是后期叠加的。声音是两个角色的对白（判为随 AI 画面一起生成）加曲库 BGM（121.6 BPM）。
+
+**怎么复刻**：5 个对话镜头虽然在成片里被界面隔开，但属于同一场景，**一次生成**就够（Seedance 2.5，7.9s 多镜头；用两个角色的参考图锁定长相），剪辑时再把界面插回去。5 段界面写成 1 个 Remotion 工程，录屏和截图用真实素材。
+
+### 2. 3D 科普片：咸鸭蛋为什么会流油（67s · 21 镜）
+
+![3D 科普片拆解拼帧](docs/cases/salted_egg/storyboard.jpg)
+
+▶ [原视频](docs/cases/videos/salted_egg.mp4) · 📄 [完整报告](docs/cases/salted_egg/report.md)
+
+**怎么做的**：21 镜全部判为 3D 渲染（置信度 89–99%），毛绒小动物角色加剖面原理动画；文字标注、字幕、标题后期叠加；TTS 女声旁白加曲库 BGM（110 BPM），45% 的切点落在节拍上（随机约 25%）。
+
+**怎么复刻**：两条路。一是交给视频模型，21 镜按场景合并成 10 个生成单元；二是做成 3D 工程，**让 LLM 写 Blender 脚本或 Three.js 场景**，角色只建模一次，每个镜头设好机位渲染，多角度一致性最好，改文案和镜头也只是改代码。这类代码驱动的科普片，现在已经可以由 LLM 生成。
+
+### 3. 原片 vs AI 复刻：TikTok 实拍 → 换产品重做（21s · 11 镜 / 21s · 8 镜）
+
+![榨汁杯原片与复刻拆解拼帧](docs/cases/juicer_pair.jpg)
+
+▶ [TikTok 原片](docs/cases/videos/v11_tiktok_original.mp4) · [AI 复刻](docs/cases/videos/v12_oiioii_juicer_remake.mp4) · 📄 完整报告：[原片](docs/cases/v11/report.md) · [复刻](docs/cases/v12/report.md)
+
+**怎么做的**：上面是手机第一视角实拍（原生 30fps、有传感器噪声、真人男声和同期声）；下面是 OiiOii 拿它当参考、换成摩飞榨汁杯后用视频模型重做的版本（元数据带 AIGC 标识，24fps 生成后转成 30fps，TTS 男声口播，无 BGM）。复刻保留了原片的场景、机位和按步骤跳切的节奏，换掉了产品、食材和语言。
+
+**怎么复刻**：
+- 原片按拍摄组织：1 个场景、2 个机位（近景 7 镜、特写 4 镜），同一张台面一次拍完，每条前后多留 1 秒。
+- 复刻版按生成组织：8 镜合并成 3 个生成单元（备料 #1–#5、搅打 #6、倒出和成品 #7–#8），参考素材是 `@图片1` 产品图和 `@视频1` 原片片段，后一单元用前一单元的尾帧开头。默认引擎 Seedance 2.0 不支持一次多镜头，用它要生成 8 次，改用 2.5 只要 3 次。
+
+单元 1 的提示词（节选；报告里每个单元都有完整版和英文版）：
+
+```text
+竖屏 9:16；正面柔光，偏冷，背景虚化。产品外观以 @图片1 为准，Logo 和细节保持一致。参考 @视频1 的动作、运镜和剪辑节奏。镜头之间硬切。
+镜头1（0.0–1.8s）：固定俯拍机位，大理石桌面上放着蓝色便携榨汁杯，一只手将一透明盒新鲜红草莓轻轻放在榨汁杯右侧，随后手移出画面
+镜头2（1.8–2.8s）：手松开，几颗草莓掉落进下方的蓝色榨汁杯中，镜头保持固定
+镜头3（2.8–3.7s）：一只手将切块的绿色猕猴桃松开，猕猴桃块掉入杯中，杯子里已经有红色的草莓块
+镜头4（3.7–6.2s）：一只手拿着白色塑料瓶，将牛奶平稳地倒入榨汁杯中，杯中液面逐渐上升
+镜头5（6.2–9.0s）：手将杯盖扣紧并旋紧，随后单手拿起杯身完全倒转，杯中水果与牛奶向下沉降
 ```
 
-首次拆解会自动下载约 67 MB 的人声分离模型（`~/.cache/rea-video/models`）。一条 30 秒视频不开 VLM 约 1 分钟出结果。
+### 4. 代码 UI 动效：产品宣传片（70s · 12 镜）
 
-装好 skill 后，在 Claude Code / Codex / zcode 里直接说"帮我拆解这条视频 xxx.mp4，看看是不是 AI 做的"即可，agent 会按 [SKILL.md](skills/rea-video/SKILL.md) 的流程跑：先看记忆 → 拆解 → 看图复核 → 按模板交付。
+![代码 UI 动效拆解拼帧](docs/cases/v10/storyboard.jpg)
 
-## 快速开始
+▶ [原视频](docs/cases/videos/v10_oiioii_gen_coding_first.mp4) · 📄 [完整报告](docs/cases/v10/report.md)
 
-```bash
+**怎么做的**：OiiOii「视频复刻」功能的上线宣传片。代码渲染 83%（界面透视、文字缓动、进度卡片、粒子 Logo），录屏 12%，1 镜是网页截图做推拉；界面里播放的视频片段、Logo、截图被标为嵌入的真实素材（视频片段本身是不是实拍不下结论）。纯配乐，曲库 BGM 112.3 BPM 加 6 处音效。
 
-# 1. 只做确定性取证（离线、免费）
-rea-video decompose ref.mp4 -o out/ref
+**怎么复刻**：不需要视频模型。11 镜写成 1 个 Remotion 工程（文字和界面 100% 可控，改文案只改数据，可以让 LLM 直接写），录屏用真实界面录，截图推拉在本地按测得的缩放参数重建。
 
-# 2. 加 VLM（建议，不强制）：让多模态大模型看画面，实拍/AI/3D 判断更准
-#    任意 OpenAI 兼容的多模态模型都行，模型可写多个做备选
-export REA_VLM_BASE_URL=https://.../v1 REA_VLM_API_KEY=... REA_VLM_MODEL=gemini-2.5-pro,gpt-4o
-rea-video decompose ref.mp4 -o out/ref --vlm
-#    或复用 capsule-cinema 的配置：rea-video --env-file ~/code/github/capsule-cinema/.env decompose ref.mp4 -o out/ref --vlm
-#    VLM 调用全部失败时不会中断，报告和 `rea-video summary` 的 "VLM:" 一行会写明"全部调用失败，等同未开"
+### 5. AI 音乐 MV：音乐是 AI 生成还是曲库（165s · 86 镜）
 
-open out/ref/report.html
+![AI 音乐 MV 拆解拼帧（前 24 镜）](docs/cases/qing_mv/preview.jpg)
 
-# 3. 没有 VLM，但 agent 自己能看图（zcode、Claude Code 等多模态 agent）：让 agent 当 VLM
-rea-video review out/ref             # 生成逐镜看图任务和答案模板
-rea-video apply-review out/ref --by zcode   # agent 填完答案后并入结论和报告
+（图为前 24 镜）▶ [原视频](docs/cases/videos/qing_mv.mp4) · 📄 [完整报告（86 镜全部）](docs/cases/qing_mv/report.md)
 
-# 4. 用户纠正和偏好会被记住（存在 ~/.rea-video，可用 REA_VIDEO_HOME 改位置）
-rea-video correct out/ref --shots 3 --label still_motion --note "这是定格动画"
-rea-video prefs vlm on && rea-video prefs --note "报告尽量短"
-rea-video memory
+**怎么做的**：一首 AI 生成的说唱，画面基本都是生成的：戴耳机的白须老者对着麦克风对口型（数字人 16%），穿插清代场景和道具的 AI 视频（47%）、3D 风格镜头（20%）和静图推拉（17%）。音乐整片不间断、人声是唱的、和视频同时收尾，判为「AI 生成音乐」（倾向）——这条实际是 Suno 生成的，判对；BGM 178.2 BPM，56 处音效。
 
-# 只剥离声音：stems/original.wav（原声）、vocals.wav（人声干声）、music.wav（配乐）
-rea-video stems ref.mp4 -o out/ref
-```
+**怎么复刻**：先按风格和 BPM 用 Suno 生成歌；对口型镜头用人像 + 歌声驱动数字人；其余 AI 镜头按场景合并成 34 个生成单元；19 个静图推拉镜头在本地重建，不用调模型。
 
-输出示例（混合片）：
-
-```
-结论：混合制作：代码/模板渲染 59% + AI 生成视频 41%；叠加层：字幕、标题（代码/剪辑软件合成）
-#1 00:00.000 1.38s 代码/模板渲染 → R01 Remotion 重建
-#2 00:01.375 2.50s AI 生成视频（24fps 源、无传感器噪声…）→ R07 首尾帧生成（capsule-cinema）
-...
-```
+**这条没做好的地方**：VLM 服务一直报 503，整片分析没做成，只有逐镜结果。有 5 个镜头（#27、#29、#36、#38、#46）VLM 判实拍、工具判 AI 或 3D，结论跟了工具，报告里标为「有分歧」，等 agent 看图确认。
 
 ## 效果
 
-详细方法见 [docs/decompose.md](docs/decompose.md)，全部数字和复现命令见 [eval/RESULTS.md](eval/RESULTS.md)。
+全部数字和复现方法见 [eval/RESULTS.md](eval/RESULTS.md)，判断方法见 [docs/decompose.md](docs/decompose.md)。
 
-**制作方式判断**（按时长加权的镜头准确率）。标注集：labels（调参集）、holdout + holdout2（16 条留出视频）、articles（10 条文章视频，开发集）：
+**制作方式判断**（按时长加权的镜头准确率）。labels 是调参集，holdout 和 holdout2 是 16 条留出视频，articles 是 10 条从公众号下载的转码视频：
 
 | 配置 | labels | holdout | holdout2 | articles |
 |---|---|---|---|---|
 | 只用工具（离线、免费） | 99.9% | 99.6% | 99.8% | 88.6% |
 | + VLM（Gemini 3.1 Pro） | — | 99.6% | 99.8% | 99.6% |
-| + agent 看图复核（zcode） | — | 99.6% | 99.8% | 100% |
-| + VLM + agent | — | 99.6% | 99.8% | 98.8% |
+| + agent 看图复核 | — | 99.6% | 99.8% | 100% |
 
-- 平时拍的、没转码的视频，只用工具就基本够；**平台下载的转码视频**噪点证据被抹掉，看图（VLM 或能看图的 agent）能把 88.6% 提到 99% 以上。
-- 拿不准时会说拿不准：转码视频里，既没有 AIGC 标识、也没有手机原生 30fps 证据的"AI / 实拍"镜头，置信度封顶 0.7，结论写"证据不足，待确认"。
-- **真实素材**（实拍、截图、录屏、照片）：97.6% / 99.6% / 98.1%（labels / holdout / holdout2），articles 100%。
-- **切点**：F1 1.0。
-
-**换一个 agent 只靠 Skill 盲测**（[eval/agent_test](eval/agent_test/README.md)）：zcode（GLM，能看图）不改代码、不上网，13 条文章视频按人工评分 19/22，只用工具 18/22，上一代流程 14/22；16 条留出视频里完成的 15 条有 14 条结论正确（1 条因 zcode 自身报错中断）。开 VLM + 看图复核时，每条视频约 6–20 分钟。
-
-**声音**：默认剥成原声 / 人声干声 / 配乐三条轨（UVR MDX-Net，TTS + BGM 分离 SDR ≈ 19.7 dB）；人声、BGM 有无，以及 BPM、调性在带真值的样本上全对。音乐来源（AI 生成还是曲库）只对了 2/5：AI 工作流里 Suno 生成的垫底 BGM 会被判成"倾向曲库"。混音里的音效只能靠 VLM 听。
+- 没转码的视频只用工具基本够；平台下载的转码视频噪声证据被抹掉，靠看图能从 88.6% 提到 99% 以上。
+- 真实素材识别 97.6% / 99.6% / 98.1%，切点 F1 1.0。声音的人声、BGM 有无，以及 BPM、调性在带真值的样本上全对。
 
 **局限**：
-- 样本少：带制作方式标注的视频共 41 条（调参 15、留出 16、转码开发集 10），实拍和定格动画尤其少。最近几条融合规则就是在这些数据上选出来的，需要新视频复核。可以用 `rea-video memory --export-labels` 把用户纠正过的视频导出成新的评测样本。
-- 转码后的"实拍还是 AI"仍然是最难的一类：现在只能如实标"待确认"，还不能判得更准。
-- 单开 VLM 时，Gemini 会很自信地把卡通 AI 判成 3D、把文字卡片判成截图；工具已做限制（只有一个看图来源时，不能推翻工具有把握的 AI / 实拍判断）。VLM 服务不稳定时会自动换备用模型，全部失败也不会中断。
-
-## 案例
-
-`rea-video decompose` 的真实输出（未开 VLM，仅确定性取证）。拼帧图每格一个镜头，底部彩条是逐镜判断：制作方式、置信度、时间范围；完整产出还有 `breakdown.json`、`report.html/md`、每镜首尾帧和声音拆解图。
-
-### 混合片：代码渲染 + AI 生成 + 真实素材（19s · 10 镜）
-
-![混合片拆解拼帧](docs/cases/dual_role.jpg)
-
-**结论**：代码/模板渲染 59% + AI 生成视频 41%；叠加层：文字标注、字幕、标题（代码/剪辑软件合成）；声音：人声 + BGM 121.6 BPM + 音效 1 处。
-
-- **真实素材单独标出**：录屏 8.2s、界面截图 2.9s，复刻时原样保留、不重新生成
-- 代码渲染镜头给出文字轨和版式 → Remotion 重建；AI 镜头 → capsule-cinema 首尾帧生成；「快速开始」里的输出示例就是这条
-
-### 纯 AI 生成（10s · 4 镜）
-
-![AI 生成视频拆解拼帧](docs/cases/douyin_ai.jpg)
-
-**结论**：AI 生成视频 100%（逐镜置信度 82–83%）；声音：人声 + BGM 123.0 BPM（C major，置信 0.88）。
-
-- 元数据直接检出 **AIGC 生成标识**（generator 字段）
-- 4 镜平均 2.53s，33% 的切点落在 BGM 节拍上（随机约 26%）
-
-### 3D 渲染科普片（67s · 21 镜）
-
-![3D 渲染拆解拼帧](docs/cases/salted_egg.jpg)
-
-**结论**：3D 渲染 100%（21 镜全部判为 3D，置信 39–70%）；叠加层：文字标注、字幕、标题；声音：人声（女声）+ BGM 110.0 BPM（D major）。
-
-- 45% 的切点落在 BGM 节拍上（随机约 25%）——识别出卡点剪辑
-- 报告直接给出**声音复刻方案**：人声 → TTS（需要卡时间窗用时长可控 TTS），音乐 → 按 110 BPM / D major 生成或选曲，在段落变化点对齐镜头；每镜带复刻路线（如 R08-product-multiview → capsule-cinema）
-- 这类 3D / 代码渲染的科普片，现在已经可以让 LLM 写渲染代码（如 Three.js、Blender 脚本、Remotion）直接生成，不用再一镜镜手工建模和做动画；拆出的镜头结构、标注样式和卡点节奏可以直接作为生成说明
-
-### AI 音乐 MV：判断音乐是 AI 生成还是现成曲库（165s · 86 镜）
-
-![AI 音乐 MV 拆解拼帧（前 24 镜）](docs/cases/qing_mv_preview.jpg)
-
-（图为前 24 镜，[完整 86 镜拼帧](docs/cases/qing_mv.jpg)）
-
-**结论**：AI 生成视频 61% + 3D 渲染 23% + 静态图推拉 17%；声音：人声（唱）+ BGM 178.2 BPM（A minor）+ 音效 56 处。音乐不间断、人声是唱的、与视频同时收尾 → 判为「AI 生成音乐」，实际是 Suno 生成的说唱，判对。
-
-### OiiOii 公众号文章里的原片和复刻（13 条视频）
-
-下面几组视频都来自 OiiOii 的两篇公众号文章，都是微信转码版。每组上面是原片，下面是 AI 复刻；▶ 链接是压缩后的原视频（480p），可以对照着看。
-
-#### 原片 vs AI 复刻：分出哪条是手机实拍（21s · 11 镜 / 21s · 8 镜）
-
-![榨汁杯原片与复刻拆解拼帧](docs/cases/juicer_pair.jpg)
-
-▶ [TikTok 原片](docs/cases/videos/v11_tiktok_original.mp4) · [AI 复刻](docs/cases/videos/v12_oiioii_juicer_remake.mp4)
-
-**结论**：原片判为实拍 100%，整条标为真实素材（复刻时原样保留，不重新生成）；复刻版判为 AI 生成视频 100%（逐镜置信度 81–86%）。
-
-- **帧率证据**：原片是原生 30fps，84% 时长没有重复帧，符合手机直出；复刻版有 20% 重复帧，每 5 帧重复一次，说明是 24fps 生成后转成 30fps
-- 复刻版元数据里检出 **AIGC 生成标识**；原片则给出可照着拍的方案：手持拍物品、中景为主、正面柔光、每分钟 29 刀、60% 的切点落在说话停顿处
-- 微信转码会抹掉噪声证据，所以原片仍标了「实拍还是 AI 待确认」，建议开 VLM 或让 agent 看图复核
-
-#### 绘本风：原片 + 两种复刻（各 30s）
-
-![绘本风原片与两种复刻拆解拼帧](docs/cases/sketch_trio.jpg)
-
-▶ [原参考片](docs/cases/videos/v02_original_reference.mp4) · [视频模型 + Harness 复刻](docs/cases/videos/v01_oiioii_remake.mp4) · [纯视频模型复刻](docs/cases/videos/v03_pure_video_model_remake.mp4)
-
-**结论**：三条都判为 AI 生成视频 100%。两种复刻的镜头结构都跟着原片走：铅笔特写开场 → 云上场景 → 水彩收尾，转场都是叠化。
-
-- 插画风格、铅笔素描过渡都没有被误判成 2D 动画或 3D 渲染；纯模型复刻版元数据里检出 AIGC 标识
-- 报告给出画面光影（近景为主、右前方顶光、光比约 1.8:1、背景虚化），可直接写进生成提示词
-- 原参考片没有作者说明，判断只标了「证据不足，待确认」
-
-#### 代码 UI 动效：Gemini 发布片和两版复刻（各 70s 左右）
-
-![Gemini 原片与复刻拆解拼帧](docs/cases/gemini_code.jpg)
-
-▶ [Gemini 原片](docs/cases/videos/v09_gemini_original.mp4) · [原片 / 复刻左右对比](docs/cases/videos/v08_oiioii_gemini_style_remake.mp4) · [OiiOii 第一版「视频生成 + Coding」](docs/cases/videos/v10_oiioii_gen_coding_first.mp4)
-
-**结论**：三条都以代码/模板渲染为主（81% / 80% / 92%），逐镜准确率 81–96%。
-
-- 这类界面动效和文字动画都是代码渲染出来的，复刻路线是 Remotion 或让 LLM 直接写动画代码，不需要视频模型
-- 左右对比那条里识别出 32s 录屏素材；误判主要在 Google 搜索框那几秒，深色背景加光效被判成 3D
-
-#### 3D + 文字动效推广片：判得最差的一组（29s · 11 镜 / 34s · 10 镜）
-
-![推广片原片与复刻拆解拼帧](docs/cases/promo_pair.jpg)
-
-▶ [产品推广原片](docs/cases/videos/v04_product_promo_original.mp4) · [OiiOii「视频生成 + Coding」复刻](docs/cases/videos/v05_oiioii_gen_plus_coding.mp4)
-
-**结论**：原片判为 3D 渲染 65% + AI 生成视频 35%；复刻版判为 3D 63% + 代码渲染 22% + AI 12% + 录屏 2%。
-
-- 原片其实是 3D 元素加文字动效，没有 AI 镜头。判错的 3 镜（#4、#5、#9）都是大面积粉紫渐变、玻璃质感、几乎没有纹理，被当成了 AI 画面。原片逐镜准确率只有 65%，这类片子建议开 VLM
-- 复刻版识别出 10s 界面截图和 2s 录屏，标为真实素材
-
-#### 换主角：狗换成男生、真人变赛车游戏角色（12s / 12s / 6s）
-
-![换主角原片与复刻拆解拼帧](docs/cases/swap_pair.jpg)
-
-▶ [原片（狗）](docs/cases/videos/v06_outfit_original.mp4) · [换成男生](docs/cases/videos/v07_oiioii_male_swap.mp4) · [真人变装 QQ 飞车风](docs/cases/videos/v13_oiioii_outfit_swap.mp4)
-
-**结论**：三条都判为 AI 生成视频 100%。
-
-- 原片和男生版是同一个俯拍机位、同一块地毯和光线，只换了主角；BGM 都是 89.1 BPM，说明复刻沿用了原片配乐
-- 原片（狗）的判断标了「证据不足，待确认」，文章没说明它是实拍还是 AI
-- 变装那条真人和游戏角色两镜都判对；画面里的游戏菜单被当成了后期叠加的贴片，这一点有误
-
-> 以上视频来自 OiiOii 公众号文章（[文章 1](https://mp.weixin.qq.com/s/s7i_fQmwWo9SbRoV-KDZ9g)、[文章 2](https://mp.weixin.qq.com/s/aXhPx0eQu9ngYxuyvsFE4Q)），版权归原作者，仅作拆解演示。
-
-## 和 capsule-cinema 一起复刻
-
-```bash
-CC=~/code/github/capsule-cinema; PY=$CC/.venv/bin/python
-rea-video remake-plan out/ref/breakdown.json --capsule-root $CC                  # AI 类镜头 → 首尾帧生成任务
-$PY integrations/capsule_cinema/run_remake.py --jobs out/ref/remake/jobs.json    # 调 capsule-cinema 生成（会计费，可先 --dry-run）
-rea-video assemble out/ref/breakdown.json out/ref/remake/results.json            # 按原时间线拼回 + 对比片
-$PY integrations/capsule_cinema/to_capsule.py --breakdown out/ref/breakdown.json --capsule-root $CC --capsule-name my_remake
-```
-
-- 静态图推拉和静帧：不调模型，本地用测得的缩放和平移参数精确重建。
-- 代码渲染和录屏：报告给出文字轨和版式，用 Remotion 重建。
-- `to_capsule.py`：通过 capsule-cinema 自带的 `tool_factory` 注入拆解结果，生成可复用的配方草稿，不需要改 capsule-cinema 的代码。
-
-见 [integrations/capsule_cinema/README.md](integrations/capsule_cinema/README.md)。
-
-## 命令
-
-| 命令 | 作用 |
-|---|---|
-| `decompose VIDEO [--vlm] [--no-ocr]` | 拆解，输出 breakdown.json、report.html/md、storyboard.jpg、每镜首尾帧 |
-| `review OUT_DIR` | 给能看图的 agent 生成逐镜看图任务（review_tasks.json）和答案模板（review_answers.json） |
-| `apply-review OUT_DIR [ANSWERS] [--by NAME]` | 把 agent 看图的答案和确定性结果融合，重写 breakdown.json 和报告 |
-| `correct OUT_DIR --shots N --label L [--real yes/no] [--note]` | 用户指出判错：改正结论和报告，并记入记忆（以后同一文件自动套用，同类镜头复核时提示） |
-| `prefs [KEY VALUE] [--note TEXT]` | 用户偏好：默认引擎、是否默认开 VLM、VLM 配置文件、复核者名字、给 agent 的自由文字说明 |
-| `memory [--export-labels YAML]` | 看记住了什么（偏好、常见纠正类型）；把纠正导出成评测样本 |
-| `probe VIDEO` | 只看元数据线索（拍摄设备、AIGC 隐式标识、C2PA、编辑器签名） |
-| `summary breakdown.json` | 紧凑打印结论，标出需要复核的低置信镜头 |
-| `tiles VIDEO --start --end --every` | 按时间抽帧拼图，近距离复核 |
-| `eval labels.yaml` | 在带标注的样本上评测准确率和切点 F1 |
-| `capsule breakdown.json` | 导出 capsule-cinema 的视频分析 JSON |
-| `remake-plan` / `assemble` | 生成复刻任务、拼回成片 |
-
-## 工作流（设计目标；目前完成到拆解和 AI 镜头复刻）
-
-```
-Ingest ─► Decompose ─► Video IR ─► Plan ─► Reconstruct ─► Verify ─► Remix
- 导入      拆解/拉片     源码        路由     重建           差分验证   批量改写
-```
-
-| 阶段 | 状态 |
-|---|---|
-| Ingest、Decompose、Video IR（`breakdown.json`） | 已可用，即本仓库主体 |
-| Plan | 已可用：每镜给出复刻路线；AI 类镜头生成 capsule-cinema 任务 |
-| Reconstruct | 部分可用：AI 镜头交给 capsule-cinema，静态图推拉本地重建；代码层只给出文字轨和版式，还不生成 Remotion 工程 |
-| Verify | 部分可用：`assemble` 拼回成片并输出对比视频；自动打分还没做 |
-| Remix | 未开始 |
-
-1. **Ingest（导入）**：probe、抽帧、分离音轨。
-2. **Decompose（拆解）**：确定性 CV 和 VLM 分工。CV 负责精确的时间和位置：切镜、OCR 轨迹、分割、相机运动、节拍、字级对齐；VLM 负责语义：镜头意图、表演、风格。
-3. **Video IR（源码）**：时间线 → 轨道 → 片段。每个片段标注渲染方式（`code` / `gen` / `footage` / `audio`），并附参数、证据和 unknowns。
-4. **Plan（路由）**：读取 [能力地图](capabilities/README.md)，把每个生成单元路由到原语和模型，输出 Shot Recipe，包含成本预估和需要用户确认的节点。
-5. **Reconstruct（重建）**：代码层用 Remotion 等渲染，生成层调用模型，音频层用 TTS、音乐、音效，最后合成。
-6. **Verify（验证）**：检查切点对齐、OCR 文本一致性、布局 IoU、感知相似度、主体一致性、运动轨迹、节拍和口型，输出 scorecard，由 agent 循环修复得分最差的镜头。
-7. **Remix（改写）**：换人、换货、换文案、换语言、换画幅时，只重新渲染受影响的层。
-
-## 两种模式
-
-- **fidelity（高保真复刻）**：目标是结构、节奏、运镜、文字和动效逐项对齐，用分数说话。
-- **adapt（创意改编）**：保留原片"为什么有效"的关系，比如钩子、揭示、节奏，内容按新主题重写。
-
-两种模式可以按层混用。例如节奏和运镜走 fidelity，人物和文案走 adapt。
-
-## 和同类方案的区别
-
-详见 [docs/vs-hypit.md](docs/vs-hypit.md)。一句话：Hypit 擅长"导演式改编口播类视频"，OiiOii 擅长"一键托管复刻"。rea-video 要做的是**有证据、能验证、能路由到任何模型**的逆向工程。
+- 样本少：带标注的视频共 41 条，实拍和定格动画尤其少，规则可能贴合了这批数据。
+- 转码后「实拍还是 AI」仍然最难：VLM 也会看走眼。案例 3 的原片里，VLM 把 3 个实拍镜头判成了 AI，理由是「挂钟数字乱码」，但画面里的数字其实清清楚楚。现在工具和 VLM 对「是不是实拍」意见相反时会标「有分歧」，排进 agent 必看列表，但最终还是要靠看图复核。
+- 24→30fps 的帧率痕迹只说明素材是 24fps 源，电影机或微单拍 24p 再导出 30fps 也会这样。看图一方认为是实拍时会标「待确认」，但评测集里还没有这类样本。
+- 音乐来源（AI 生成还是曲库）只对了 2/5；生成单元是按复刻规则推荐的分法，原作者实际分几次生成，多数时候看不出来。
 
 ## 合法使用
 
 rea-video 用于学习视频的结构、节奏和制作方法，并用**你有权使用的素材**重新制作。请勿直接搬运他人的画面、音乐、角色或肖像。投放时请遵守平台规则和当地的 AI 生成内容标识要求。
+
+案例 3、4 的视频来自 OiiOii 公众号文章（[文章 1](https://mp.weixin.qq.com/s/s7i_fQmwWo9SbRoV-KDZ9g)、[文章 2](https://mp.weixin.qq.com/s/aXhPx0eQu9ngYxuyvsFE4Q)），版权归原作者，仅作拆解演示。
+
+## 更多
+
+- [docs/cli.md](docs/cli.md)：命令行参考、和 capsule-cinema 的对接命令、工作流设计
+- [capabilities/](capabilities/README.md)：视频 / 图像 / 音频模型的能力地图和路由规则，复刻方案按它选模型
+- [docs/vs-hypit.md](docs/vs-hypit.md)：和 Hypit、OiiOii 的区别
 
 ## 灵感来源
 

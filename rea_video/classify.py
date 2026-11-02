@@ -18,6 +18,8 @@ fusion weights reflect that."""
 from __future__ import annotations
 
 import math
+import re
+from difflib import SequenceMatcher
 
 LABELS = ["live_action", "ai_video", "avatar", "cg_3d", "code_render", "screen_capture", "still_motion", "static_hold"]
 LABEL_ZH = {
@@ -294,34 +296,79 @@ def image_source_guess(f: dict, facts: dict) -> str:
     return "unknown"  # photo vs AI image needs the VLM
 
 
+# Labels that answer the same first question ("how was the picture made?") and differ only in subtype.
+# Fusion decides the group first, then the subtype inside it: when the tools say "AI video" and an agent says
+# "digital avatar", both are votes for "generated" and must not be outvoted by a third source's "live action".
+GROUPS = {"ai_video": "generated", "avatar": "generated", "cg_3d": "rendered", "code_render": "rendered"}
+
+
+def group_of(label: str) -> str:
+    return GROUPS.get(label, label)
+
+
+def _group_sum(d: dict[str, float]) -> dict[str, float]:
+    g: dict[str, float] = {}
+    for k, v in d.items():
+        g[group_of(k)] = g.get(group_of(k), 0.0) + v
+    return g
+
+
+def _log_pool(det_p: float, vlm_p: float, det_w: float) -> float:
+    return math.exp(det_w * 0.6 * math.log(det_p + 1e-4) + VLM_WEIGHT * math.log(vlm_p + 1e-3))
+
+
 def fuse(det: dict[str, float], vlm: dict[str, float] | None, family: str, majority: str | None = None) -> dict[str, float]:
-    """majority: the tools' top label when one of the two image readers backs it (see pipeline._majority)."""
+    """Two stages: which group made the picture (generated / filmed / rendered / screen / still), then which subtype.
+    majority: the tools' top label when one of the two image readers backs its group (see pipeline._majority)."""
     if not vlm:
         return det
     vlm = _norm({k: float(vlm.get(k, 0.0)) for k in LABELS})
-    out = {}
-    for k in LABELS:
-        out[k] = math.exp(DET_WEIGHT[k] * 0.6 * math.log(det.get(k, 1e-4) + 1e-4) + VLM_WEIGHT * math.log(vlm.get(k, 1e-4) + 1e-3))
     # hard temporal constraints: a frozen shot cannot be a generated *video*
+    mult = {k: 1.0 for k in LABELS}
     if family == "frozen":
         for k in ("ai_video", "live_action", "avatar", "cg_3d", "still_motion"):
-            out[k] *= 0.05
+            mult[k] = 0.05
     if family == "planar":
         for k in ("live_action", "avatar"):
-            out[k] *= 0.2
+            mult[k] = 0.2
+    sub = {k: _log_pool(det.get(k, 0.0), vlm.get(k, 0.0), DET_WEIGHT[k]) * mult[k] for k in LABELS}
+    raw = {k: _log_pool(det.get(k, 0.0), vlm.get(k, 0.0), DET_WEIGHT[k]) for k in LABELS}
+    dg, vg = _group_sum(det), _group_sum(vlm)
+    members: dict[str, list[str]] = {}
+    for k in LABELS:
+        members.setdefault(group_of(k), []).append(k)
+    out: dict[str, float] = {}
+    for g, ks in members.items():
+        # the group trusts the tools as much as their favourite member; constraints scale it like its members
+        w = DET_WEIGHT[max(ks, key=lambda k: det.get(k, 0.0))]
+        cons = sum(sub[k] for k in ks) / (sum(raw[k] for k in ks) or 1e-12)
+        gs = _log_pool(dg.get(g, 0.0), vg.get(g, 0.0), w) * cons
+        inner = sum(sub[k] for k in ks) or 1e-12
+        for k in ks:
+            out[k] = gs * sub[k] / inner
     # the answer must be one that some source actually backs (top-2 of the deterministic layer
-    # or of the model), not a compromise label nobody voted for
+    # or of the model, or a member of the group either one ranks first), not a compromise nobody voted for
     backed = {k for src in (det, vlm) for k, _ in sorted(src.items(), key=lambda kv: -kv[1])[:2]}
+    backed |= {k for src in (dg, vg) for k in members[max(src, key=src.get)] if det.get(k, 0.0) + vlm.get(k, 0.0) > 0.05}
     best = max(out, key=out.get)
     if best not in backed:
         for k in out:
             if k not in backed:
                 out[k] *= 0.1
-    # two of three sources agree: one overconfident model must not outvote them (hard constraints above still apply)
-    if majority and out[majority] > 0 and max(out, key=out.get) != majority:
-        for k in out:
-            if k != majority:
-                out[k] = min(out[k], out[majority] * 0.8)
+    # two of three sources agree on the group: one overconfident model must not outvote them (hard constraints above still apply)
+    if majority and out[majority] > 0:
+        if max(out, key=out.get) != majority:
+            for k in out:
+                if k != majority:
+                    out[k] = min(out[k], out[majority] * 0.8)
+        # and as a group: "AI video" + "avatar" together must not outvote it either
+        gm = group_of(majority)
+        cap = 0.8 * sum(v for k, v in out.items() if group_of(k) == gm)
+        for g, ks in members.items():
+            tot = sum(out[k] for k in ks)
+            if g != gm and tot > cap:
+                for k in ks:
+                    out[k] *= cap / tot
     return _norm(out)
 
 
@@ -330,13 +377,25 @@ def top(probs: dict[str, float]) -> tuple[str, float]:
     return k, probs[k]
 
 
+def decide(probs: dict[str, float]) -> tuple[str, float]:
+    """Final call, two stages: the group with the most probability (how the picture was made), then its best
+    subtype. Confidence is the group's probability: "AI video 35% / avatar 26% / live 38%" is a 61% call
+    that the picture was generated."""
+    g: dict[str, float] = {}
+    for k, p in probs.items():
+        g[group_of(k)] = g.get(group_of(k), 0.0) + p
+    best = max(g, key=g.get)
+    k = max((x for x in probs if group_of(x) == best), key=probs.get)
+    return k, g[best]
+
+
 def overlay_layers(overlay: dict | None, text: dict | None, template: dict | None) -> list[dict]:
     layers: list[dict] = []
     for tr in (text or {}).get("tracks", []):
         if not tr.get("axis_aligned", True) and tr["kind"] != "subtitle":
             continue  # tilted text is probably part of the scene
         layers.append({"kind": tr["kind"], "source": "code_or_editor", "band": tr["band"], "texts": tr["texts"],
-                       "changing": tr["changing"], "y_center": tr.get("y_center")})
+                       "changing": tr["changing"], "y_center": tr.get("y_center"), "drift": tr.get("drift")})
     for b in (overlay or {}).get("boxes", []):
         if any(l["band"] == b["band"] and l["kind"] in ("subtitle", "title", "label") for l in layers):
             continue
@@ -345,6 +404,44 @@ def overlay_layers(overlay: dict | None, text: dict | None, template: dict | Non
         layers.append({"kind": "layout_template", "source": "code_or_editor", "band": "frame",
                        "coverage": round(template.get("frozen_ratio", 0), 3)})
     return layers
+
+
+# bases whose picture can carry printed words (packaging, signs, screens in the scene) that OCR also reads
+# (a still image is often a screenshot or a poster whose words are its content: left alone)
+SCENE_TEXT_BASES = ("live_action", "ai_video", "avatar", "cg_3d")
+SCENE_TEXT_DRIFT = 0.04  # the same words moved more than 4% of the frame: they sit on an object
+
+
+def _same_words(ocr: str, overlay: str) -> bool:
+    a, b = (re.sub(r"\s+", "", x).lower() for x in (ocr, overlay))
+    if len(a) < 2 or not b:
+        return False
+    if a in b or b in a:
+        return True
+    m = SequenceMatcher(None, a, b, autojunk=False)
+    blocks = m.get_matching_blocks()
+    # a contiguous run of the same characters, not letters scattered across the line ("Aon" in "GAME CHANGER")
+    return max(blk.size for blk in blocks) >= max(2, len(a) // 2) and sum(blk.size for blk in blocks) / len(a) >= 0.6
+
+
+def drop_scene_text(layers: list[dict], label: str, vlm_overlay: list | None) -> tuple[list[dict], list[str]]:
+    """Remove OCR text that belongs to the scene (logos and labels on products, signs) from the overlay layers.
+    vlm_overlay: the image reader's list of post-production text (None when it did not answer). It is asked to
+    leave out words printed on objects, so OCR tracks it does not mention are scene text.
+    Without it, only text that moves with the picture is dropped."""
+    if label not in SCENE_TEXT_BASES:
+        return layers, []
+    keep, dropped = [], []
+    for l in layers:
+        if not l.get("texts"):
+            keep.append(l)
+            continue
+        if isinstance(vlm_overlay, list):
+            scene = not any(_same_words(t, str(o)) for t in l["texts"] for o in vlm_overlay)
+        else:
+            scene = (l.get("drift") or 0.0) > SCENE_TEXT_DRIFT
+        (dropped if scene else keep).append(l)
+    return keep, [t for l in dropped for t in l["texts"][:3]]
 
 
 def verdict_text(label: str, image_source: str | None, layers: list[dict]) -> str:

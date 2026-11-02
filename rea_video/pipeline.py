@@ -12,7 +12,7 @@ from . import SCHEMA, __version__
 from .assets import detect_embedded, material_summary
 from .audio import analyze_audio, merge_audio_with_vlm
 from .sound_source import MUSIC_ZH, classify_sound_sources, per_clip_audio
-from .classify import LABEL_ZH, RULES, deterministic, fuse, video_context, image_source_guess, overlay_layers, top, verdict_text
+from .classify import LABEL_ZH, RULES, decide, deterministic, drop_scene_text, fuse, group_of, image_source_guess, overlay_layers, top, verdict_text, video_context
 from .features import collect_samples, shot_features
 from .media import cut_clip, extract_frame, require_tools, video_info
 from .overlay import ocr_frames, persistent_template, static_overlays, summarize_text
@@ -22,7 +22,7 @@ from .shots import build_track, detect_shots
 from .util import LOG, fmt_time, round_floats, write_json
 from . import aspects
 from .faces import shot_faces
-from .visual import shot_sheet, storyboard
+from .visual import LABEL_SHORT, shot_sheet, storyboard
 from .vlm import SHOT_PROMPT, WHOLE_PROMPT, VLMClient, VLMConfig, normalize_shot_result, shot_hints, vlm_note
 
 
@@ -181,13 +181,18 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
 DOUBT_CAP = 0.7
 
 
-def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict) -> str | None:
+def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict, seen_live: float = 0.0) -> str | None:
     """On platform-transcoded files only two things settle AI vs live action: an AIGC label (AI) or a
     native-30fps camera signature (live). Without them, cap the confidence and say why.
-    24fps-source pulldown alone is not decisive: AI video, stop motion and cinema cameras all produce it."""
-    if label not in ("ai_video", "live_action") or not facts.get("transcode_degraded"):
+    24fps-source pulldown alone is not decisive: AI video, stop motion and cinema cameras all produce it.
+    seen_live: how strongly the image readers (VLM / agent) think the shot was filmed."""
+    if label not in ("ai_video", "live_action") or prov.get("aigc"):
         return None
-    if prov.get("aigc"):
+    if (label == "ai_video" and facts.get("pulldown") in ("24→30", "24→60", "25→30?") and seen_live >= 0.5
+            and not (prov.get("hints") or {}).get("generator")):
+        # a cinema / mirrorless camera shooting 24p and exported at 30 fps leaves the same cadence as a generator
+        return "AI 还是 24p 相机实拍待确认：帧率痕迹只说明素材是 24fps 源，看图的一方认为是实拍，又没有 AIGC 标识"
+    if not facts.get("transcode_degraded"):
         return None
     if label == "live_action" and vctx.get("native30") and not facts.get("pulldown"):
         return None
@@ -260,14 +265,31 @@ def _vlm_gate(rec: dict, vprobs: dict | None, vctx: dict) -> dict | None:
 
 
 def _majority(rec: dict) -> str | None:
-    """The tools' top label when one of the two image readers (VLM, agent review) agrees with it and the other
-    does not. Not the reverse: VLM and agent tend to misread the same picture the same way (measured on
+    """The tools' top label when one of the two image readers (VLM, agent review) puts the same group first
+    (generated / filmed / rendered ..., classify.GROUPS) and the other does not: "AI video" from the tools and
+    "avatar" from the agent are two votes for "generated". Not the reverse: VLM and agent tend to misread the same picture the same way (measured on
     eval/articles.yaml and holdout2), so their agreement against the tools is left to the normal fusion."""
     v, a = ((rec.get(k) or {}).get("label_probs") for k in ("vlm", "review"))
     if not (v and a and sum(v.values()) > 0 and sum(a.values()) > 0):
         return None
-    d, tv, ta = top(rec["deterministic"]["probs"])[0], top(v)[0], top(a)[0]
-    return d if (tv == d) != (ta == d) else None
+    d = top(rec["deterministic"]["probs"])[0]
+    if (top(v)[0] == d) != (top(a)[0] == d):  # same subtype: tools + agent say code render, the VLM says 3D
+        return d
+    gd, gv, ga = group_of(d), _top_group(v), _top_group(a)
+    return d if (gv == gd) != (ga == gd) else None
+
+
+def _top_group_label(probs: dict[str, float]) -> str:
+    """The best label inside the group with the most probability."""
+    g = _top_group(probs)
+    return max((k for k in probs if group_of(k) == g), key=probs.get)
+
+
+def _top_group(probs: dict[str, float]) -> str:
+    g: dict[str, float] = {}
+    for k, p in probs.items():
+        g[group_of(k)] = g.get(group_of(k), 0.0) + p
+    return max(g, key=g.get)
 
 
 def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
@@ -294,7 +316,9 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         seen = visual_opinion(rec) or {}
         vprobs = _vlm_gate(rec, seen.get("label_probs"), vctx)
         probs = fuse(rec["deterministic"]["probs"], vprobs, fam, majority=_majority(rec))
-        label, conf = top(probs)
+        # group-first decision only when an image reader voted: the tools' avatar score is a slice of their AI score,
+        # so adding the two would outvote live action on tool-only runs (eval/koubo night street 0.51 -> 0.33)
+        label, conf = decide(probs) if vprobs else top(probs)
         src = seen.get("image_source")
         img_src = src if src and src != "unknown" else image_source_guess(rec["features"], rec["deterministic"]["facts"])
         evidence = (list(rec["deterministic"]["evidence"]) + [f"[VLM] {e}" for e in (rec.get("vlm") or {}).get("evidence", [])[:6]]
@@ -309,10 +333,25 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
                        "image_source": img_src if label in ("static_hold", "still_motion") else None,
                        "generator_guess": seen.get("generator_guess"),
                        "decided_by": decided, "evidence": evidence}
-        doubt = None if decided == "user" else _ai_or_live_doubt(label, rec["deterministic"]["facts"], prov, vctx)
+        vt = (rec.get("vlm") or {}).get("label_probs")
+        dt = top(rec["deterministic"]["probs"])[0]
+        rv = (rec.get("review") or {}).get("label_probs")
+        reviewed = bool(rv and sum(rv.values()) > 0 and _top_group(rv) == group_of(label))
+        if (decided != "user" and not reviewed and vt and sum(vt.values()) > 0
+                and (_top_group(vt) == "live_action") != (group_of(dt) == "live_action")):
+            # the tools and the VLM disagree on whether the picture was filmed: the VLM is sometimes confidently wrong
+            # (it has invented "garbled clock digits" on live footage), so ask for a look at its evidence
+            follow = "VLM" if group_of(label) == group_of(_top_group_label(vt)) else "工具"
+            rec["base"]["disputed"] = (f"工具判{LABEL_ZH[dt]}、VLM 判{LABEL_ZH[_top_group_label(vt)]}，结论跟了{follow}："
+                                       "请对照截图核实 VLM 的证据是否真的看得见")
+        seen_live = (seen.get("label_probs") or {}).get("live_action", 0.0) / (sum((seen.get("label_probs") or {}).values()) or 1.0)
+        doubt = None if decided == "user" else _ai_or_live_doubt(label, rec["deterministic"]["facts"], prov, vctx, seen_live)
         if doubt:
             rec["base"]["confidence"] = round(min(conf, DOUBT_CAP), 3)
             rec["base"]["uncertain"] = doubt
+        rec["layers"], scene_text = drop_scene_text(rec["layers"], label, (rec.get("vlm") or {}).get("overlay_text"))
+        if scene_text:
+            rec["base"]["scene_text"] = scene_text  # read by OCR but printed on things in the scene, not overlays
         if label in ("code_render", "screen_capture"):
             # text/graphics are the rendered content itself here, not a separate overlay layer
             rec["layers"] = [l for l in rec["layers"] if l["kind"] == "layout_template"]
@@ -362,7 +401,13 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         for k in {it["kind_zh"] for it in r["material"]["items"] if it.get("real_material")}:
             real_kinds[k] = real_kinds.get(k, 0.0) + r["duration"]
     if real_shots:
-        verdict += "；引入用户真实素材：" + "、".join(f"{k}（{v:.1f}s）" for k, v in sorted(real_kinds.items(), key=lambda kv: -kv[1]))
+        verdict += "；用到真实素材：" + "、".join(f"{k}（{v:.1f}s）" for k, v in sorted(real_kinds.items(), key=lambda kv: -kv[1]))
+    refs: dict[str, list[int]] = {}
+    for r in shot_records:
+        for k in dict.fromkeys(x["kind_zh"] for x in (r.get("material") or {}).get("references", [])):
+            refs.setdefault(k, []).append(r["index"])
+    if refs:
+        verdict += "；复刻需准备参考：" + "、".join(f"{k}（{len(v)} 镜）" for k, v in sorted(refs.items(), key=lambda kv: -len(kv[1])))
     if audio.get("beat_synced_edit"):
         verdict += "；剪辑卡在音乐节拍上"
     summary = {
@@ -374,6 +419,7 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         "real_material": {"shots": [r["index"] for r in real_shots], "seconds": round(sum(r["duration"] for r in real_shots), 2),
                           "ratio": round(sum(r["duration"] for r in real_shots) / total, 3),
                           "kinds": {k: round(v, 2) for k, v in real_kinds.items()}},
+        "references": refs,
         "vlm": vlm_note(breakdown.get("analysis", {}).get("vlm") or {}, breakdown.get("analysis", {}).get("review")),
     }
     sb_items = []
@@ -382,7 +428,8 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
     for r in shot_records:
         img = cv2.imread(str(out / r["assets"]["first_frame"]))
         if img is not None:
-            sb_items.append((img, r["base"]["label"], f"#{r['index']} {r['base']['label']} {r['base']['confidence']:.0%}", r["start"], r["end"]))
+            sb_items.append((img, r["base"]["label"], f"#{r['index']} {LABEL_SHORT.get(r['base']['label'], r['base']['label'])} {r['base']['confidence']:.0%}",
+                             r["start"], r["end"]))
     storyboard(sb_items, out / "storyboard.jpg")
 
     aspects.finalize(breakdown)
@@ -427,6 +474,10 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
         a_parts.append(f"音效 {n_sfx} 处")
     if a_parts:
         summary["verdict"] += "；声音：" + " + ".join(a_parts)
+    from .production import production_plan
+
+    breakdown["production_plan"] = production_plan(breakdown, out, engine=engine)
+    summary["production"] = breakdown["production_plan"]["summary"]
     breakdown["summary"] = summary
     write_json(out / "breakdown.json", breakdown)
     from .report import write_reports
