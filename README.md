@@ -30,7 +30,7 @@ rea-video 判断：左边全部实拍，一个场景、两个机位就能拍完�
 | 3D / 动画 | Blender / C4D 科普、产品动画、2D 动画、定格动画 | 用视频模型生成还是写 3D 代码渲染 |
 | 代码 / 模板 | 文字动效、UI 演示、图表、PPT 式卡片 | 文字、版式、动效节奏，可以写成 Remotion 工程 |
 | 录屏 / 截图 | 软件教程、网页演示 | 哪些是真实素材，复刻时要你自己录 |
-| 混合 / 混剪 | AI 人物 + 代码界面 + 真实录屏，实拍 + AI 加工 | 每一镜分开判断，再按原时间线拼回 |
+| 混合 / 混剪 | AI 人物 + 代码界面 + 真实录屏，实拍口播 + 用本人出镜视频生成的 AI 带货段 | 每一镜分开判断，再按原时间线拼回 |
 
 除了画面怎么做的，每条视频还会拆：
 
@@ -63,13 +63,13 @@ agent 会自己装好命令行工具、读完拆解流程，然后从头跑完�
 <table>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/storyboard.jpg"></a><br>
+<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
 <b>混合片</b> · 19 秒 · 10 镜<br>
 AI 人物对话 + 代码界面 + 8 秒真实录屏。5 个对话镜头被界面隔开，但同一个场景，一次生成就够。<br>
 <a href="docs/cases/videos/dual_role.mp4">视频</a> · <a href="docs/cases/dual_role/report.md">报告</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/storyboard.jpg"></a><br>
+<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D 科普片</b> · 67 秒 · 21 镜<br>
 全部 3D 渲染，AI 旁白。可以合并成 10 次视频生成，也可以让大模型写 Blender / Three.js 代码。<br>
 <a href="docs/cases/videos/salted_egg.mp4">视频</a> · <a href="docs/cases/salted_egg/report.md">报告</a>
@@ -77,16 +77,30 @@ AI 人物对话 + 代码界面 + 8 秒真实录屏。5 个对话镜头被界面�
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/storyboard.jpg"></a><br>
+<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
 <b>产品宣传片</b> · 70 秒 · 12 镜<br>
 83% 是代码动效，12% 录屏。不需要视频模型，写一个 Remotion 工程就能做。<br>
 <a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">视频</a> · <a href="docs/cases/v10/report.md">报告</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/preview.jpg"></a><br>
+<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>AI 音乐 MV</b> · 165 秒 · 86 镜<br>
 判出歌是 AI 生成的（实际是 Suno）。看图模型说是「影视剧实拍」的镜头，agent 从奏折上的伪汉字认出是 AI。<br>
 <a href="docs/cases/videos/qing_mv.mp4">视频</a> · <a href="docs/cases/qing_mv/report.md">报告</a>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
+<b>实拍开箱带货</b> · 72 秒 · 29 镜<br>
+全部实拍：头顶俯拍支架、一块地毯一个机位，无口播，同期声 + 曲库 BGM。转码后工具把 35% 判成 AI，agent 看图复核后 97% 实拍。<br>
+<a href="docs/cases/videos/unboxing.mp4">视频</a> · <a href="docs/cases/unboxing/report.md">报告</a>
+</td>
+<td width="50%" valign="top">
+<a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
+<b>AI 与真人混合</b> · 58 秒 · 21 镜<br>
+实拍 75%（口播 + 拍手机屏幕演示）+ AI 25%：作者拿自己的出镜视频和两张商品图，在即梦里生成「真人带货」片段。靠即梦水印和礼盒乱码认出 AI 段。<br>
+<a href="docs/cases/videos/ai_daihuo.mp4">视频</a> · <a href="docs/cases/ai_daihuo/report.md">报告</a>
 </td>
 </tr>
 </table>
@@ -96,7 +110,7 @@ AI 人物对话 + 代码界面 + 8 秒真实录屏。5 个对话镜头被界面�
 rea-video 拆完，交给 [cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) 的复刻配方生成：运镜、动作、节奏、转场跟着原片走，只换你指定的元素。
 目前的效果是用自己部署的 MiniMax H3 生成的：原镜头当动作参考，换好元素的关键帧（gpt-image-2）定长相和场景。
 下面是公众号文章里 OiiOii 做过的三组复刻，每组我们做了两版：和 OiiOii 同样的换法，以及把主体、场景、道具一起换掉。
-每个动图里四格同步播放：原片、OiiOii 复刻、我们的复刻、换元素版。
+四格分别是：原片、OiiOii 复刻、我们的复刻、换元素版。第一组是动图，后两组放的是同一时刻的抽帧，点图可以看动图。
 
 <table>
 <tr><td>
@@ -108,14 +122,14 @@ rea-video 拆完，交给 [cheap-claude-video](https://github.com/JuneYaooo/chea
 <tr><td>
 <b>纸艺 / 水彩动画</b> · 30 秒<br>
 同款：主角换成黏土小女孩。换元素：主角换成小狐狸，森林换成海底，云端换成星空，晚霞换成极光。<br>
-<img src="docs/cases/remake/paper.gif"><br>
-<a href="docs/cases/remake/paper_compare.mp4">高清对比视频（带声音）</a> · <a href="docs/cases/remake/paper_sheet.jpg">同一时刻抽帧</a>
+<a href="docs/cases/remake/paper.gif"><img src="docs/cases/remake/paper_sheet.jpg"></a><br>
+<a href="docs/cases/remake/paper.gif">动图</a> · <a href="docs/cases/remake/paper_compare.mp4">高清对比视频（带声音）</a>
 </td></tr>
 <tr><td>
 <b>实拍带货</b> · 21 秒 · 11 镜<br>
 同款：产品换成原创新款，英文贴字换成中文。换元素：樱花粉产品，厨房换成户外露营，食材换成草莓、燕麦奶、猕猴桃。<br>
-<img src="docs/cases/remake/juicer.gif"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">高清对比视频（带声音）</a> · <a href="docs/cases/remake/juicer_sheet.jpg">同一时刻抽帧</a>
+<a href="docs/cases/remake/juicer.gif"><img src="docs/cases/remake/juicer_sheet.jpg"></a><br>
+<a href="docs/cases/remake/juicer.gif">动图</a> · <a href="docs/cases/remake/juicer_compare.mp4">高清对比视频（带声音）</a>
 </td></tr>
 </table>
 
@@ -131,7 +145,13 @@ rea-video 拆完，交给 [cheap-claude-video](https://github.com/JuneYaooo/chea
 | + 看图模型（Gemini） | — | 99.6% / 99.8% | 99.6% |
 | + agent 看图复核 | — | 99.6% / 99.8% | 100% |
 
-原始文件只用工具基本够。从平台下载的视频压缩过，噪点证据没了，要靠看图才能回到 99% 以上。真实素材识别 97–99%，镜头切点全对。明细和复现方法在 [eval/RESULTS.md](eval/RESULTS.md)。
+留出集的两个数分别是 holdout（9 条）和 holdout2（7 条）。
+
+原始文件只用工具基本够。从平台下载的视频压缩过，噪点证据没了，要靠看图才能回到 99% 以上。
+
+抖音带货两条（实拍开箱、AI 与真人混合）只用工具 46%，开看图模型 64%，agent 看图复核后 97.5%：拍真实手机屏幕的画面工具会判成 3D / AI，目前要靠看图纠正。
+
+真实素材识别 97–99%，镜头切点全对。明细和复现方法在 [eval/RESULTS.md](eval/RESULTS.md)。
 
 ## 怎么判断的
 
@@ -190,6 +210,8 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 ## 社区
 
 欢迎来 [linux.do](https://linux.do/) 交流使用体验、拆解案例和复刻思路。
+
+有想拆的视频，开一个[「求拆解」issue](https://github.com/JuneYaooo/rea-video/issues/new?template=request_breakdown.yml)，贴上链接就行，拆完会发成案例。
 
 也欢迎加微信交流群：拆视频时遇到的问题、判断制作方式的方法、复刻经验和案例，都可以在群里交流、分享：
 

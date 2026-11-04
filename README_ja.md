@@ -65,13 +65,13 @@ Install https://github.com/JuneYaooo/rea-video, then break down this video: /pat
 <table>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/storyboard.jpg"></a><br>
+<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
 <b>ミックスメディアのクリップ</b> · 19 秒 · 10 ショット<br>
 AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画面録画。5 つの会話ショットは UI のセグメントで分断されていますが、同じセットを共有しているので、1 回の生成でまかなえます。<br>
 <a href="docs/cases/videos/dual_role.mp4">動画</a> · <a href="docs/cases/dual_role/report.md">レポート</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/storyboard.jpg"></a><br>
+<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D の解説動画</b> · 67 秒 · 21 ショット<br>
 すべて 3D で、ナレーションは AI です。10 回の動画生成で作れるほか、LLM に Blender / Three.js のコードを書かせることもできます。<br>
 <a href="docs/cases/videos/salted_egg.mp4">動画</a> · <a href="docs/cases/salted_egg/report.md">レポート</a>
@@ -79,16 +79,30 @@ AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/storyboard.jpg"></a><br>
+<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
 <b>商品のプロモーション動画</b> · 70 秒 · 12 ショット<br>
 83% がコードで動かすモーショングラフィックス、12% が画面録画です。動画モデルは不要で、1 つの Remotion プロジェクトで作れます。<br>
 <a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">動画</a> · <a href="docs/cases/v10/report.md">レポート</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/preview.jpg"></a><br>
+<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>AI ミュージックビデオ</b> · 165 秒 · 86 ショット<br>
 曲が AI 生成であること（Suno で作られたもの）を正しく判定しています。ビジョンモデルは一部のショットを「実写のドラマ」と判定しましたが、エージェントが巻物の上の偽の漢字に気づき、AI と判定しました。<br>
 <a href="docs/cases/videos/qing_mv.mp4">動画</a> · <a href="docs/cases/qing_mv/report.md">レポート</a>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
+<b>実写の開封動画</b> · 72 秒 · 29 ショット<br>
+全編実写。頭上の俯瞰スタンドにスマホを固定、ラグ 1 枚・1 カメ、ナレーションなし、環境音 + ライブラリ BGM。プラットフォーム再エンコード後、ツール単体では 35% を AI と誤判定。agent の目視レビューで実写 97% に。<br>
+<a href="docs/cases/videos/unboxing.mp4">動画</a> · <a href="docs/cases/unboxing/report.md">レポート</a>
+</td>
+<td width="50%" valign="top">
+<a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
+<b>AI と実写のハイブリッド</b> · 58 秒 · 21 ショット<br>
+実写 75%（トーク + スマホ画面の撮影）+ AI 25%：投稿者が自分の出演クリップと商品写真 2 枚を即夢に渡し、「本人が商品紹介する」AI 映像を生成。即夢の透かしとギフト箱の文字化けで AI 部分を特定。<br>
+<a href="docs/cases/videos/ai_daihuo.mp4">動画</a> · <a href="docs/cases/ai_daihuo/report.md">レポート</a>
 </td>
 </tr>
 </table>
@@ -98,7 +112,7 @@ AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画
 rea-video で動画を分析したあと、[cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) のリメイクレシピで新しいバージョンを生成します。カメラ、動き、テンポ、トランジションはオリジナルに従い、選んだ要素だけが差し替えられます。
 これらの結果は、セルフホストの MiniMax H3 で生成しました。オリジナルのショットを動きの参照とし、要素を差し替えたキーフレーム（gpt-image-2）で見た目を決めています。
 以下は、OiiOii が WeChat の記事で紹介した 3 つのリメイクです。それぞれについて 2 つのバージョンを作りました。OiiOii と同じ差し替えのバージョンと、被写体、舞台、小道具も差し替えたバージョンです。
-各 GIF では、オリジナル、OiiOii のリメイク、私たちのリメイク、要素を差し替えたバージョンの 4 つを同期して再生しています。
+4 つのパネルは、オリジナル、OiiOii のリメイク、私たちのリメイク、要素を差し替えたバージョンです。最初の組は GIF、残りの 2 組は同じ瞬間の静止画で、画像をクリックすると GIF が開きます。
 
 <table>
 <tr><td>
@@ -110,14 +124,14 @@ rea-video で動画を分析したあと、[cheap-claude-video](https://github.c
 <tr><td>
 <b>ペーパークラフト / 水彩アニメーション</b> · 30 秒<br>
 同じ差し替え：主役を新しい粘土の少女に。要素の差し替え：キツネ。森 → サンゴ礁、雲 → 星空、夕焼け → オーロラ。<br>
-<img src="docs/cases/remake/paper.gif"><br>
-<a href="docs/cases/remake/paper_compare.mp4">HD の比較動画（音声付き）</a> · <a href="docs/cases/remake/paper_sheet.jpg">同じ瞬間の静止画</a>
+<a href="docs/cases/remake/paper.gif"><img src="docs/cases/remake/paper_sheet.jpg"></a><br>
+<a href="docs/cases/remake/paper.gif">GIF</a> · <a href="docs/cases/remake/paper_compare.mp4">HD の比較動画（音声付き）</a>
 </td></tr>
 <tr><td>
 <b>手持ちの商品動画</b> · 21 秒 · 11 ショット<br>
 同じ差し替え：オリジナルの新商品、英語のステッカー → 中国語のキャプション。要素の差し替え：ピンクの商品、キッチン → キャンプのテーブル、新しい食材。<br>
-<img src="docs/cases/remake/juicer.gif"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">HD の比較動画（音声付き）</a> · <a href="docs/cases/remake/juicer_sheet.jpg">同じ瞬間の静止画</a>
+<a href="docs/cases/remake/juicer.gif"><img src="docs/cases/remake/juicer_sheet.jpg"></a><br>
+<a href="docs/cases/remake/juicer.gif">GIF</a> · <a href="docs/cases/remake/juicer_compare.mp4">HD の比較動画（音声付き）</a>
 </td></tr>
 </table>
 
@@ -133,7 +147,11 @@ HD の比較動画では、オリジナルの音声を使っています。オ�
 | + ビジョンモデル (Gemini) | — | 99.6% / 99.8% | 99.6% |
 | + エージェントによる目視確認 | — | 99.6% / 99.8% | 100% |
 
-オリジナルのファイルであれば、ほとんどの場合ツールだけで十分です。プラットフォームからダウンロードした動画は再圧縮されていてノイズの根拠が失われているため、99% 以上に戻すにはビジョンによる確認が必要です。実素材の検出精度は 97〜99% で、ショットの境界はすべて正しく検出されています。数値と再現方法：[eval/RESULTS.md](eval/RESULTS.md)。
+ホールドアウトの 2 つの数値は、holdout（9 本）と holdout2（7 本）です。
+
+オリジナルのファイルであれば、ほとんどの場合ツールだけで十分です。プラットフォームからダウンロードした動画は再圧縮されていてノイズの根拠が失われているため、99% 以上に戻すにはビジョンによる確認が必要です。
+
+実素材の検出精度は 97〜99% で、ショットの境界はすべて正しく検出されています。数値と再現方法：[eval/RESULTS.md](eval/RESULTS.md)。
 
 ## 仕組み
 
@@ -193,6 +211,8 @@ rea-video は動画をレンダリングしません。ショットごとに、�
 ## コミュニティ
 
 [linux.do](https://linux.do/)（中国語のコミュニティ）で、分析結果やリメイクのアイデアを共有してください。
+
+分析してほしい動画があれば、リンクを添えて [issue](https://github.com/JuneYaooo/rea-video/issues/new?template=request_breakdown.yml) を立ててください。結果は事例として公開します。
 
 ## クレジット
 
