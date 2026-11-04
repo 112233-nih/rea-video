@@ -191,7 +191,7 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 
 欢迎来 [linux.do](https://linux.do/) 交流使用体验、拆解案例和复刻思路。
 
-也欢迎加微信交流群：
+也欢迎加微信交流群：拆视频时遇到的问题、判断制作方式的方法、复刻经验和案例，都可以在群里交流、分享：
 
 <div align="center">
 <img src="docs/wechat-group-qr.jpg" width="260" alt="rea-video 微信交流群二维码">
