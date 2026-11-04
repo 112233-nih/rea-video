@@ -20,7 +20,7 @@ rea-video's verdict: the left is all live footage, one set and two camera positi
 
 </div>
 
-> The reports and detailed docs are currently in Chinese. Your agent can read them and answer in English.
+> The generated reports and detailed docs are currently in Chinese. Your agent reads them and answers in your language. To see what a report looks like without installing anything: [English version of the mixed-media clip report](docs/cases/dual_role/report_en.md).
 
 ## What it can break down
 
@@ -68,7 +68,7 @@ Add a video-capable model — Gemini or Doubao both work: give the agent the end
 <a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
 <b>Mixed-media clip</b> · 19 s · 10 shots<br>
 AI characters talking + code-built UI + 8 s of real screen recording. The 5 dialogue shots are split up by UI segments but share one set, so one generation covers them.<br>
-<a href="docs/cases/videos/dual_role.mp4">Video</a> · <a href="docs/cases/dual_role/report.md">Report</a>
+<a href="docs/cases/videos/dual_role.mp4">Video</a> · <a href="docs/cases/dual_role/report_en.md">Report (English)</a> · <a href="docs/cases/dual_role/report.md">Report (Chinese)</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>

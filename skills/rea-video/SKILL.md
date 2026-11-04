@@ -76,6 +76,8 @@ rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
 
 按 `references/output-template.md` 回复：先一句话结论，再复刻方案（按生成单元 / 拍摄场次组织），然后分镜表、剪辑包装、声音、真实素材清单、不确定点，最后给 `report.html` 路径。不要把 breakdown.json 整段贴进对话。
 
+**用用户的语言回复。**工具生成的 `report.html` / `report.md` 目前是中文，用户用英文或其他语言提问时，回复里的结论、复刻方案、分镜表、声音和素材清单都用用户的语言写（提示词给中英两版），并说明报告文件本身是中文；用户要英文报告时，把 `report.md` 翻译成 `report_en.md` 放在同一目录。
+
 ## 3. 复刻（需要时）
 
 见 `references/remake.md`：AI 镜头走 capsule-cinema（会计费，先 `rea-video remake-run --dry-run` 并征得用户同意）；实拍给拍摄方案；代码渲染用 Remotion；用户自己的素材用 `rea-video assemble` 拼回原时间线。

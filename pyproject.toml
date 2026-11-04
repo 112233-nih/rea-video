@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Reverse engineer any video: shot-level production-method forensics (live action / AI video / code render / mixed) and remake planning."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
 dependencies = [
   "numpy>=1.24",
   "opencv-python-headless>=4.8",
