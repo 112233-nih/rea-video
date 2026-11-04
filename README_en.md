@@ -112,7 +112,7 @@ All real footage: an overhead phone rig, one rug, one camera position, no voice-
 After rea-video breaks a video down, the remake recipe in [cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) generates a new version: camera, motion, pacing and transitions follow the original, only the elements you choose are swapped.
 These results were generated with a self-hosted MiniMax H3: the original shot is the motion reference, and keyframes with the swapped elements (gpt-image-2) set the look.
 Below are three remakes that OiiOii showed in its WeChat articles. For each we made two versions: the same swap as OiiOii, and one that also swaps the subject, setting and props.
-The four panels are: original, OiiOii remake, our remake, element-swap version. The first set is a GIF; the other two show same-moment stills, click through for the GIF.
+Each GIF plays four versions in sync: original, OiiOii remake, our remake, element-swap version.
 
 <table>
 <tr><td>
@@ -124,14 +124,14 @@ Same swap: woman → man, three outfits → matching menswear. Element swap: a g
 <tr><td>
 <b>Paper-craft / watercolor animation</b> · 30 s<br>
 Same swap: new clay girl as the lead. Element swap: a fox; forest → coral reef, clouds → starry sky, sunset → aurora.<br>
-<a href="docs/cases/remake/paper.gif"><img src="docs/cases/remake/paper_sheet.jpg"></a><br>
-<a href="docs/cases/remake/paper.gif">GIF</a> · <a href="docs/cases/remake/paper_compare.mp4">HD comparison video (with audio)</a>
+<img src="docs/cases/remake/paper.gif"><br>
+<a href="docs/cases/remake/paper_compare.mp4">HD comparison video (with audio)</a> · <a href="docs/cases/remake/paper_sheet.jpg">same-moment stills</a>
 </td></tr>
 <tr><td>
 <b>Handheld product video</b> · 21 s · 11 shots<br>
 Same swap: an original new product, English sticker → Chinese caption. Element swap: pink product, kitchen → camping table, new ingredients.<br>
-<a href="docs/cases/remake/juicer.gif"><img src="docs/cases/remake/juicer_sheet.jpg"></a><br>
-<a href="docs/cases/remake/juicer.gif">GIF</a> · <a href="docs/cases/remake/juicer_compare.mp4">HD comparison video (with audio)</a>
+<img src="docs/cases/remake/juicer.gif"><br>
+<a href="docs/cases/remake/juicer_compare.mp4">HD comparison video (with audio)</a> · <a href="docs/cases/remake/juicer_sheet.jpg">same-moment stills</a>
 </td></tr>
 </table>
 

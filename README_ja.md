@@ -112,7 +112,7 @@ AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画
 rea-video で動画を分析したあと、[cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) のリメイクレシピで新しいバージョンを生成します。カメラ、動き、テンポ、トランジションはオリジナルに従い、選んだ要素だけが差し替えられます。
 これらの結果は、セルフホストの MiniMax H3 で生成しました。オリジナルのショットを動きの参照とし、要素を差し替えたキーフレーム（gpt-image-2）で見た目を決めています。
 以下は、OiiOii が WeChat の記事で紹介した 3 つのリメイクです。それぞれについて 2 つのバージョンを作りました。OiiOii と同じ差し替えのバージョンと、被写体、舞台、小道具も差し替えたバージョンです。
-4 つのパネルは、オリジナル、OiiOii のリメイク、私たちのリメイク、要素を差し替えたバージョンです。最初の組は GIF、残りの 2 組は同じ瞬間の静止画で、画像をクリックすると GIF が開きます。
+各 GIF では、オリジナル、OiiOii のリメイク、私たちのリメイク、要素を差し替えたバージョンの 4 つを同期して再生しています。
 
 <table>
 <tr><td>
@@ -124,14 +124,14 @@ rea-video で動画を分析したあと、[cheap-claude-video](https://github.c
 <tr><td>
 <b>ペーパークラフト / 水彩アニメーション</b> · 30 秒<br>
 同じ差し替え：主役を新しい粘土の少女に。要素の差し替え：キツネ。森 → サンゴ礁、雲 → 星空、夕焼け → オーロラ。<br>
-<a href="docs/cases/remake/paper.gif"><img src="docs/cases/remake/paper_sheet.jpg"></a><br>
-<a href="docs/cases/remake/paper.gif">GIF</a> · <a href="docs/cases/remake/paper_compare.mp4">HD の比較動画（音声付き）</a>
+<img src="docs/cases/remake/paper.gif"><br>
+<a href="docs/cases/remake/paper_compare.mp4">HD の比較動画（音声付き）</a> · <a href="docs/cases/remake/paper_sheet.jpg">同じ瞬間の静止画</a>
 </td></tr>
 <tr><td>
 <b>手持ちの商品動画</b> · 21 秒 · 11 ショット<br>
 同じ差し替え：オリジナルの新商品、英語のステッカー → 中国語のキャプション。要素の差し替え：ピンクの商品、キッチン → キャンプのテーブル、新しい食材。<br>
-<a href="docs/cases/remake/juicer.gif"><img src="docs/cases/remake/juicer_sheet.jpg"></a><br>
-<a href="docs/cases/remake/juicer.gif">GIF</a> · <a href="docs/cases/remake/juicer_compare.mp4">HD の比較動画（音声付き）</a>
+<img src="docs/cases/remake/juicer.gif"><br>
+<a href="docs/cases/remake/juicer_compare.mp4">HD の比較動画（音声付き）</a> · <a href="docs/cases/remake/juicer_sheet.jpg">同じ瞬間の静止画</a>
 </td></tr>
 </table>
 
