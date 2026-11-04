@@ -7,7 +7,7 @@
 实拍口播、桌拍、AI 视频、3D、代码动效、混剪都能拆，<br>
 逐个镜头告诉你画面、花字、剪辑和声音是怎么做的，再告诉你怎么照着做一条。
 
-中文 | [English](README_en.md)
+中文 | [English](README_en.md) | [日本語](README_ja.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)
