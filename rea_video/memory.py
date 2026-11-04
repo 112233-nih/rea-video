@@ -18,6 +18,7 @@ from collections import Counter
 from pathlib import Path
 
 from .classify import LABEL_ZH, LABELS, top
+from .util import OCR_LANGS
 
 PREF_KEYS = {
     "engine": "复刻计划默认的视频引擎（decompose / remake-plan 的 --engine）",
@@ -54,8 +55,8 @@ def set_pref(key: str, value: str | None) -> dict:
         raise ValueError(f"未知偏好 {key}（可选：{', '.join(PREF_KEYS)}；自由文字偏好用 prefs --note）")
     if value is not None and key in ("vlm", "stems") and value not in ON_OFF:
         raise ValueError(f"{key} 只能是 on / off")
-    if value is not None and key == "ocr_lang" and value not in ("zh", "ja"):
-        raise ValueError("ocr_lang 只能是 zh / ja")
+    if value is not None and key == "ocr_lang" and value not in OCR_LANGS:
+        raise ValueError(f"ocr_lang 只能是 {' / '.join(OCR_LANGS)}")
     if value is not None and key == "env_file":
         value = str(Path(value).expanduser().resolve())
     prefs = load_prefs()

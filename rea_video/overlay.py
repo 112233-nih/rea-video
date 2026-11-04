@@ -16,9 +16,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .util import LOG
+from .util import LOG, OCR_LANGS
 
-OCR_LANGS = ("zh", "ja")
 # Recognition models for languages other than the bundled Chinese/English one. Detection stays the bundled
 # model, which finds Japanese text lines fine; only the recognizer's character set has to change. The ONNX
 # files from RapidOCR carry their character list in the model metadata, so no separate dict is needed.
