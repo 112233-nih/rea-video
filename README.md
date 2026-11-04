@@ -95,30 +95,30 @@ AI 人物对话 + 代码界面 + 8 秒真实录屏。5 个对话镜头被界面�
 
 rea-video 拆完，交给 [cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) 的复刻配方生成：运镜、动作、节奏、转场跟着原片走，只换你指定的元素。
 下面是公众号文章里 OiiOii 做过的三组复刻，每组我们做了两版：和 OiiOii 同样的换法，以及把主体、场景、道具一起换掉。
-每行一个版本，每列是同一时刻。
+每个动图里四格同步播放：原片、OiiOii 复刻、我们的复刻、换元素版。
 
 <table>
 <tr><td>
 <b>俯拍换装</b> · 12 秒<br>
 同款：女生换成男生，三套衣服换成对应男装。换元素：古风少女、三套汉服、中式书房，遥控器换成团扇。<br>
-<img src="docs/cases/remake/outfit_sheet.jpg" width="560"><br>
-<a href="docs/cases/remake/outfit_compare.mp4">四联对比视频</a>
+<img src="docs/cases/remake/outfit.gif"><br>
+<a href="docs/cases/remake/outfit_compare.mp4">高清对比视频（带声音）</a> · <a href="docs/cases/remake/outfit_sheet.jpg">同一时刻抽帧</a>
 </td></tr>
 <tr><td>
 <b>纸艺 / 水彩动画</b> · 30 秒<br>
 同款：主角换成黏土小女孩。换元素：主角换成小狐狸，森林换成海底，云端换成星空，晚霞换成极光。<br>
-<img src="docs/cases/remake/paper_sheet.jpg"><br>
-<a href="docs/cases/remake/paper_compare.mp4">四联对比视频</a>
+<img src="docs/cases/remake/paper.gif"><br>
+<a href="docs/cases/remake/paper_compare.mp4">高清对比视频（带声音）</a> · <a href="docs/cases/remake/paper_sheet.jpg">同一时刻抽帧</a>
 </td></tr>
 <tr><td>
 <b>实拍带货</b> · 21 秒 · 11 镜<br>
 同款：产品换成原创新款，英文贴字换成中文。换元素：樱花粉产品，厨房换成户外露营，食材换成草莓、燕麦奶、猕猴桃。<br>
-<img src="docs/cases/remake/juicer_sheet.jpg" width="560"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">四联对比视频</a>
+<img src="docs/cases/remake/juicer.gif"><br>
+<a href="docs/cases/remake/juicer_compare.mp4">高清对比视频（带声音）</a> · <a href="docs/cases/remake/juicer_sheet.jpg">同一时刻抽帧</a>
 </td></tr>
 </table>
 
-对比视频从左到右：原片、OiiOii 复刻、我们的复刻、换元素版，声音用原片。原片和 OiiOii 版取自公众号文章，仅用于对比展示。
+高清对比视频的声音用原片。原片和 OiiOii 版取自公众号文章，仅用于对比展示。
 
 ## 准不准
 
