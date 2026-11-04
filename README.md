@@ -205,7 +205,6 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 - [docs/decompose.md](docs/decompose.md)：判断规则
 - [docs/cli.md](docs/cli.md)：命令行用法、和 capsule-cinema 的对接
 - [rea_video/capabilities/](rea_video/capabilities/README.md)：各家视频 / 图像 / 音频模型的能力表，复刻方案按它选模型
-- [eval/RESULTS.md](eval/RESULTS.md)：评测结果
 
 ## 社区
 
@@ -218,8 +217,6 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 <div align="center">
 <img src="docs/wechat-group-qr.jpg" width="260" alt="rea-video 微信交流群二维码">
 </div>
-
-微信群二维码 7 天会过期，扫不了或过期了就在 [issue](https://github.com/JuneYaooo/rea-video/issues) 里说一声，我们补一张新码。
 
 ## 致谢
 
