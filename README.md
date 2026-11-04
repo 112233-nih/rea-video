@@ -191,6 +191,14 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 
 欢迎来 [linux.do](https://linux.do/) 交流使用体验、拆解案例和复刻思路。
 
+也欢迎加微信交流群：
+
+<div align="center">
+<img src="docs/wechat-group-qr.jpg" width="260" alt="rea-video 微信交流群二维码">
+</div>
+
+微信群二维码 7 天会过期，扫不了或过期了就在 [issue](https://github.com/JuneYaooo/rea-video/issues) 里说一声，我们补一张新码。
+
 ## 致谢
 
 思路来自 [REA（Reverse Engineer Anything）](https://github.com/morluto/rea)：从现象追到实现，结论附证据，用可测量的方式验证。
