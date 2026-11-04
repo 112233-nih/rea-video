@@ -96,6 +96,7 @@ Correctly flags the song as AI-generated (it was made with Suno). The vision mod
 ## Remakes
 
 After rea-video breaks a video down, the remake recipe in [cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) generates a new version: camera, motion, pacing and transitions follow the original, only the elements you choose are swapped.
+These results were generated with a self-hosted MiniMax H3: the original shot is the motion reference, and keyframes with the swapped elements (gpt-image-2) set the look.
 Below are three remakes that OiiOii showed in its WeChat articles. For each we made two versions: the same swap as OiiOii, and one that also swaps the subject, setting and props.
 Each GIF plays four versions in sync: original, OiiOii remake, our remake, element-swap version.
 
@@ -136,7 +137,7 @@ On original files the tools alone are mostly enough. Videos downloaded from plat
 
 ## How it works
 
-![rea-video pipeline](docs/rea-flow.svg)
+![rea-video pipeline](docs/rea-flow_en.svg)
 
 1. Split: cut the video into shots and separate audio into voice, music and effects.
 2. Gather evidence: measure the frames (frame cadence, sensor noise, whether the whole image is panning as one plane, AIGC tags in metadata); look at the images (hands, text, physics); listen (BPM, key, singing vs speech).
