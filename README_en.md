@@ -20,7 +20,7 @@ rea-video's verdict: the left is all live footage, one set and two camera positi
 
 </div>
 
-> The generated reports and detailed docs are currently in Chinese. Your agent reads them and answers in your language. To see what a report looks like without installing anything: [English version of the mixed-media clip report](docs/cases/dual_role/report_en.md).
+> The reports rea-video generates and the detailed docs are currently in Chinese. Your agent reads them and answers in your language. The six example reports below are translated into English, so you can see what a report looks like without installing anything.
 
 ## What it can break down
 
@@ -68,13 +68,13 @@ Add a video-capable model — Gemini or Doubao both work: give the agent the end
 <a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
 <b>Mixed-media clip</b> · 19 s · 10 shots<br>
 AI characters talking + code-built UI + 8 s of real screen recording. The 5 dialogue shots are split up by UI segments but share one set, so one generation covers them.<br>
-<a href="docs/cases/videos/dual_role.mp4">Video</a> · <a href="docs/cases/dual_role/report_en.md">Report (English)</a> · <a href="docs/cases/dual_role/report.md">Report (Chinese)</a>
+<a href="docs/cases/videos/dual_role.mp4">Video</a> · <a href="docs/cases/dual_role/report_en.md">Report</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D explainer</b> · 67 s · 21 shots<br>
 All 3D, AI narration. Doable as 10 video generations, or have an LLM write Blender / Three.js code.<br>
-<a href="docs/cases/videos/salted_egg.mp4">Video</a> · <a href="docs/cases/salted_egg/report.md">Report</a>
+<a href="docs/cases/videos/salted_egg.mp4">Video</a> · <a href="docs/cases/salted_egg/report_en.md">Report</a>
 </td>
 </tr>
 <tr>
@@ -82,13 +82,13 @@ All 3D, AI narration. Doable as 10 video generations, or have an LLM write Blend
 <a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
 <b>Product promo</b> · 70 s · 12 shots<br>
 83% code-driven motion graphics, 12% screen recording. No video model needed; one Remotion project does it.<br>
-<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Video</a> · <a href="docs/cases/v10/report.md">Report</a>
+<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Video</a> · <a href="docs/cases/v10/report_en.md">Report</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>AI music video</b> · 165 s · 86 shots<br>
 Correctly flags the song as AI-generated (it was made with Suno). The vision model called some shots "live-action drama"; the agent spotted fake Chinese characters on a scroll and ruled them AI.<br>
-<a href="docs/cases/videos/qing_mv.mp4">Video</a> · <a href="docs/cases/qing_mv/report.md">Report</a>
+<a href="docs/cases/videos/qing_mv.mp4">Video</a> · <a href="docs/cases/qing_mv/report_en.md">Report</a>
 </td>
 </tr>
 <tr>
@@ -96,13 +96,13 @@ Correctly flags the song as AI-generated (it was made with Suno). The vision mod
 <a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
 <b>Live-action unboxing</b> · 72 s · 29 shots<br>
 All real footage: an overhead phone rig, one rug, one camera position, no voice-over, room sound plus library BGM. After platform transcoding the offline tool called 35% of it AI; agent review brought it to 97% live-action.<br>
-<a href="docs/cases/videos/unboxing.mp4">Video</a> · <a href="docs/cases/unboxing/report.md">Report</a>
+<a href="docs/cases/videos/unboxing.mp4">Video</a> · <a href="docs/cases/unboxing/report_en.md">Report</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
 <b>AI + real person hybrid</b> · 58 s · 21 shots<br>
 75% real (talking head + filming a phone screen) and 25% AI: the creator fed her own on-camera clip and two product photos to Jimeng to generate a "real-person" product segment. The AI part was caught by the Jimeng watermark and garbled text on the gift box.<br>
-<a href="docs/cases/videos/ai_daihuo.mp4">Video</a> · <a href="docs/cases/ai_daihuo/report.md">Report</a>
+<a href="docs/cases/videos/ai_daihuo.mp4">Video</a> · <a href="docs/cases/ai_daihuo/report_en.md">Report</a>
 </td>
 </tr>
 </table>

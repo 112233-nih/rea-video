@@ -20,7 +20,7 @@ rea-video の判定：左はすべて実写で、1 つのセットと 2 つの�
 
 </div>
 
-> レポートと詳細なドキュメントは、現在中国語のみです。エージェントがそれらを読み、日本語で回答できます。
+> rea-video が生成するレポートと詳細なドキュメントは、現在中国語のみです。エージェントがそれらを読み、日本語で回答できます。下の 6 つの事例レポートは日本語に翻訳してあるので、インストールしなくてもレポートの中身を確認できます。
 
 ## 分析できるもの
 
@@ -68,13 +68,13 @@ Install https://github.com/JuneYaooo/rea-video, then break down this video: /pat
 <a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
 <b>ミックスメディアのクリップ</b> · 19 秒 · 10 ショット<br>
 AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画面録画。5 つの会話ショットは UI のセグメントで分断されていますが、同じセットを共有しているので、1 回の生成でまかなえます。<br>
-<a href="docs/cases/videos/dual_role.mp4">動画</a> · <a href="docs/cases/dual_role/report.md">レポート</a>
+<a href="docs/cases/videos/dual_role.mp4">動画</a> · <a href="docs/cases/dual_role/report_ja.md">レポート</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D の解説動画</b> · 67 秒 · 21 ショット<br>
 すべて 3D で、ナレーションは AI です。10 回の動画生成で作れるほか、LLM に Blender / Three.js のコードを書かせることもできます。<br>
-<a href="docs/cases/videos/salted_egg.mp4">動画</a> · <a href="docs/cases/salted_egg/report.md">レポート</a>
+<a href="docs/cases/videos/salted_egg.mp4">動画</a> · <a href="docs/cases/salted_egg/report_ja.md">レポート</a>
 </td>
 </tr>
 <tr>
@@ -82,13 +82,13 @@ AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画
 <a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
 <b>商品のプロモーション動画</b> · 70 秒 · 12 ショット<br>
 83% がコードで動かすモーショングラフィックス、12% が画面録画です。動画モデルは不要で、1 つの Remotion プロジェクトで作れます。<br>
-<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">動画</a> · <a href="docs/cases/v10/report.md">レポート</a>
+<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">動画</a> · <a href="docs/cases/v10/report_ja.md">レポート</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>AI ミュージックビデオ</b> · 165 秒 · 86 ショット<br>
 曲が AI 生成であること（Suno で作られたもの）を正しく判定しています。ビジョンモデルは一部のショットを「実写のドラマ」と判定しましたが、エージェントが巻物の上の偽の漢字に気づき、AI と判定しました。<br>
-<a href="docs/cases/videos/qing_mv.mp4">動画</a> · <a href="docs/cases/qing_mv/report.md">レポート</a>
+<a href="docs/cases/videos/qing_mv.mp4">動画</a> · <a href="docs/cases/qing_mv/report_ja.md">レポート</a>
 </td>
 </tr>
 <tr>
@@ -96,13 +96,13 @@ AI キャラクターの会話 + コードで作った UI + 8 秒の実際の画
 <a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
 <b>実写の開封動画</b> · 72 秒 · 29 ショット<br>
 全編実写。頭上の俯瞰スタンドにスマホを固定、ラグ 1 枚・1 カメ、ナレーションなし、環境音 + ライブラリ BGM。プラットフォーム再エンコード後、ツール単体では 35% を AI と誤判定。agent の目視レビューで実写 97% に。<br>
-<a href="docs/cases/videos/unboxing.mp4">動画</a> · <a href="docs/cases/unboxing/report.md">レポート</a>
+<a href="docs/cases/videos/unboxing.mp4">動画</a> · <a href="docs/cases/unboxing/report_ja.md">レポート</a>
 </td>
 <td width="50%" valign="top">
 <a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
 <b>AI と実写のハイブリッド</b> · 58 秒 · 21 ショット<br>
 実写 75%（トーク + スマホ画面の撮影）+ AI 25%：投稿者が自分の出演クリップと商品写真 2 枚を即夢に渡し、「本人が商品紹介する」AI 映像を生成。即夢の透かしとギフト箱の文字化けで AI 部分を特定。<br>
-<a href="docs/cases/videos/ai_daihuo.mp4">動画</a> · <a href="docs/cases/ai_daihuo/report.md">レポート</a>
+<a href="docs/cases/videos/ai_daihuo.mp4">動画</a> · <a href="docs/cases/ai_daihuo/report_ja.md">レポート</a>
 </td>
 </tr>
 </table>
