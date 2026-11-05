@@ -12,7 +12,6 @@ from .i18n import LANGS, T, set_lang
 from .classify import LABELS
 from .vlm import vlm_note
 
-DEFAULT_CAPSULE_ROOT = os.getenv("CAPSULE_CINEMA_ROOT", str(Path.home() / "code/github/capsule-cinema"))
 
 
 def _env(args) -> None:
@@ -111,6 +110,8 @@ def cmd_apply_review(args) -> int:
           ("：" + ", ".join(f"{i} {a}→{c}" for i, a, c in changed) if changed else ""))
     print(f"结论: {b['summary']['verdict']}")
     print(f"VLM: {b['summary']['vlm']}")
+    if not log["applied"] and not log["problems"]:
+        print("答案文件里没有可并入的镜头（先按 review_tasks.md 填 review_answers.json）")
     return 0 if log["applied"] else 1
 
 
@@ -154,11 +155,22 @@ def cmd_capsule(args) -> int:
     return 0
 
 
+def _capsule_root(args, check: bool = True) -> Path:
+    from .memory import capsule_root
+
+    root = capsule_root(args.capsule_root)
+    if check and not root.is_dir():
+        raise SystemExit(T(f"找不到 capsule-cinema 仓库：{root}。用 --capsule-root 指定，或 rea-video prefs capsule_root <路径> 设成默认",
+                           f"capsule-cinema repo not found: {root}. Pass --capsule-root, or set it once with: rea-video prefs capsule_root <path>"))
+    return root
+
+
 def cmd_remake_plan(args) -> int:
     from .integrations.capsule_cinema import build_remake_jobs
 
     bdir = Path(args.breakdown).parent
-    jobs = build_remake_jobs(read_json(Path(args.breakdown)), bdir, capsule_root=Path(args.capsule_root),
+    root = _capsule_root(args)
+    jobs = build_remake_jobs(read_json(Path(args.breakdown)), bdir, capsule_root=root,
                              engine=args.engine,  # None: keep the engine chosen at decompose time
                              mode=args.mode, labels=args.labels.split(",") if args.labels else None)
     print(jobs)
@@ -183,7 +195,7 @@ def _run_integration(script: str, python: str, argv: list[str]) -> int:
 def cmd_remake_run(args) -> int:
     jobs = Path(args.jobs).expanduser().resolve()
     # capsule-root 只认命令行（jobs.json 可能是别人给的，不能让它决定跑哪个解释器、import 哪里的代码）
-    root = Path(args.capsule_root).expanduser().resolve()
+    root = _capsule_root(args, check=not args.dry_run)
     argv = ["--jobs", str(jobs), "--capsule-root", str(root)] + (["--only", args.only] if args.only else []) + (["--dry-run"] if args.dry_run else [])
     # 试跑不调用 capsule-cinema，用当前解释器即可
     python = sys.executable if args.dry_run and not args.python else _capsule_python(args.python, root)
@@ -191,12 +203,13 @@ def cmd_remake_run(args) -> int:
 
 
 def cmd_capsule_draft(args) -> int:
-    argv = ["--breakdown", str(Path(args.breakdown).expanduser().resolve()), "--capsule-root", args.capsule_root]
+    root = _capsule_root(args)
+    argv = ["--breakdown", str(Path(args.breakdown).expanduser().resolve()), "--capsule-root", str(root)]
     argv += ["--capsule-name", args.capsule_name] if args.capsule_name else []
     argv += ["--capsule-display-name", args.capsule_display_name] if args.capsule_display_name else []
     argv += ["--write-capsule"] if args.write_capsule else []
     argv += ["--overwrite-capsule"] if args.overwrite_capsule else []
-    return _run_integration("to_capsule.py", _capsule_python(args.python, Path(args.capsule_root)), argv)
+    return _run_integration("to_capsule.py", _capsule_python(args.python, root), argv)
 
 
 def cmd_assemble(args) -> int:
@@ -414,15 +427,15 @@ def main(argv: list[str] | None = None) -> int:
 
     r = sub.add_parser("remake-plan", help="为 AI 类镜头生成 capsule-cinema 复刻任务")
     r.add_argument("breakdown")
-    r.add_argument("--capsule-root", default=DEFAULT_CAPSULE_ROOT)
+    r.add_argument("--capsule-root", help="capsule-cinema 仓库；默认 $CAPSULE_CINEMA_ROOT、prefs capsule_root，再退到 ~/code/github/capsule-cinema")
     r.add_argument("--engine", help="换用另一个视频引擎；默认沿用拆解时的引擎")
     r.add_argument("--mode", default="first_last_frame", choices=["first_last_frame", "image_to_video", "text_to_video"])
-    r.add_argument("--labels", default="", help="只复刻这些底层类别（逗号分隔），默认 ai_video,cg_3d,live_action,avatar")
+    r.add_argument("--labels", default="", help="只复刻这些底层类别（逗号分隔），默认 ai_video,cg_3d,live_action,avatar,anim_2d,stop_motion")
     r.set_defaults(func=cmd_remake_plan)
 
     rr = sub.add_parser("remake-run", help="用 capsule-cinema 执行 remake-plan 生成的任务（会计费，先 --dry-run）")
     rr.add_argument("jobs", help="remake-plan 输出的 jobs.json")
-    rr.add_argument("--capsule-root", default=DEFAULT_CAPSULE_ROOT, help="须与 remake-plan 时一致")
+    rr.add_argument("--capsule-root", help="须与 remake-plan 时一致；默认同 remake-plan")
     rr.add_argument("--dry-run", action="store_true", help="只列出任务和参数，不调用模型")
     rr.add_argument("--only", default="", help="只跑这些镜头（逗号分隔）")
     rr.add_argument("--python", help="capsule-cinema 的 Python；默认 $CAPSULE_CINEMA_PYTHON 或 <capsule-root>/.venv/bin/python")
@@ -430,7 +443,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cd = sub.add_parser("capsule-draft", help="用拆解结果生成 capsule-cinema 胶囊草稿")
     cd.add_argument("breakdown")
-    cd.add_argument("--capsule-root", default=DEFAULT_CAPSULE_ROOT)
+    cd.add_argument("--capsule-root", help="capsule-cinema 仓库；默认 $CAPSULE_CINEMA_ROOT、prefs capsule_root，再退到 ~/code/github/capsule-cinema")
     cd.add_argument("--capsule-name", default="")
     cd.add_argument("--capsule-display-name", default="")
     cd.add_argument("--write-capsule", action="store_true", help="落盘到 capsule-cinema 的 capsules/")
@@ -511,6 +524,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"rea-video: {exc}{hint}", file=sys.stderr)
         if args.verbose:
             raise
+        return 2
+    except FileNotFoundError as exc:  # wrong path to a video / breakdown.json / answers file
+        if args.verbose:
+            raise
+        print(f"rea-video: " + T(f"找不到文件：{exc.filename}", f"file not found: {exc.filename}"), file=sys.stderr)
         return 2
 
 

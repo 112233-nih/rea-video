@@ -12,7 +12,9 @@ from .util import LOG, read_json, round_floats, write_json
 
 
 def _expand(path: str) -> str:
-    root = os.getenv("CAPSULE_CINEMA_ROOT", str(Path.home() / "code/github/capsule-cinema"))
+    from .memory import capsule_root
+
+    root = str(capsule_root())
     p = os.path.expanduser(path.replace("${CAPSULE}", root))
     if not os.path.isabs(p):  # relative paths are relative to the repo root
         p = str(Path(__file__).resolve().parents[1] / p)
@@ -305,8 +307,9 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
         tot = sum(x["truth"] for x in subs)
         summary["packaging"] = {
             "videos": len(packs), "subtitle_lines": tot,
-            "subtitle_recall": round(sum(x["recall"] * x["truth"] for x in subs) / tot, 3) if tot else None,
-            "subtitle_precision_mean": round(sum(x["precision"] or 0 for x in subs) / len(subs), 3),
+            "subtitle_recall": round(sum((x["recall"] or 0) * x["truth"] for x in subs) / tot, 3) if tot else None,
+            "subtitle_precision_mean": (round(sum(x["precision"] for x in precs) / len(precs), 3)
+                                        if (precs := [x for x in subs if x["precision"] is not None]) else None),
             "start_err_median_s": {r["id"]: r["packaging"]["subtitles"]["start_err_median_s"] for r in rows if r.get("packaging")},
             "end_err_median_s": {r["id"]: r["packaging"]["subtitles"]["end_err_median_s"] for r in rows if r.get("packaging")},
             "other_text_found": f"{sum(p_[k]['found'] for p_ in packs for k in ('titles', 'cards', 'labels', 'stickers') if k in p_)}/"

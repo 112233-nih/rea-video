@@ -13,6 +13,9 @@ rea-video --help
 bash scripts/install_skill.sh    # 可选：装 CLI 并把 skill 链接到 ~/.claude/skills、~/.codex/skills、~/.agents/skills
 ```
 
+手动装了 `[ocr]` 时，OCR 依赖会再装一套 `opencv-python`，和 rea-video 用的 `opencv-python-headless` 抢同一个 `cv2` 目录。装完跑一次：
+`pip uninstall -y opencv-python && pip install --force-reinstall --no-deps "opencv-python-headless>=4.8,<5"`（`install_skill.sh` 会自动做）。
+
 Claude Code 也可以按插件装 skill（CLI 仍需 `pip install`，skill 第一步会检查）：
 
 ```text
@@ -65,7 +68,7 @@ rea-video stems ref.mp4 -o out/ref
 ## 和 capsule-cinema 一起复刻
 
 ```bash
-CC=~/code/github/capsule-cinema   # capsule-cinema 仓库，也可以设 CAPSULE_CINEMA_ROOT
+CC=~/code/github/capsule-cinema   # capsule-cinema 仓库；也可以设 CAPSULE_CINEMA_ROOT，或 rea-video prefs capsule_root $CC 设一次，之后不用再带 --capsule-root
 rea-video remake-plan out/ref/breakdown.json --capsule-root $CC                  # AI 类镜头 → 首尾帧生成任务
 rea-video remake-run out/ref/remake/jobs.json                                    # 调 capsule-cinema 生成（会计费，可先 --dry-run）
 rea-video assemble out/ref/breakdown.json out/ref/remake/results.json            # 按原时间线拼回 + 对比片
@@ -94,7 +97,7 @@ rea-video capsule-draft out/ref/breakdown.json --capsule-root $CC --capsule-name
 | `eval labels.yaml` | 在带标注的样本上评测准确率和切点 F1 |
 | `capsule breakdown.json` | 导出 capsule-cinema 的视频分析 JSON |
 | `remake-plan` / `assemble` | 生成复刻任务、拼回成片 |
-| `remake-run JOBS [--dry-run] [--only] [--capsule-root]` | 用 capsule-cinema 执行复刻任务（会计费） |
+| `remake-run JOBS [--dry-run] [--only 2,5\|shot_002] [--capsule-root]` | 用 capsule-cinema 执行复刻任务（会计费）；有镜头没生成出视频时退出码非 0 |
 | `capsule-draft breakdown.json` | 生成 capsule-cinema 胶囊草稿 |
 
 ## 工作流（设计目标；目前完成到拆解和 AI 镜头复刻）

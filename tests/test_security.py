@@ -34,9 +34,11 @@ def test_cwd_env_is_not_loaded(tmp_path, monkeypatch):
     assert "REA_TEST_FROM_CWD" not in os.environ
 
 
-def _run_remake(jobs: Path, root: Path) -> subprocess.CompletedProcess:
-    script = Path(__file__).resolve().parent.parent / "rea_video/integrations/run_remake.py"
-    return subprocess.run([sys.executable, str(script), "--jobs", str(jobs), "--capsule-root", str(root), "--dry-run"],
+RUN_REMAKE = Path(__file__).resolve().parent.parent / "rea_video/integrations/run_remake.py"
+
+
+def _run_remake(jobs: Path, root: Path, *extra: str) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, str(RUN_REMAKE), "--jobs", str(jobs), "--capsule-root", str(root), "--dry-run", *extra],
                           capture_output=True, text=True)
 
 
@@ -64,3 +66,17 @@ def test_face_model_checksum_rejects_tampered_download(tmp_path, monkeypatch):
     monkeypatch.setattr(faces.urllib.request, "urlretrieve", lambda url, dst: open(dst, "wb").write(b"evil"))
     assert faces._ensure_model() is None
     assert list(tmp_path.iterdir()) == []
+
+
+def test_run_remake_only_accepts_shot_ids(tmp_path):
+    root = tmp_path / "capsule"
+    jobs_list = [{"executor": "capsule_cinema", "shot": i, "label": "ai_video",
+                  "params": {"prompt": f"p{i}", "output_dir": str(root / f"output/{i}")}} for i in (1, 3)]
+    jobs = tmp_path / "jobs.json"
+    jobs.write_text(json.dumps({"capsule_root": str(root), "run_dir": "r", "jobs": jobs_list}))
+    for only in ("3", "shot_003", "SHOT_3"):
+        r = _run_remake(jobs, root, "--only", only)
+        assert r.returncode == 0 and r.stdout.startswith("1 generation job") and '"p3"' in r.stdout, (only, r.stderr)
+    for bad in ("abc", "7"):
+        r = _run_remake(jobs, root, "--only", bad)
+        assert r.returncode != 0 and "--only" in r.stderr
