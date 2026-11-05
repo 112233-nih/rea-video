@@ -52,6 +52,17 @@ https://github.com/JuneYaooo/rea-video 를 설치하고, 이 영상을 분석해
 
 에이전트가 CLI를 설치하고, 워크플로를 익힌 뒤 전체 과정을 실행합니다. ffmpeg와 Python 3.10 이상이 필요합니다.
 
+<details><summary>직접 설치하기</summary>
+
+```bash
+brew install ffmpeg            # sudo apt install ffmpeg
+git clone https://github.com/JuneYaooo/rea-video && cd rea-video
+bash scripts/install_skill.sh  # CLI 설치(pip, 안 되면 pipx / 로컬 .venv) 후 skill 연결
+rea-video --help
+```
+
+</details>
+
 결과물:
 
 - 한 줄 요약. 예: "AI 영상 41% + 코드 UI 59%, 실제 화면 녹화 8초, 122 BPM 라이브러리 음악"

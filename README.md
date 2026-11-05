@@ -52,6 +52,17 @@ Install https://github.com/JuneYaooo/rea-video, then break down this video: /pat
 
 The agent installs the CLI, learns the workflow and runs the whole thing. You need ffmpeg and Python 3.10+.
 
+<details><summary>Install by hand</summary>
+
+```bash
+brew install ffmpeg            # or: sudo apt install ffmpeg
+git clone https://github.com/JuneYaooo/rea-video && cd rea-video
+bash scripts/install_skill.sh  # installs the CLI (pip, or pipx / a local .venv if pip is blocked) and links the skill into ~/.claude, ~/.codex, ~/.agents
+rea-video --help
+```
+
+</details>
+
 You get:
 
 - a one-line summary, e.g. "41% AI video + 59% code UI, 8 s of real screen recording, library music at 122 BPM"

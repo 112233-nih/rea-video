@@ -52,6 +52,17 @@ Install https://github.com/JuneYaooo/rea-video, then break down this video: /pat
 
 エージェントが CLI をインストールし、ワークフローを学んで、すべてを実行します。ffmpeg と Python 3.10+ が必要です。
 
+<details><summary>手動でインストール</summary>
+
+```bash
+brew install ffmpeg            # sudo apt install ffmpeg
+git clone https://github.com/JuneYaooo/rea-video && cd rea-video
+bash scripts/install_skill.sh  # CLI をインストール（pip、だめなら pipx / ローカル .venv）し、skill をリンク
+rea-video --help
+```
+
+</details>
+
 得られるもの：
 
 - 1 行の要約。例："41% AI video + 59% code UI, 8 s of real screen recording, library music at 122 BPM"

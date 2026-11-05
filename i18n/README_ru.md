@@ -52,6 +52,17 @@ rea-video создан для ИИ-агентов. В Claude Code, Codex или 
 
 Агент установит CLI, изучит порядок работы и проведёт весь процесс. Нужны ffmpeg и Python 3.10+.
 
+<details><summary>Установка вручную</summary>
+
+```bash
+brew install ffmpeg            # sudo apt install ffmpeg
+git clone https://github.com/JuneYaooo/rea-video && cd rea-video
+bash scripts/install_skill.sh  # ставит CLI (pip, иначе pipx / локальный .venv) и подключает skill
+rea-video --help
+```
+
+</details>
+
 Вы получите:
 
 - итог в одну строку, например: «41% ИИ-видео + 59% интерфейс на коде, 8 с настоящей записи экрана, библиотечная музыка 122 BPM»

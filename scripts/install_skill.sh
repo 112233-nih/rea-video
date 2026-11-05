@@ -23,18 +23,30 @@ if [ -z "$PY" ] || ! py_ok "$PY"; then
   exit 1
 fi
 
+# rapidocr 依赖 opencv-python，和 rea-video 的 opencv-python-headless 共用 cv2 目录，后装的覆盖先装的。
+# 只留 headless 一套：删掉 opencv-python 后强制重装 headless（删除会带走共用文件）。
+dedupe_cv() {  # 参数：能跑 pip 的命令，如 python -m pip / pipx runpip rea-video
+  if "$@" show opencv-python >/dev/null 2>&1; then
+    "$@" uninstall -y opencv-python >/dev/null
+    "$@" install --force-reinstall --no-deps "opencv-python-headless>=4.8,<5" >/dev/null
+    echo "已去掉重复的 opencv-python，只保留 opencv-python-headless"
+  fi
+}
+
 # ---- 安装 CLI：pip -> (系统 Python 不让装时) pipx -> 仓库内 .venv ----
 log="$(mktemp)"
 trap 'rm -f "$log"' EXIT
 if "$PY" -m pip install -e "$ROOT[ocr]" 2>&1 | tee "$log"; [ "${PIPESTATUS[0]}" -eq 0 ]; then
-  :
+  dedupe_cv "$PY" -m pip
 elif grep -qi "externally-managed" "$log"; then
   echo "系统 Python 不允许直接 pip 安装（PEP 668），改用隔离环境。" >&2
   if command -v pipx >/dev/null 2>&1; then
     pipx install --force --python "$PY" -e "$ROOT[ocr]"
+    dedupe_cv pipx runpip rea-video
   else
     "$PY" -m venv "$ROOT/.venv"
     "$ROOT/.venv/bin/python" -m pip install -e "$ROOT[ocr]"
+    dedupe_cv "$ROOT/.venv/bin/python" -m pip
     mkdir -p "$HOME/.local/bin"
     ln -sfn "$ROOT/.venv/bin/rea-video" "$HOME/.local/bin/rea-video"
     echo "已装到 $ROOT/.venv，命令链接到 ~/.local/bin/rea-video"
