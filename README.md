@@ -7,7 +7,7 @@ Reverse-engineer any video.
 Talking-head, tabletop, AI video, 3D, motion graphics, mixed edits: give it any of them,<br>
 and it tells you shot by shot how the visuals, styled text, editing and audio were made, then gives you a plan to make one yourself.
 
-[中文](README_zh.md) | English | [日本語](README_ja.md)
+[中文](README_zh.md) | English | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""生成 README 用的流程图 docs/rea-flow.svg（中文）和 docs/rea-flow_en.svg（英文）和 docs/rea-flow_ja.svg（日文）。
+"""生成 README 用的流程图 docs/rea-flow.svg（中文）和 docs/rea-flow_en.svg（英文）和 docs/rea-flow_ja.svg（日文），以及韩 / 俄 / 西 / 葡 / 法 / 德版 docs/rea-flow_{ko,ru,es,pt,fr,de}.svg。
 
 用法：python3 scripts/render_flow_svg.py [输出目录，默认 docs]
 
 画的是一个具体例子：一条带货视频切成 5 个镜头 + 声音，每列一个镜头，每行一步
-（切开 / 取证据 / 判断 / 复刻方案）。改文案改顶部的 ZH / EN / JA 字典即可。
+（切开 / 取证据 / 判断 / 复刻方案）。改文案改顶部的 ZH / EN / JA / KO / RU / ES / PT / FR / DE 字典即可。
 """
 import sys
 from pathlib import Path
@@ -129,6 +129,246 @@ JA = dict(
     footer=("レポート  report.html · breakdown.json", "一文の結論 · 実写 / AI 生成 / コード別のリメイク案 · ショットごとのスクショ、根拠、プロンプト · 字幕 SRT / ASS"),
 )
 
+KO = dict(
+    title="상품 영상 예시: 5개 샷과 사운드로 나누고, 각 샷이 4단계를 거칩니다",
+    subtitle="가로로 읽으면 한 샷의 근거부터 리메이크 계획까지, 세로로 읽으면 같은 단계에서 샷별 차이",
+    steps=[
+        ("①", "분할", "샷 단위로 분할\n오디오 3트랙 분리"),
+        ("②", "근거", "프레임 측정\n이미지 보기\n소리 듣기"),
+        ("③", "판정", "확실한 근거 우선\n충돌은 재검토"),
+        ("④", "리메이크", "모델 능력에\n맞춰 묶기"),
+    ],
+    shots=["0:00–0:06", "0:06–0:11", "0:11–0:16", "0:16–0:21", "0:21–0:24"],
+    sound_lanes=["음성", "음악", "효과음"],
+    sound_caption="전체 0:00–0:24",
+    kinds={"m": "측", "l": "시", "h": "청"},
+    evidence=[
+        [("m", "60fps, 중복 없음"), ("m", "센서 노이즈"), ("l", "손·글자 정상")],
+        [("m", "배경 픽셀 고정"), ("m", "일부만 움직임"), ("l", "실제 앱 화면")],
+        [("m", "24fps 중복 주기"), ("m", "AIGC 태그 있음"), ("l", "상자 글자 깨짐")],
+        [("m", "도구: 3D 같음"), ("l", "VLM: AI 영상"), ("l", "의견 충돌 ⚠")],
+        [("m", "배경 픽셀 고정"), ("m", "OCR 자막 트랙"), ("l", "촬영 흔적 없음")],
+        [("h", "3–8Hz 음절 변조"), ("h", "122 BPM, D 단조"), ("h", "컷이 비트에 맞음")],
+    ],
+    verdicts=[
+        ("live", "실사", 0.96, None),
+        ("screen", "화면 녹화 · 실소재", 0.93, None),
+        ("ai", "AI 영상", 0.98, None),
+        ("ai", "AI 영상", 0.88, "에이전트가 이미지로 재검토"),
+        ("code", "코드 렌더링", 0.95, None),
+        ("sound", "음성 + 라이브러리 음악", 0.9, None),
+    ],
+    rule="확실한 근거(AIGC 태그, 프레임 주기)가 「그렇게 보인다」보다 우선. 의견이 갈리는 샷은 표시해서 에이전트가 이미지로 재검토",
+    plans={
+        "s1": ("cam", ["직접 촬영", "1 장면 1 카메라", "링라이트 + 휴대폰"]),
+        "s2": ("screen", ["직접 녹화", "실제 소재", "생성하지 않음"]),
+        "s34": ("ai", ["2개 샷을 1번에 생성", "멀티샷 프롬프트 + 제품 이미지 2장 + @원본", "모델 능력에 맞춰 묶음: 1회 10초,", "멀티샷 출력, 참조 이미지 2장"]),
+        "s5": ("code", ["코드 작성", "Remotion 프로젝트", "텍스트, 레이아웃, 모션"]),
+        "snd": ("sound", ["트랙 3개 따로", "음성: 직접 녹음 또는 TTS", "음악: 122 BPM 라이브러리", "효과음: 타임라인대로"]),
+    },
+    footer=("리포트  report.html · breakdown.json", "한 줄 결론 · 촬영 / AI 생성 / 코드로 나눈 리메이크 계획 · 샷별 스틸, 근거, 프롬프트 · 자막 SRT / ASS"),
+)
+
+RU = dict(
+    title="Пример: рекламный ролик разбит на 5 кадров и звук, каждый кадр проходит четыре шага",
+    subtitle="По горизонтали — один кадр от доказательств до плана ремейка; по вертикали — разные кадры на одном шаге",
+    steps=[
+        ("1", "Нарезка", "делим на кадры\nзвук на 3 дорожки"),
+        ("2", "Факты", "замер кадров\nсмотрим\nслушаем"),
+        ("3", "Решение", "сначала факты\nспорное —\nна проверку"),
+        ("4", "План", "группируем\nпод модель"),
+    ],
+    shots=["0:00–0:06", "0:06–0:11", "0:11–0:16", "0:16–0:21", "0:21–0:24"],
+    sound_lanes=["голос", "музыка", "эффекты"],
+    sound_caption="весь звук 0:00–0:24",
+    kinds={"m": "З", "l": "В", "h": "С"},
+    evidence=[
+        [("m", "60fps, без дублей"), ("m", "шум сенсора"), ("l", "руки и текст ОК")],
+        [("m", "фон неподвижен"), ("m", "движется часть"), ("l", "реальный UI")],
+        [("m", "24fps, повторы"), ("m", "метка AIGC"), ("l", "текст искажён")],
+        [("m", "замер: вроде 3D"), ("l", "VLM: вроде ИИ"), ("l", "конфликт ⚠")],
+        [("m", "фон неподвижен"), ("m", "текст по OCR"), ("l", "камеры не видно")],
+        [("h", "слоги 3–8 Гц"), ("h", "122 BPM, ре минор"), ("h", "склейки в такт")],
+    ],
+    verdicts=[
+        ("live", "Живая съёмка", 0.96, None),
+        ("screen", "Запись экрана", 0.93, None),
+        ("ai", "ИИ-видео", 0.98, None),
+        ("ai", "ИИ-видео", 0.88, "агент проверяет визуально"),
+        ("code", "Рендер кодом", 0.95, None),
+        ("sound", "Голос + сток-музыка", 0.9, None),
+    ],
+    rule="Жёсткие доказательства (метки AIGC, частота кадров) важнее «похоже на»; кадры, где источники расходятся, агент проверяет визуально",
+    plans={
+        "s1": ("cam", ["Снять", "1 сцена, 1 камера", "лампа + телефон"]),
+        "s2": ("screen", ["Записать", "реальный материал", "не генерируем"]),
+        "s34": ("ai", ["2 кадра за 1 генерацию", "промпт на 2 кадра + 2 фото + @исходник", "под возможности модели: 10 с за вызов,", "несколько кадров за раз, 2 референса"]),
+        "s5": ("code", ["Код", "проект Remotion", "текст и анимация"]),
+        "snd": ("sound", ["Три дорожки", "голос: сам или TTS", "музыка: сток, 122 BPM", "эффекты: по таймингу"]),
+    },
+    footer=("Отчёт  report.html · breakdown.json", "вывод в одну строку · план: снять / сгенерировать / написать код · кадры, доказательства, промпты · субтитры SRT / ASS"),
+)
+
+ES = dict(
+    title="Un ejemplo: un vídeo de producto dividido en 5 planos y sonido; cada plano pasa por cuatro pasos",
+    subtitle="En horizontal, un plano desde la evidencia hasta el plan de remake; en vertical, planos distintos en un mismo paso",
+    steps=[
+        ("1", "Dividir", "cortar en planos\naudio en 3 pistas"),
+        ("2", "Evidencia", "medir fotogramas\nmirar imágenes\nescuchar"),
+        ("3", "Decidir", "primero lo medido\nrevisar conflictos"),
+        ("4", "Plan", "agrupar según\nel modelo"),
+    ],
+    shots=["0:00–0:06", "0:06–0:11", "0:11–0:16", "0:16–0:21", "0:21–0:24"],
+    sound_lanes=["voz", "música", "efectos"],
+    sound_caption="pista completa 0:00–0:24",
+    kinds={"m": "M", "l": "V", "h": "O"},
+    evidence=[
+        [("m", "60fps, sin repetir"), ("m", "ruido de sensor"), ("l", "manos y texto bien")],
+        [("m", "fondo estático"), ("m", "solo mov. local"), ("l", "UI de app real")],
+        [("m", "24fps, repetidos"), ("m", "etiqueta AIGC"), ("l", "texto ilegible")],
+        [("m", "herramientas: 3D"), ("l", "VLM: parece IA"), ("l", "conflicto ⚠")],
+        [("m", "fondo estático"), ("m", "pista de texto OCR"), ("l", "no parece rodado")],
+        [("h", "sílabas a 3–8Hz"), ("h", "122 BPM, re menor"), ("h", "cortes a tempo")],
+    ],
+    verdicts=[
+        ("live", "Imagen real", 0.96, None),
+        ("screen", "Pantalla grabada", 0.93, None),
+        ("ai", "Vídeo IA", 0.98, None),
+        ("ai", "Vídeo IA", 0.88, "el agente lo revisa a ojo"),
+        ("code", "Render por código", 0.95, None),
+        ("sound", "Voz + música de stock", 0.9, None),
+    ],
+    rule="La evidencia dura (etiquetas AIGC, cadencia de fotogramas) pesa más que «parece»; los planos en conflicto se marcan y el agente los revisa a ojo",
+    plans={
+        "s1": ("cam", ["Grabarlo", "1 escena, 1 cámara", "aro de luz + móvil"]),
+        "s2": ("screen", ["Grabar", "material real", "nunca se genera"]),
+        "s34": ("ai", ["2 planos en 1 generación", "prompt multiplano + 2 fotos + @original", "según el modelo: 10 s por llamada,", "salida multiplano, 2 imágenes de referencia"]),
+        "s5": ("code", ["Programar", "proyecto Remotion", "texto, diseño, motion"]),
+        "snd": ("sound", ["Tres pistas", "voz: grabar o TTS", "música: stock, 122 BPM", "efectos: por tiempos"]),
+    },
+    footer=("Informe  report.html · breakdown.json", "veredicto en una línea · plan: grabar / generar / programar · fotogramas, evidencias y prompts por plano · subtítulos SRT / ASS"),
+)
+
+PT = dict(
+    title="Um exemplo: um vídeo de produto dividido em 5 planos e som; cada plano passa por quatro etapas",
+    subtitle="Na horizontal, um plano da evidência até a proposta de remake; na vertical, planos diferentes na mesma etapa",
+    steps=[
+        ("1", "Dividir", "cortar em planos\náudio em 3 faixas"),
+        ("2", "Evidência", "medir quadros\nolhar imagens\nescutar"),
+        ("3", "Decidir", "concreto primeiro\nrevisar conflitos"),
+        ("4", "Remake", "agrupar conforme\no modelo"),
+    ],
+    shots=["0:00–0:06", "0:06–0:11", "0:11–0:16", "0:16–0:21", "0:21–0:24"],
+    sound_lanes=["voz", "música", "efeitos"],
+    sound_caption="faixa inteira 0:00–0:24",
+    kinds={"m": "M", "l": "O", "h": "E"},
+    evidence=[
+        [("m", "60fps, sem repetir"), ("m", "ruído do sensor"), ("l", "mãos e texto ok")],
+        [("m", "fundo estático"), ("m", "movimento local"), ("l", "UI de app real")],
+        [("m", "24fps, repetições"), ("m", "tag AIGC"), ("l", "texto ilegível")],
+        [("m", "ferramentas: 3D"), ("l", "VLM: parece IA"), ("l", "conflito ⚠")],
+        [("m", "fundo estático"), ("m", "faixa de texto OCR"), ("l", "não foi filmado")],
+        [("h", "sílabas a 3–8Hz"), ("h", "122 BPM, ré menor"), ("h", "cortes no tempo")],
+    ],
+    verdicts=[
+        ("live", "Filmagem real", 0.96, None),
+        ("screen", "Gravação de tela", 0.93, None),
+        ("ai", "Vídeo de IA", 0.98, None),
+        ("ai", "Vídeo de IA", 0.88, "o agente revisa visualmente"),
+        ("code", "Render por código", 0.95, None),
+        ("sound", "Voz + música de banco", 0.9, None),
+    ],
+    rule="Evidência concreta (tags AIGC, cadência de quadros) pesa mais que \"parece\"; planos com fontes em conflito vão para revisão visual do agente",
+    plans={
+        "s1": ("cam", ["Filmar", "1 cenário, 1 câmera", "ring light + celular"]),
+        "s2": ("screen", ["Gravar", "material real", "nunca gerado"]),
+        "s34": ("ai", ["2 planos em 1 geração", "prompt multiplano + 2 fotos + @original", "conforme o modelo: 10 s por chamada,", "saída multiplano, 2 imagens de referência"]),
+        "s5": ("code", ["Programar", "projeto Remotion", "texto, layout, motion"]),
+        "snd": ("sound", ["Três faixas", "voz: gravar ou TTS", "música: banco, 122 BPM", "efeitos: por tempo"]),
+    },
+    footer=("Relatório  report.html · breakdown.json", "veredito em uma linha · remake dividido em filmar / gerar / programar · quadros, evidências e prompts por plano · legendas SRT / ASS"),
+)
+
+FR = dict(
+    title="Un exemple : une vidéo produit découpée en 5 plans et le son, chaque plan passant par quatre étapes",
+    subtitle="À l'horizontale, un plan des indices jusqu'au plan de remake ; à la verticale, les plans comparés à une même étape",
+    steps=[
+        ("1", "Découper", "couper en plans\nson en 3 pistes"),
+        ("2", "Indices", "mesurer l'image\nregarder\nécouter"),
+        ("3", "Trancher", "preuves d'abord\nconflits revus"),
+        ("4", "Remake", "regrouper selon\nle modèle"),
+    ],
+    shots=["0:00–0:06", "0:06–0:11", "0:11–0:16", "0:16–0:21", "0:21–0:24"],
+    sound_lanes=["voix", "musique", "effets"],
+    sound_caption="piste entière 0:00–0:24",
+    kinds={"m": "M", "l": "R", "h": "É"},
+    evidence=[
+        [("m", "60fps, sans doublon"), ("m", "bruit du capteur"), ("l", "mains, texte OK")],
+        [("m", "fond statique"), ("m", "mouvement local"), ("l", "vraie UI d'app")],
+        [("m", "24fps, doublons"), ("m", "tag AIGC"), ("l", "texte illisible")],
+        [("m", "outils : rendu 3D"), ("l", "VLM : vidéo IA"), ("l", "conflit ⚠")],
+        [("m", "fond statique"), ("m", "piste texte OCR"), ("l", "rien de filmé")],
+        [("h", "syllabes 3–8Hz"), ("h", "122 BPM, ré mineur"), ("h", "coupes sur le temps")],
+    ],
+    verdicts=[
+        ("live", "Tournage réel", 0.96, None),
+        ("screen", "Écran enregistré", 0.93, None),
+        ("ai", "Vidéo IA", 0.98, None),
+        ("ai", "Vidéo IA", 0.88, "l'agent vérifie à l'œil"),
+        ("code", "Rendu par code", 0.95, None),
+        ("sound", "Voix + musique stock", 0.9, None),
+    ],
+    rule="Les preuves solides (tags AIGC, cadence d'images) priment sur « ça ressemble à » ; les plans où les sources divergent sont vérifiés à l'œil par l'agent",
+    plans={
+        "s1": ("cam", ["Tourner", "1 décor, 1 caméra", "ring light + téléphone"]),
+        "s2": ("screen", ["Enregistrer", "vrai contenu", "jamais généré"]),
+        "s34": ("ai", ["2 plans en 1 génération", "prompt multi-plan + 2 photos produit + @source", "selon le modèle : 10 s par appel,", "sortie multi-plan, 2 images de référence"]),
+        "s5": ("code", ["Coder", "projet Remotion", "texte, layout, motion"]),
+        "snd": ("sound", ["Trois pistes", "voix : enregistrée ou TTS", "musique libre, 122 BPM", "effets : selon le minutage"]),
+    },
+    footer=("Rapport  report.html · breakdown.json", "verdict en une ligne · remake réparti en tourner / générer / coder · images, indices et prompts par plan · sous-titres SRT / ASS"),
+)
+
+DE = dict(
+    title="Ein Beispiel: ein Produktvideo in 5 Shots plus Ton zerlegt, jeder Shot durchläuft vier Schritte",
+    subtitle="Waagerecht: ein Shot vom Beleg bis zum Remake-Plan; senkrecht: die Shots eines Schritts im Vergleich",
+    steps=[
+        ("1", "Aufteilen", "in Shots schneiden\nTon in 3 Spuren"),
+        ("2", "Belege", "Frames messen\nBilder ansehen\nhinhören"),
+        ("3", "Urteil", "erst harte Belege\nKonflikte prüfen"),
+        ("4", "Plan", "gebündelt nach\nModellfähigkeit"),
+    ],
+    shots=["0:00–0:06", "0:06–0:11", "0:11–0:16", "0:16–0:21", "0:21–0:24"],
+    sound_lanes=["Stimme", "Musik", "SFX"],
+    sound_caption="ganze Spur 0:00–0:24",
+    kinds={"m": "M", "l": "S", "h": "H"},
+    evidence=[
+        [("m", "60fps, nie doppelt"), ("m", "Sensorrauschen"), ("l", "Hände, Text ok")],
+        [("m", "Hintergrund fix"), ("m", "nur lokal bewegt"), ("l", "echte App-UI")],
+        [("m", "24fps, Dubletten"), ("m", "AIGC-Tag"), ("l", "Text verstümmelt")],
+        [("m", "Tools: wirkt 3D"), ("l", "VLM: wirkt KI"), ("l", "Widerspruch ⚠")],
+        [("m", "Hintergrund fix"), ("m", "OCR-Textspur"), ("l", "keine Kameraspur")],
+        [("h", "Silben 3–8Hz"), ("h", "122 BPM, d-Moll"), ("h", "Schnitte auf Beat")],
+    ],
+    verdicts=[
+        ("live", "Realaufnahme", 0.96, None),
+        ("screen", "Bildschirmaufnahme", 0.93, None),
+        ("ai", "KI-Video", 0.98, None),
+        ("ai", "KI-Video", 0.88, "Agent prüft visuell"),
+        ("code", "Code-Rendering", 0.95, None),
+        ("sound", "Stimme + Archivmusik", 0.9, None),
+    ],
+    rule="Harte Belege (AIGC-Tags, Frame-Takt) wiegen schwerer als „sieht aus wie“; Shots, bei denen die Quellen sich widersprechen, prüft der Agent visuell",
+    plans={
+        "s1": ("cam", ["Drehen", "1 Set, 1 Kamera", "Ringlicht + Handy"]),
+        "s2": ("screen", ["Aufnehmen", "echtes Material", "nie generiert"]),
+        "s34": ("ai", ["2 Shots in 1 Generierung", "Multi-Shot-Prompt + 2 Produktbilder + @Original", "nach Modellfähigkeit: 10 s pro Aufruf,", "Multi-Shot-Ausgabe, 2 Referenzbilder"]),
+        "s5": ("code", ["Coden", "Remotion-Projekt", "Text, Layout, Motion"]),
+        "snd": ("sound", ["Drei Spuren", "Stimme: selbst oder TTS", "Musik: Archiv, 122 BPM", "SFX: nach Zeitplan"]),
+    },
+    footer=("Bericht  report.html · breakdown.json", "Fazit in einem Satz · Remake-Plan nach drehen / generieren / coden · Stills, Belege, Prompts pro Shot · Untertitel SRT / ASS"),
+)
+
 # ---------------------------------------------------------------- palette
 C = {
     "ink": "#0f172a", "mute": "#64748b", "line": "#cbd5e1", "band": "#f8fafc", "bg": "#ffffff",
@@ -148,6 +388,13 @@ SND_W = W - SND_X - 18                # 152
 ROWS = {"split": (84, 214), "evidence": (222, 338), "decide": (346, 466), "plan": (474, 636)}
 FONT_JA = "Hiragino Sans, Hiragino Kaku Gothic ProN, Yu Gothic, Meiryo, Noto Sans CJK JP, Noto Sans JP, sans-serif"
 FONT = "PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK SC, Source Han Sans SC, Segoe UI, Helvetica, Arial, sans-serif"
+FONT_KO = "Apple SD Gothic Neo, Malgun Gothic, Noto Sans CJK KR, Noto Sans KR, sans-serif"
+FONTS = {"ja": FONT_JA, "ko": FONT_KO}   # 其余语言和英文一样用 FONT
+
+
+def pick(lang, zh, ja, en):
+    """字号：中文一档，日文 / 韩文一档，拉丁 / 西里尔字母一档。"""
+    return zh if lang == "zh" else ja if lang in ("ja", "ko") else en
 
 
 def esc(s):
@@ -274,10 +521,12 @@ def thumb_sound(x, y, w, h, lanes):
     lane_h = (h - 16) / 3
     cols = ["#f97316", "#0d9488", "#2563eb"]
     kinds = ["voice", "music", "sfx"]
+    longest = max(len(n) for n in lanes)
+    wx = 42 if longest <= 5 else 12 + longest * 7   # 标签长（俄 / 德等）时波形往右让
     for i, name in enumerate(lanes):
         ly = y + 8 + i * lane_h
         o.append(text(x + 8, ly + lane_h / 2 + 4, name, 10, C["mute"], 700))
-        o.append(waveform(x + 42, ly + 3, w - 50, lane_h - 6, kinds[i], cols[i], i * 2.3))
+        o.append(waveform(x + wx, ly + 3, w - wx - 8, lane_h - 6, kinds[i], cols[i], i * 2.3))
     return "".join(o)
 
 
@@ -306,7 +555,7 @@ def icon(kind, x, y, color):
 # ---------------------------------------------------------------- main
 def build(S, lang):
     o = []
-    o.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="{FONT_JA if lang == "ja" else FONT}">')
+    o.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="{FONTS.get(lang, FONT)}">')
     o.append('<defs>'
              '<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
              f'<path d="M0,0 L10,5 L0,10 z" fill="{C["mute"]}"/></marker>'
@@ -316,7 +565,7 @@ def build(S, lang):
     o.append(f'<rect width="{W}" height="{H}" rx="18" fill="{C["bg"]}"/>')
 
     # title
-    o.append(text(GX, 36, S["title"], {"zh": 21, "ja": 19, "en": 19}[lang], C["ink"], 800))
+    o.append(text(GX, 36, S["title"], pick(lang, 21, 19, 19), C["ink"], 800))
     o.append(text(GX, 60, S["subtitle"], 13, C["mute"]))
 
     # row bands
@@ -336,7 +585,7 @@ def build(S, lang):
         cy = y0 + 20
         o.append(f'<circle cx="{GX+13}" cy="{cy}" r="13" fill="{C["ink"]}"/>')
         o.append(text(GX + 13, cy + 5, num, 13, "#fff", 800, "middle"))
-        o.append(text(GX + 32, cy + 5, name, {"zh": 16, "ja": 15, "en": 14}[lang], C["ink"], 800))
+        o.append(text(GX + 32, cy + 5, name, pick(lang, 16, 15, 14), C["ink"], 800))
         for j, line in enumerate(sub.split("\n")):
             o.append(text(GX, cy + 26 + j * 17, line, 12, C["mute"]))
         # arrow to next row
@@ -382,7 +631,7 @@ def build(S, lang):
             o.append(f'<rect x="{x}" y="{cy}" width="22" height="26" rx="7" fill="{fg}" opacity="0.9"/>')
             o.append(f'<rect x="{x+14}" y="{cy}" width="8" height="26" fill="{fg}" opacity="0.9"/>')
             o.append(text(x + 11, cy + 18, kinds[k], 11.5, "#fff", 800, "middle"))
-            o.append(text(x + 28, cy + 17.5, label.replace(" ⚠", ""), {"zh": 11.5, "ja": 11, "en": 10.5}[lang], fg, 600))
+            o.append(text(x + 28, cy + 17.5, label.replace(" ⚠", ""), pick(lang, 11.5, 11, 10.5), fg, 600))
 
     # ---- row 3: verdict
     y0, y1 = ROWS["decide"]
@@ -392,7 +641,7 @@ def build(S, lang):
         colr, bg = C[kind], C[f"{kind}_bg"]
         py = y0 + 6
         o.append(f'<rect x="{x}" y="{py}" width="{w}" height="30" rx="15" fill="{colr}"' + (f' stroke="{C["warn"]}" stroke-width="2" stroke-dasharray="4 3"' if note else "") + '/>')
-        o.append(text(x + w / 2, py + 20, label, {"zh": 13, "ja": 12.5, "en": 11.5}[lang], "#fff", 800, "middle"))
+        o.append(text(x + w / 2, py + 20, label, pick(lang, 13, 12.5, 11.5), "#fff", 800, "middle"))
         # confidence bar
         by = py + 42
         o.append(f'<rect x="{x}" y="{by}" width="{w}" height="6" rx="3" fill="{C["m_bg"]}"/>')
@@ -401,7 +650,7 @@ def build(S, lang):
         if note:
             o.append(text(x, by + 40, "⚠ " + note, 10.5, C["warn"], 700))
     # rule line
-    o.append(text(COL0, y1 - 4, S["rule"], 12 if lang != "ja" else 11.5, C["mute"]))
+    o.append(text(COL0, y1 - 4, S["rule"], pick(lang, 12, 11.5, 12), C["mute"]))
 
     # ---- row 4: plan cards
     y0, y1 = ROWS["plan"]
@@ -414,9 +663,9 @@ def build(S, lang):
         bg = {"cam": C["live_bg"], "screen": C["screen_bg"], "ai": C["ai_bg"], "code": C["code_bg"], "sound": C["sound_bg"]}[kind]
         o.append(f'<g filter="url(#sh)"><rect x="{x}" y="{cy0}" width="{w}" height="{ch}" rx="10" fill="{bg}" stroke="{colr}" stroke-opacity="0.35"/></g>')
         o.append(icon(kind, x + 12, cy0 + 12, colr))
-        o.append(text(x + 40, cy0 + 28, lines[0], {"zh": 14, "ja": 13, "en": 12.5}[lang], colr, 800))
+        o.append(text(x + 40, cy0 + 28, lines[0], pick(lang, 14, 13, 12.5), colr, 800))
         for j, line in enumerate(lines[1:]):
-            o.append(text(x + 12, cy0 + 52 + j * 21, line, {"zh": 12, "ja": 11, "en": 10.5}[lang], C["ink"]))
+            o.append(text(x + 12, cy0 + 52 + j * 21, line, pick(lang, 12, 11, 10.5), C["ink"]))
     # bracket joining shots 3+4 above the merged card
     bx0, bx1 = col_x(2) + 10, col_x(3) + COLW - 10
     o.append(f'<path d="M{bx0},{cy0-12} v6 H{bx1} v-6" fill="none" stroke="{C["ai"]}" stroke-width="2.2"/>')
@@ -430,7 +679,7 @@ def build(S, lang):
     name, sub = S["footer"]
     o.append(f'<g filter="url(#sh)"><rect x="{fx}" y="{fy}" width="{fw}" height="52" rx="12" fill="{C["ink"]}"/></g>')
     o.append(text(fx + 16, fy + 22, name, 14, "#fff", 800))
-    o.append(text(fx + 16, fy + 41, sub, 11.5 if lang != "en" else 11, "#cbd5e1"))
+    o.append(text(fx + 16, fy + 41, sub, pick(lang, 11.5, 11.5, 11), "#cbd5e1"))
 
     o.append('</svg>')
     return "\n".join(o)
@@ -441,4 +690,6 @@ if __name__ == "__main__":
     (out / "rea-flow.svg").write_text(build(ZH, "zh"), encoding="utf-8")
     (out / "rea-flow_en.svg").write_text(build(EN, "en"), encoding="utf-8")
     (out / "rea-flow_ja.svg").write_text(build(JA, "ja"), encoding="utf-8")
+    for lang, S in [("ko", KO), ("ru", RU), ("es", ES), ("pt", PT), ("fr", FR), ("de", DE)]:
+        (out / f"rea-flow_{lang}.svg").write_text(build(S, lang), encoding="utf-8")
     print("written", out)
