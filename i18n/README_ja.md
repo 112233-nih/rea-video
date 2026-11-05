@@ -7,7 +7,7 @@
 実写のトーク動画、卓上撮影、AI 動画、3D、モーショングラフィックス、ミックス編集など、どんな動画を渡しても、<br>
 映像、装飾テキスト、編集、音声がどのように作られたかをショットごとに説明し、自分で同じものを作るためのプランを提示します。
 
-[中文](README_zh.md) | [English](../README.md) | 日本語 | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [Русский](README_ru.md) | 日本語 | [한국어](README_ko.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)

@@ -7,7 +7,7 @@ Faça a engenharia reversa de qualquer vídeo.
 Vídeo de apresentador, mesa de produto, vídeo de IA, 3D, motion graphics, edições mistas: mande qualquer um deles,<br>
 e ele mostra, plano a plano, como foram feitos a imagem, os textos estilizados, a edição e o áudio, e depois entrega um plano para você fazer o seu.
 
-[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | Português | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [Русский](README_ru.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Español](README_es.md) | Português | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)

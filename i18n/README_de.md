@@ -7,7 +7,7 @@ Reverse Engineering für jedes Video.
 Talking Head, Tabletop, KI-Video, 3D, Motion Graphics, gemischte Schnitte: Gib ihm ein beliebiges davon,<br>
 und es sagt dir Shot für Shot, wie Bild, gestaltete Texte, Schnitt und Ton entstanden sind, und gibt dir dann einen Plan, um so ein Video selbst zu machen.
 
-[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | Deutsch
+[中文](README_zh.md) | [English](../README.md) | [Русский](README_ru.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | Deutsch
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)

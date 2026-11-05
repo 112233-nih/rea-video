@@ -7,7 +7,7 @@
 «Говорящая голова», предметная съёмка на столе, ИИ-видео, 3D, моушн-графика, смешанный монтаж — дайте ему что угодно,<br>
 и он по каждому кадру расскажет, как сделаны изображение, оформленные надписи, монтаж и звук, а затем даст план, как снять такое же самому.
 
-[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | Русский | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | Русский | [日本語](README_ja.md) | [한국어](README_ko.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)

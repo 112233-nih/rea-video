@@ -7,7 +7,7 @@ Faites la rétro-ingénierie de n'importe quelle vidéo.
 Face caméra, table top, vidéo IA, 3D, motion design, montages mixtes : donnez-lui n'importe laquelle,<br>
 et il vous explique, plan par plan, comment l'image, les textes stylisés, le montage et le son ont été faits, puis vous donne un plan pour en faire une vous-même.
 
-[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | Français | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [Русский](README_ru.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Español](README_es.md) | [Português](README_pt.md) | Français | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)

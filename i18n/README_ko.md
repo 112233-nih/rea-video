@@ -7,7 +7,7 @@
 토킹헤드, 테이블탑, AI 영상, 3D, 모션 그래픽, 혼합 편집 영상 등 무엇이든 넣으면,<br>
 화면, 스타일 텍스트, 편집, 오디오가 어떻게 만들어졌는지 샷 단위로 알려 주고, 직접 만들 수 있는 계획까지 제시합니다.
 
-[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | 한국어 | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [Русский](README_ru.md) | [日本語](README_ja.md) | 한국어 | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)
