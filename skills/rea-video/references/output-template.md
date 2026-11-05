@@ -11,6 +11,10 @@
 - 然后写剪辑包装（字幕样式和时间轴文件、花字 / 贴纸清单、音效卡点）、声音拆解、真实素材清单，最后写不确定点。
 - 报告文件路径（`report.html`）写给用户。不要把 breakdown.json 整段贴进对话。
 
+## 语言
+
+报告语言跟 `--lang` 走（zh / en），回复语言跟用户走；两者的判断顺序见 SKILL.md「交付给用户」。下面的模板是中文版，英文回复用同样的结构：one-line verdict → remake plan → shot list → packaging → audio → material you must supply → open questions → report path。
+
 ## 回复模板（中文）
 
 **一句话结论**：混合制作——底层画面 AI 生成视频 62%、代码模板 30%、实拍 8%；全片字幕由代码叠加；引入了 2 段真实截图；女声 TTS + 110 BPM 流行 BGM，切镜卡在节拍上。

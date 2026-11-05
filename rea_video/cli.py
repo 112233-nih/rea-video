@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from .util import LOG, OCR_LANGS, load_env_files, read_json, setup_logging
+from .i18n import LANGS, set_lang
 from .classify import LABELS
 from .vlm import vlm_note
 
@@ -48,9 +49,12 @@ def cmd_decompose(args) -> int:
     meta = read_json(Path(args.meta)) if args.meta else None
     use_vlm = args.vlm or (pref("vlm") == "on" and not args.no_vlm)
     stems = not args.no_stems and pref("stems", "on") == "on"
+    lang = args.lang or pref("lang", "zh")
+    if lang not in LANGS:
+        raise SystemExit(f"错误：不支持的报告语言 {lang}（可选：{', '.join(LANGS)}）")
     b = decompose(args.video, out, use_vlm=use_vlm, whole_vlm=not args.no_whole, ocr=not args.no_ocr,
                   workers=args.workers, engine=args.engine or pref("engine", "seedance2.0"), platform_meta=meta, stems=stems,
-                  packaging=not args.no_packaging)
+                  packaging=not args.no_packaging, lang=lang)
     print(json.dumps({"out": str(out), "verdict": b["summary"]["verdict"], "shots": b["summary"]["shots"],
                       "confidence": b["summary"]["confidence"], "vlm": b["summary"]["vlm"],
                       "report": str(out / "report.html")}, ensure_ascii=False, indent=2))
@@ -63,6 +67,7 @@ def cmd_review(args) -> int:
 
     out = Path(args.out_dir)
     b = read_json(out / "breakdown.json")
+    set_lang(b.get("lang", "zh"))
     tasks, answers = build_tasks(b, str(out))
     (out / "review_tasks.json").write_text(json.dumps(tasks, ensure_ascii=False, indent=2), encoding="utf-8")
     ans_path = out / "review_answers.json"
@@ -82,6 +87,9 @@ def cmd_apply_review(args) -> int:
 
     out = Path(args.out_dir)
     b = read_json(out / "breakdown.json")
+    if args.lang:
+        b["lang"] = args.lang
+    set_lang(b.get("lang", "zh"))
     answers = read_json(Path(args.answers) if args.answers else out / "review_answers.json")
     from .memory import pref
 
@@ -223,16 +231,20 @@ def cmd_tiles(args) -> int:
 
 def cmd_summary(args) -> int:
     """Compact, agent-friendly view of a breakdown (instead of reading the whole JSON)."""
+    from .i18n import T, join
+
     b = read_json(Path(args.breakdown))
+    set_lang(b.get("lang", "zh"))
     s = b["summary"]
     lines = [f"{b['source']['filename']} | {b['source']['duration']}s {b['source']['width']}x{b['source']['height']} {b['source']['fps']}fps",
-             f"结论: {s['verdict']}", f"置信度: {s['confidence']}", f"VLM: {s.get('vlm') or vlm_note(b['analysis']['vlm'])}", ""]
+             f"{T('结论', 'Verdict')}: {s['verdict']}", f"{T('置信度', 'Confidence')}: {s['confidence']}", f"VLM: {s.get('vlm') or vlm_note(b['analysis']['vlm'])}", ""]
     vc = b.get("video_context") or {}
     if vc.get("transcoded"):
-        lines.append(f"平台转码: {'、'.join(vc.get('platform', []))}（噪声类证据失效；原生 30fps 无重复帧: {vc.get('native30')}）")
+        lines.append(T("平台转码: {p}（噪声类证据失效；原生 30fps 无重复帧: {n}）", "Platform transcode: {p} (noise evidence unusable; native 30fps without duplicate frames: {n})",
+                       p=join(vc.get("platform", [])), n=vc.get("native30")))
     prov = b.get("provenance", {})
     if prov.get("aigc") or prov.get("hints"):
-        lines.append(f"元数据: aigc={prov.get('aigc')} hints={prov.get('hints')}")
+        lines.append(f"{T('元数据', 'Metadata')}: aigc={prov.get('aigc')} hints={prov.get('hints')}")
     from .aspects import shot_text
     from .memory import hint_for, patterns
 
@@ -243,13 +255,13 @@ def cmd_summary(args) -> int:
         det = r["deterministic"]["probs"]
         past = None if base["decided_by"] == "user" else hint_for(max(det, key=det.get), pats)
         mat = (r.get("material") or {}).get("origin_zh", "")
-        second = "(用户纠正)" if base["decided_by"] == "user" else f"(次选 {alt[0]} {alt[1]:.2f})"
+        second = T("(用户纠正)", "(user correction)") if base["decided_by"] == "user" else T("(次选 {l} {p:.2f})", "(runner-up {l} {p:.2f})", l=alt[0], p=alt[1])
         lines.append(f"#{r['index']:>2} {r['start']:7.2f}-{r['end']:7.2f} {base['label']:<14} {base['confidence']:.2f} {second} "
-                     f"| 素材:{mat} | 叠加:{','.join(sorted({l['kind'] for l in r.get('layers', [])})) or '-'} | {r['features'].get('camera')}"
-                     + ("  ← 低置信，需要复核" if base["confidence"] < 0.6 else "")
+                     f"| {T('素材', 'material')}:{mat} | {T('叠加', 'overlays')}:{','.join(sorted({l['kind'] for l in r.get('layers', [])})) or '-'} | {r['features'].get('camera')}"
+                     + (T("  ← 低置信，需要复核", "  ← low confidence, review it") if base["confidence"] < 0.6 else "")
                      + (f"  ← {base['uncertain']}" if base.get("uncertain") else "")
-                     + (f"  ← 有分歧：{base['disputed']}" if base.get("disputed") else "")
-                     + ("  ← 用户纠正过素材来源" if (r.get("material") or {}).get("user_corrected") else "")
+                     + (T("  ← 有分歧：{d}", "  ← disputed: {d}", d=base["disputed"]) if base.get("disputed") else "")
+                     + (T("  ← 用户纠正过素材来源", "  ← material origin corrected by the user") if (r.get("material") or {}).get("user_corrected") else "")
                      + (f"  ← {past}" if past else "")
                      + (f" | {shot_text(r)}" if r["base"]["label"] in ("live_action", "avatar") and shot_text(r) else ""))
     if s.get("aspects"):
@@ -257,22 +269,24 @@ def cmd_summary(args) -> int:
     a = b.get("audio", {})
     if a.get("has_audio"):
         mu = a.get("music", {})
-        lines += ["", f"人声: {a.get('voice', {}).get('present')} ({a.get('voice', {}).get('ratio')}) | 音乐: {mu.get('present')} "
+        lines += ["", f"{T('人声', 'Voice')}: {a.get('voice', {}).get('present')} ({a.get('voice', {}).get('ratio')}) | {T('音乐', 'Music')}: {mu.get('present')} "
                       f"{mu.get('tempo_bpm')}BPM {(mu.get('key') or {}).get('tonic', '')}{(mu.get('key') or {}).get('mode', '')} | "
-                      f"音效: {len((b.get('audio_plan') or {}).get('sfx_merged', []))} | 卡点: {a.get('beat_synced_edit')}"]
+                      f"{T('音效', 'SFX')}: {len((b.get('audio_plan') or {}).get('sfx_merged', []))} | {T('卡点', 'beat-synced')}: {a.get('beat_synced_edit')}"]
         if (b.get("sound_sources") or {}).get("summary_zh"):
-            lines.append("声音来源: " + b["sound_sources"]["summary_zh"])
+            lines.append(f"{T('声音来源', 'Sound sources')}: " + b["sound_sources"]["summary_zh"])
         if (b.get("stems") or {}).get("ok"):
-            lines.append("音轨: stems/original.wav（原声） stems/vocals.wav（人声） stems/music.wav（配乐）")
+            lines.append(T("音轨: stems/original.wav（原声） stems/vocals.wav（人声） stems/music.wav（配乐）",
+                           "Stems: stems/original.wav (original) stems/vocals.wav (voice) stems/music.wav (music)"))
     pk = b.get("packaging")
     if pk:
-        lines += [""] + [f"包装: {x}" for x in (pk.get("summary_zh") or ["没有检出后期叠加的文字或贴纸"])]
+        tag = T("包装", "Packaging")
+        lines += [""] + [f"{tag}: {x}" for x in (pk.get("summary_zh") or [T("没有检出后期叠加的文字或贴纸", "no overlaid text or stickers detected")])]
         low = [st for st in pk.get("stickers", []) if not st.get("in_picture") and st.get("confidence") in ("low", "vlm")]
         if low:
-            lines.append("包装: 需要看图确认的贴纸 " + "、".join(f"{st['id']} {st['t0']:.1f}-{st['t1']:.1f}s" for st in low)
-                         + "（截图在 packaging/）")
+            lines.append(f"{tag}: " + T("需要看图确认的贴纸 ", "stickers to confirm by eye ") + join(f"{st['id']} {st['t0']:.1f}-{st['t1']:.1f}s" for st in low)
+                         + T("（截图在 packaging/）", " (crops under packaging/)"))
         if pk.get("files"):
-            lines.append("包装文件: " + " ".join(pk["files"].values()))
+            lines.append(f"{T('包装文件', 'Packaging files')}: " + " ".join(pk["files"].values()))
     print("\n".join(lines))
     return 0
 
@@ -349,6 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--no-ocr", action="store_true", help="不做 OCR（字幕/花字时间轴也会跳过，只剩贴纸检测）")
     d.add_argument("--ocr-lang", choices=OCR_LANGS, help="字幕/花字的语言：zh 中英（默认）、ja 日文（首次使用自动下载识别模型）；也可用 prefs ocr_lang 设成默认")
     d.add_argument("--no-packaging", action="store_true", help="跳过剪辑包装层（整片字幕时间轴、花字、贴纸/动图、音效卡点）；省掉约每分钟 30–50 秒")
+    d.add_argument("--lang", choices=LANGS, help="报告、结论和 VLM 描述的语言：zh（默认）/ en；按用户提问的语言选，也可用 prefs lang 设成默认")
     d.add_argument("--workers", type=int, default=3)
     d.add_argument("--engine", help="复刻计划使用的 capsule-cinema 视频引擎（默认 prefs 里的 engine，否则 seedance2.0）")
     d.add_argument("--meta", help='平台元数据 JSON，例如 {"music": {"title": "xx", "author": "yy", "is_original": false, "popular": true}}')
@@ -436,6 +451,7 @@ def main(argv: list[str] | None = None) -> int:
     ar.add_argument("out_dir")
     ar.add_argument("answers", nargs="?", help="答案文件（默认 <out_dir>/review_answers.json）")
     ar.add_argument("--by", help="复核者名字（写进报告）")
+    ar.add_argument("--lang", choices=LANGS, help="在这一步换报告语言：结论、证据和报告文字重新生成，VLM 已写好的描述和提示词保持原语言")
     ar.set_defaults(func=cmd_apply_review)
 
     co = sub.add_parser("correct", help="用户指出判错：改正这条视频的结论，并记入记忆（以后同类镜头会提示复核）")

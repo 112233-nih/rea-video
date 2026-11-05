@@ -21,6 +21,8 @@ Everything here is deterministic and best effort: styles and animations are meas
 or the agent's look at the frames still settles fine typography (font family) and odd cases."""
 from __future__ import annotations
 
+from .i18n import LangDict, T, join, semi
+
 import re
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -41,39 +43,56 @@ SMALL_W = 160            # sticker search resolution
 CELL = 8                 # sticker search cell size (px at SMALL_W)
 MIN_CONF = 0.6
 
-KIND_ZH = {"subtitle": "字幕", "huazi": "花字", "title": "标题", "label": "文字标注", "scene": "画面里的字"}
-ANIM_ZH = {"cut": "直接出现", "pop": "缩放弹出", "fade": "淡入", "slide": "滑入", "reveal": "逐字出现",
-           "cut_out": "直接消失", "pop_out": "缩小消失", "fade_out": "淡出", "slide_out": "滑出"}
-STICKER_ZH = {"animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸/图片", "pip": "画中画小窗"}
+KIND_ZH = LangDict({"subtitle": "字幕", "huazi": "花字", "title": "标题", "label": "文字标注", "scene": "画面里的字"},
+                   en={"subtitle": "subtitle", "huazi": "styled text", "title": "title", "label": "text label", "scene": "text in the scene"})
+ANIM_ZH = LangDict({"cut": "直接出现", "pop": "缩放弹出", "fade": "淡入", "slide": "滑入", "reveal": "逐字出现",
+                    "cut_out": "直接消失", "pop_out": "缩小消失", "fade_out": "淡出", "slide_out": "滑出"},
+                   en={"cut": "hard in", "pop": "scale pop", "fade": "fade in", "slide": "slide in", "reveal": "type-on",
+                       "cut_out": "hard out", "pop_out": "shrink out", "fade_out": "fade out", "slide_out": "slide out"})
+STICKER_ZH = LangDict({"animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸/图片", "pip": "画中画小窗"},
+                      en={"animated_sticker": "animated sticker / GIF", "static_sticker": "static sticker / image", "pip": "picture-in-picture"})
+COLOR_ZH = LangDict({"black": "黑", "white": "白", "grey": "灰", "red": "红", "brown": "棕", "orange": "橙", "yellow": "黄", "green": "绿",
+                     "cyan": "青", "blue": "蓝", "purple": "紫", "pink": "粉"},
+                    en={"black": "black", "white": "white", "grey": "grey", "red": "red", "brown": "brown", "orange": "orange", "yellow": "yellow",
+                        "green": "green", "cyan": "cyan", "blue": "blue", "purple": "purple", "pink": "pink"})
+BAND_ZH = LangDict({"top": "顶部", "middle": "中部", "bottom": "底部"}, en={"top": "top", "middle": "middle", "bottom": "bottom"})
+EVENT_ZH = LangDict({"subtitle_in": "字幕出现", "huazi_in": "花字出现", "title_in": "标题出现", "label_in": "文字标注出现",
+                     "sticker_in": "贴纸出现", "sticker_out": "贴纸消失", "cut": "切镜"},
+                    en={"subtitle_in": "subtitle in", "huazi_in": "styled text in", "title_in": "title in", "label_in": "text label in",
+                        "sticker_in": "sticker in", "sticker_out": "sticker out", "cut": "cut"})
 
 
 # ----------------------------------------------------------------------------- colour helpers
 
 def color_name(bgr) -> str:
+    return COLOR_ZH[_color_code(bgr)]
+
+
+def _color_code(bgr) -> str:
     b, g, r = (int(v) for v in bgr)
     hsv = cv2.cvtColor(np.uint8([[[b, g, r]]]), cv2.COLOR_BGR2HSV)[0, 0]
     h, s, v = int(hsv[0]) * 2, int(hsv[1]), int(hsv[2])
     if v < 55:
-        return "黑"
+        return "black"
     if s < 40:
-        return "白" if v > 200 else "灰"
+        return "white" if v > 200 else "grey"
     if s < 90 and v < 150:
-        return "灰"
+        return "grey"
     if h < 12 or h >= 340:
-        return "红" if v > 110 else "棕"
+        return "red" if v > 110 else "brown"
     if h < 40:
-        return "橙" if v > 150 else "棕"
+        return "orange" if v > 150 else "brown"
     if h < 68:
-        return "黄"
+        return "yellow"
     if h < 165:
-        return "绿"
+        return "green"
     if h < 195:
-        return "青"
+        return "cyan"
     if h < 255:
-        return "蓝"
+        return "blue"
     if h < 295:
-        return "紫"
-    return "粉"
+        return "purple"
+    return "pink"
 
 
 def _hex(bgr) -> str:
@@ -467,36 +486,36 @@ def merge_style(styles: list[dict]) -> dict:
 def style_text(st: dict, line_h: float | None = None, frame_h: int | None = None) -> str:
     if not st:
         return ""
-    parts = [f"{st.get('fill_name', '?')}字"]
+    parts = [T("{c}字", "{c} text", c=st.get('fill_name', '?'))]
     if st.get("stroke"):
-        parts.append(f"{st['stroke_name']}描边")
+        parts.append(T("{c}描边", "{c} outline", c=st['stroke_name']))
     if st.get("box"):
-        parts.append(f"{st.get('box_name', '')}底框")
+        parts.append(T("{c}底框", "{c} box", c=st.get('box_name', '')).strip())
     if st.get("gradient"):
-        parts.append("渐变")
+        parts.append(T("渐变", "gradient"))
     if st.get("multicolor"):
-        parts.append(f"关键词{st.get('highlight_name', '')}色高亮")
+        parts.append(T("关键词{c}色高亮", "keywords highlighted in {c}" if st.get('highlight_name') else "keyword highlight", c=st.get('highlight_name', '')))
     if st.get("weight", 0) > 0.2:
-        parts.append("粗体")
+        parts.append(T("粗体", "bold"))
     if line_h:
-        parts.append(f"字高 {line_h:.1%}" + (f"（约 {line_h * frame_h:.0f}px）" if frame_h else ""))
-    return "、".join(parts)
+        parts.append(T("字高 {h:.1%}", "line height {h:.1%}", h=line_h) + (T("（约 {px:.0f}px）", " (about {px:.0f}px)", px=line_h * frame_h) if frame_h else ""))
+    return join(parts)
 
 
 def _decor_score(c: dict) -> tuple[int, list[str]]:
     st, why = c.get("style") or {}, []
     if c["line_h"] >= 0.045:
-        why.append("字号大")
+        why.append(T("字号大", "large size"))
     if abs(c["angle"]) >= 4:
-        why.append("倾斜")
-    if st.get("fill_name") not in (None, "白", "黑", "灰"):
-        why.append(f"{st['fill_name']}色字")
+        why.append(T("倾斜", "tilted"))
+    if st.get("fill_name") not in (None, COLOR_ZH["white"], COLOR_ZH["black"], COLOR_ZH["grey"]):
+        why.append(T("{c}色字", "{c} fill", c=st['fill_name']))
     if st.get("multicolor") or st.get("gradient"):
-        why.append("多色/渐变")
+        why.append(T("多色/渐变", "multi-colour / gradient"))
     if st.get("stroke") and st.get("stroke_ratio", 0) >= 0.06:
-        why.append("粗描边")
+        why.append(T("粗描边", "thick outline"))
     if (c.get("anim_in") or {}).get("kind") == "pop":
-        why.append("弹出入场")
+        why.append(T("弹出入场", "pop-in entrance"))
     return len(why), why
 
 
@@ -535,7 +554,7 @@ def classify_cues(cues: list[dict], duration: float) -> None:
         moving = c["drift"] > 0.04 and c["samples"] >= 2
         if moving and not (st.get("stroke") or st.get("box")):
             kind = "scene"
-            why = ["跟着画面移动、没有描边或底框"]
+            why = [T("跟着画面移动、没有描边或底框", "moves with the picture, no outline or box")]
         elif c.get("_sub_lane") and not (score >= 3 and c["line_h"] >= 0.05):
             kind = "subtitle"
         elif cy < 0.3 and (dur >= 0.5 * duration or dur >= 8) and not moving and c.get("_lane_texts", 1) == 1:
@@ -910,7 +929,7 @@ def _static_blocks(small: np.ndarray, Dc: np.ndarray, dstep: float, cut_idx: lis
             continue
         st = _sticker(o["box"], o["a"], o["b"], False, False, small, Dc, dstep, gh, gw)
         st.update(kind="static_sticker", kind_zh=STICKER_ZH["static_sticker"], appears_mid_shot=True, confidence="medium",
-                  evidence="周围画面在动、这一块不动且边界清楚")
+                  evidence=T("周围画面在动、这一块不动且边界清楚", "the picture around it moves while this block holds still with a clean edge"))
         res.append(st)
     return res
 
@@ -1045,16 +1064,16 @@ def visual_events(cues: list[dict], stickers: list[dict], cuts: list[float]) -> 
     for c in cues:
         if c["kind"] == "scene":
             continue
-        what = f"{c['kind_zh']}「{c['text'].replace('/', ' ')[:16]}」出现"
+        what = T("{k}「{t}」出现", "{k} \"{t}\" appears", k=c['kind_zh'], t=c['text'].replace('/', ' ')[:16])
         ev.append({"t": c["t0"], "type": f"{c['kind']}_in", "what": what, "ref": c["id"]})
         if c.get("mid_motion"):
             ev.append({"t": None, "type": "mid", "ref": c["id"]})
     for s in stickers:
-        ev.append({"t": s["t0"], "type": "sticker_in", "what": f"{s['kind_zh']}出现", "ref": s["id"]})
+        ev.append({"t": s["t0"], "type": "sticker_in", "what": T("{k}出现", "{k} appears", k=s['kind_zh']), "ref": s["id"]})
         if s.get("disappears_mid_shot"):
-            ev.append({"t": s["t1"], "type": "sticker_out", "what": f"{s['kind_zh']}消失", "ref": s["id"]})
+            ev.append({"t": s["t1"], "type": "sticker_out", "what": T("{k}消失", "{k} disappears", k=s['kind_zh']), "ref": s["id"]})
     for t in cuts:
-        ev.append({"t": t, "type": "cut", "what": "切镜", "ref": None})
+        ev.append({"t": t, "type": "cut", "what": T("切镜", "cut"), "ref": None})
     return [e for e in ev if e["t"] is not None]
 
 
@@ -1263,39 +1282,39 @@ def summary_lines(pack: dict, sfx_align: dict | None = None) -> list[str]:
             if k:
                 anim[k] = anim.get(k, 0) + 1
         lines = max(c["n_lines"] for c in subs)
-        bands = {{"top": "顶部", "middle": "中部", "bottom": "底部"}.get(c["band"], c["band"]) for c in subs}
-        L.append(f"字幕 {len(subs)} 句（{'/'.join(sorted(bands))}，最多 {lines} 行）：{style_text(st, float(np.median([c['line_h'] for c in subs])))}"
-                 + (f"；入场：{'、'.join(f'{k}×{v}' for k, v in sorted(anim.items(), key=lambda kv: -kv[1]))}" if anim else "")
-                 + ("；说到关键词时变色" if any((c.get('style') or {}).get('highlight_timing') == 'spoken' for c in subs) else "")
-                 + ("；句中有弹跳/变色动效" if sum(1 for c in subs if c.get("mid_motion")) >= max(2, 0.2 * len(subs)) else ""))
+        bands = {BAND_ZH.get(c["band"], c["band"]) for c in subs}
+        L.append(T("字幕 {n} 句（{b}，最多 {l} 行）：{s}", "{n} subtitle lines ({b}, up to {l} rows): {s}",
+                   n=len(subs), b='/'.join(sorted(bands)), l=lines, s=style_text(st, float(np.median([c['line_h'] for c in subs]))))
+                 + (T("；入场：{a}", "; entrance: {a}", a=join(f'{k}×{v}' for k, v in sorted(anim.items(), key=lambda kv: -kv[1]))) if anim else "")
+                 + (T("；说到关键词时变色", "; keywords change colour as they are spoken") if any((c.get('style') or {}).get('highlight_timing') == 'spoken' for c in subs) else "")
+                 + (T("；句中有弹跳/变色动效", "; bounce / colour-change motion inside lines") if sum(1 for c in subs if c.get("mid_motion")) >= max(2, 0.2 * len(subs)) else ""))
     for kind in ("huazi", "title", "label"):
         cs = [c for c in cues if c["kind"] == kind]
         if cs:
-            names = "、".join(f"「{c['text'].replace('/', ' ')[:14]}」" for c in cs[:6]) + ("等" if len(cs) > 6 else "")
+            names = join(T("「{t}」", "\"{t}\"", t=c['text'].replace('/', ' ')[:14]) for c in cs[:6]) + (T("等", " …") if len(cs) > 6 else "")
             extra = ""
             if kind == "huazi":
-                extra = "（" + "、".join(dict.fromkeys(w for c in cs for w in c.get("decor", []))) + "）"
+                extra = T("（{d}）", " ({d})", d=join(dict.fromkeys(w for c in cs for w in c.get("decor", []))))
             if kind == "label" and any(c.get("follows") for c in cs):
-                extra = f"（其中 {sum(1 for c in cs if c.get('follows'))} 个跟着物体移动）"
-            L.append(f"{KIND_ZH[kind]} {len(cs)} 处{extra}：{names}")
+                extra = T("（其中 {n} 个跟着物体移动）", " ({n} of them follow an object)", n=sum(1 for c in cs if c.get('follows')))
+            L.append(T("{k} {n} 处{e}：{names}", "{k} ×{n}{e}: {names}", k=KIND_ZH[kind], n=len(cs), e=extra, names=names))
     st_all = [s for s in pack.get("stickers", []) if not s.get("in_picture")]
     st = [s for s in st_all if s.get("confidence") != "low"]
     maybe = len(st_all) - len(st)
     if maybe:
-        L.append(f"另有 {maybe} 处疑似贴纸（画面里一块突然变了，可能只是画面内容），需要看图确认")
+        L.append(T("另有 {n} 处疑似贴纸（画面里一块突然变了，可能只是画面内容），需要看图确认",
+                   "{n} more possible stickers (a block of the picture changed suddenly; may just be picture content), check the frames", n=maybe))
     if st:
         kinds: dict[str, int] = {}
         for s in st:
             kinds[s["kind_zh"]] = kinds.get(s["kind_zh"], 0) + 1
         loops = sum(1 for s in st if s.get("looping"))
-        L.append("贴纸/动图 " + "、".join(f"{k} {v} 处" for k, v in kinds.items()) + (f"（{loops} 处循环播放）" if loops else "")
-                 + ("；VLM 看到的没有截图，需要核对" if any(s.get("confidence") == "vlm" for s in st) else ""))
+        L.append(T("贴纸/动图 ", "Stickers / GIFs: ") + join(T("{k} {v} 处", "{k} ×{v}", k=k, v=v) for k, v in kinds.items()) + (T("（{n} 处循环播放）", " ({n} looping)", n=loops) if loops else "")
+                 + (T("；VLM 看到的没有截图，需要核对", "; seen by the VLM without a frame grab, needs checking") if any(s.get("confidence") == "vlm" for s in st) else ""))
     if sfx_align:
         on = sfx_align.get("sfx_on", {})
         if on:
-            zh = {"subtitle_in": "字幕出现", "huazi_in": "花字出现", "title_in": "标题出现", "label_in": "文字标注出现",
-                  "sticker_in": "贴纸出现", "sticker_out": "贴纸消失", "cut": "切镜"}
-            L.append("音效卡点：" + "、".join(f"{zh.get(k, k)} {v} 处" for k, v in sorted(on.items(), key=lambda kv: -kv[1])))
+            L.append(T("音效卡点：", "SFX hits on: ") + join(T("{k} {v} 处", "{k} ×{v}", k=EVENT_ZH.get(k, k), v=v) for k, v in sorted(on.items(), key=lambda kv: -kv[1])))
     return L
 
 
@@ -1304,7 +1323,8 @@ def summary_lines(pack: dict, sfx_align: dict | None = None) -> list[str]:
 # bases whose own picture has things popping in and out (cards, UI, animated objects): a block that appears
 # mid-shot there is content unless it also crosses a cut or loops like a GIF
 CONTENT_BASES = ("code_render", "screen_capture", "cg_3d", "anim_2d", "stop_motion")
-LAYER_ZH = {"huazi": "花字", "animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸", "pip": "画中画"}
+LAYER_ZH = LangDict({"huazi": "花字", "animated_sticker": "动态贴纸/GIF", "static_sticker": "静态贴纸", "pip": "画中画"},
+                    en={"huazi": "styled text", "animated_sticker": "animated sticker / GIF", "static_sticker": "static sticker", "pip": "picture-in-picture"})
 
 
 def clean_region(stickers: list[dict], t0: float, t1: float, min_area: float = 0.45) -> tuple[float, float, float, float] | None:
@@ -1347,7 +1367,7 @@ def shot_layers(pack: dict, rec: dict, label: str) -> list[dict]:
         if (label in CONTENT_BASES and s.get("confirmed") is None and s.get("bbox") and not (s.get("crosses_cut") or s.get("looping"))
                 and ov >= 0.5 * (s["t1"] - s["t0"])):
             s["in_picture"] = True  # a thing appearing inside an animated / rendered picture, not a pasted layer
-            s["in_picture_why"] = f"出现在{label}画面里、不跨切镜也不循环：更像画面内容本身"
+            s["in_picture_why"] = T("出现在{l}画面里、不跨切镜也不循环：更像画面内容本身", "appears inside a {l} picture, does not cross a cut or loop: more likely picture content", l=label)
             continue
         if not s.get("in_picture") and s.get("confidence") != "low":
             band = _band(s["bbox"][1] + s["bbox"][3] / 2) if s.get("bbox") else None
@@ -1368,8 +1388,8 @@ def merge_vlm(pack: dict, whole: dict | None) -> None:
         if any(min(b, o["t1"]) - max(a, o["t0"]) > 0 for o in pack.get("stickers", []) if not o.get("in_picture")):
             continue
         pack.setdefault("stickers", []).append({"id": f"sticker_vlm_{len(pack['stickers']) + 1:02d}", "kind": "animated_sticker"
-                                                if "gif" in str(s.get("what", "")).lower() or "动" in str(s.get("what", "")) else "static_sticker",
-                                                "kind_zh": str(s.get("what") or "贴纸"), "t0": round(a, 2), "t1": round(b, 2),
+                                                if any(w in str(s.get("what", "")).lower() for w in ("gif", "anim")) or "动" in str(s.get("what", "")) else "static_sticker",
+                                                "kind_zh": str(s.get("what") or T("贴纸", "sticker")), "t0": round(a, 2), "t1": round(b, 2),
                                                 "where": s.get("where", ""), "bbox": None, "confidence": "vlm", "source": "vlm"})
     pack["vlm_text_effects"] = [e for e in (whole.get("text_effects") or []) if isinstance(e, dict)][:60]
 
@@ -1396,7 +1416,7 @@ def apply_review(pack: dict) -> None:
                 st["what"] = a["what"]
         else:
             st["in_picture"] = True
-            st["in_picture_why"] = f"{rv.get('by', 'agent')} 看图：画面本身的东西"
+            st["in_picture_why"] = T("{by} 看图：画面本身的东西", "{by} looked at the frames: part of the picture itself", by=rv.get('by', 'agent'))
     ids = {st["id"] for st in pack.get("stickers", [])}
     for k, m in enumerate(rv.get("missed", []), 1):
         sid = f"sticker_agent_{k:02d}"
@@ -1407,8 +1427,8 @@ def apply_review(pack: dict) -> None:
             t1 = float(m.get("t1", t0 + 1.0))
         except (TypeError, ValueError):
             continue
-        what = str(m.get("what") or "贴纸")
-        pack.setdefault("stickers", []).append({"id": sid, "kind": "animated_sticker" if ("gif" in what.lower() or "动" in what) else "static_sticker",
+        what = str(m.get("what") or T("贴纸", "sticker"))
+        pack.setdefault("stickers", []).append({"id": sid, "kind": "animated_sticker" if (any(w in what.lower() for w in ("gif", "anim")) or "动" in what) else "static_sticker",
                                                 "kind_zh": what, "t0": round(t0, 2), "t1": round(max(t1, t0 + 0.2), 2), "bbox": None,
                                                 "where": str(m.get("where", "")), "confidence": "confirmed", "source": "agent"})
 

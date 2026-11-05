@@ -57,31 +57,43 @@ class VLMConfig:
 
 SETUP_HINT = ("建议配置 VLM（任意 OpenAI 兼容的多模态模型，如 Gemini / GPT-4o / 豆包 / Qwen-VL）："
               "设置 REA_VLM_BASE_URL、REA_VLM_API_KEY、REA_VLM_MODEL（可写多个模型逗号分隔做备选），再加 --vlm 重跑")
+SETUP_HINT_EN = ("configure a VLM (any OpenAI-compatible multimodal model, e.g. Gemini / GPT-4o / Doubao / Qwen-VL): "
+                 "set REA_VLM_BASE_URL, REA_VLM_API_KEY and REA_VLM_MODEL (several models comma-separated as fallbacks), then rerun with --vlm")
 
 
 def vlm_note(info: dict, review: dict | None = None) -> str:
     """One line for reports / summaries: did the VLM (or an agent's review) actually contribute, and what to do if not."""
+    from .i18n import T, semi
+
     base = _vlm_note(info)
     if review and review.get("shots"):
-        seen = f"由 {review.get('by', 'agent')} 看图复核 {review['shots']}/{review.get('of', '?')} 个镜头，已并入结论"
-        return seen if (info.get("status") or "off") == "off" else f"{base.split('；')[0]}；{seen}"
+        seen = T("由 {by} 看图复核 {n}/{of} 个镜头，已并入结论", "{by} reviewed {n}/{of} shots by eye; merged into the verdict",
+                 by=review.get("by", "agent"), n=review["shots"], of=review.get("of", "?"))
+        return seen if (info.get("status") or "off") == "off" else f"{base.split(semi())[0]}{semi()}{seen}"
     return base
 
 
 def _vlm_note(info: dict) -> str:
+    from .i18n import T
+
     status = info.get("status") or ("ok" if info.get("used") else "off")
     if status == "ok":
-        return f"VLM 已生效（{info.get('model', '')}）"
+        return T("VLM 已生效（{m}）", "VLM active ({m})", m=info.get("model", ""))
     if status == "partial":
-        return (f"VLM 部分生效（{info.get('model', '')}：{info.get('ok_shots', 0)}/{info.get('asked_shots', 0)} 个镜头有结果，"
-                f"整片分析{'有' if info.get('whole_ok') else '失败'}）；失败的镜头只靠确定性取证")
-    limited = "实拍/AI/3D 的区分只靠像素统计，可信度有限"
+        return T("VLM 部分生效（{m}：{ok}/{asked} 个镜头有结果，整片分析{w}）；失败的镜头只靠确定性取证",
+                 "VLM partly active ({m}: {ok}/{asked} shots answered, whole-video pass {w}); failed shots rely on deterministic forensics only",
+                 m=info.get("model", ""), ok=info.get("ok_shots", 0), asked=info.get("asked_shots", 0),
+                 w=(T("有", "succeeded") if info.get("whole_ok") else T("失败", "failed")))
+    limited = T("实拍/AI/3D 的区分只靠像素统计，可信度有限", "live action / AI / 3D are told apart from pixel statistics only, so confidence is limited")
     if status == "failed":
         err = (info.get("errors") or [""])[0]
-        return f"VLM 已请求但全部调用失败（{info.get('model', '')}：{err[:80]}），本次等同未开 VLM；{limited}。可稍后重试或换模型"
+        return T("VLM 已请求但全部调用失败（{m}：{e}），本次等同未开 VLM；{l}。可稍后重试或换模型",
+                 "VLM requested but every call failed ({m}: {e}), so this run is the same as no VLM; {l}. Retry later or switch models",
+                 m=info.get("model", ""), e=err[:80], l=limited)
     if status == "not_configured":
-        return f"VLM 已请求但没找到配置，本次未开 VLM；{limited}。{SETUP_HINT}"
-    return f"未开 VLM；{limited}。能看图的 agent：运行 rea-video review 逐镜看图并 apply-review 并入；否则{SETUP_HINT}"
+        return T("VLM 已请求但没找到配置，本次未开 VLM；{l}。{h}", "VLM requested but no configuration found, so this run had no VLM; {l}. {h}", l=limited, h=T(SETUP_HINT, SETUP_HINT_EN))
+    return T("未开 VLM；{l}。能看图的 agent：运行 rea-video review 逐镜看图并 apply-review 并入；否则{h}",
+             "No VLM; {l}. An agent that can see images: run rea-video review, look at each shot and merge with apply-review; otherwise {h}", l=limited, h=T(SETUP_HINT, SETUP_HINT_EN))
 
 
 def _data_uri(path: Path, mime: str) -> str:
@@ -276,3 +288,13 @@ def normalize_shot_result(raw: dict) -> dict:
     total = sum(clean.values()) or 1.0
     raw["label_probs"] = {k: v / total for k, v in clean.items()}
     return raw
+
+
+def prompt_lang_note() -> str:
+    """Appended to SHOT_PROMPT / WHOLE_PROMPT: free-text answers follow the report language (enum values stay as given)."""
+    from .i18n import lang
+
+    if lang() == "en":
+        return ("\n\nWrite every free-text value (evidence, description, style, summary, copy, prompts, aspects answers) in English. "
+                "Keep enum values exactly as listed. `image_prompt` and `video_prompt` in English; `video_prompt_en` may repeat it.")
+    return ""

@@ -5,6 +5,8 @@ entered the pipeline; an AIGC label means a generator declared itself) but it is
 stripped by social platforms, so absence proves nothing."""
 from __future__ import annotations
 
+from .i18n import LangDict, T, join
+
 import json
 import re
 from pathlib import Path
@@ -70,7 +72,8 @@ def _scan_bytes(path: Path, limit: int = 4 << 20) -> bytes:
     return head + tail
 
 
-AIGC_LABEL_ZH = {"1": "属于 AI 生成合成内容", "2": "可能为 AI 生成合成内容", "3": "疑似 AI 生成合成内容"}
+AIGC_LABEL_ZH = LangDict({"1": "属于 AI 生成合成内容", "2": "可能为 AI 生成合成内容", "3": "疑似 AI 生成合成内容"},
+                         en={"1": "labelled as AI-generated synthetic content", "2": "possibly AI-generated synthetic content", "3": "suspected AI-generated synthetic content"})
 
 
 def parse_aigc(value: str) -> dict | None:
@@ -88,7 +91,7 @@ def parse_aigc(value: str) -> dict | None:
     if not isinstance(data, dict):
         return None
     label = str(data.get("Label", data.get("label", ""))).strip()
-    return {"label": label, "meaning": AIGC_LABEL_ZH.get(label, "未知取值"),
+    return {"label": label, "meaning": AIGC_LABEL_ZH.get(label, T("未知取值", "unknown value")),
             "content_producer": data.get("ContentProducer", ""), "produce_id": data.get("ProduceID", ""),
             "content_propagator": data.get("ContentPropagator", ""), "propagate_id": data.get("PropagateID", "")}
 
@@ -110,12 +113,14 @@ def provenance(info: VideoInfo) -> dict:
         if short in CAMERA_KEYS:
             hints["camera"].append(f"{short}={value}")
         if any(a in short for a in AIGC_KEYS) or re.search(r"\baigc\b", value, re.I):
-            aigc = parse_aigc(value) or {"label": "", "meaning": "无法解析", "raw": value[:200]}
+            aigc = parse_aigc(value) or {"label": "", "meaning": T("无法解析", "could not be parsed"), "raw": value[:200]}
             strong = aigc.get("label") in ("1", "2", "3")
-            evidence.append({"kind": "aigc_label", "detail": f"AIGC 隐式标识 Label={aigc.get('label')}（{aigc.get('meaning')}），"
-                             f"生成服务方编码 {aigc.get('content_producer') or '—'}", "weight": "strong" if strong else "weak"})
+            evidence.append({"kind": "aigc_label", "detail": T("AIGC 隐式标识 Label={l}（{m}），生成服务方编码 {p}",
+                                                               "Implicit AIGC label Label={l} ({m}), content producer code {p}",
+                                                               l=aigc.get('label'), m=aigc.get('meaning'), p=aigc.get('content_producer') or '—'),
+                             "weight": "strong" if strong else "weak"})
             if aigc.get("label") == "1":
-                hints["generator"].append(f"AIGC 标识（{aigc.get('meaning')}）")
+                hints["generator"].append(T("AIGC 标识（{m}）", "AIGC label ({m})", m=aigc.get('meaning')))
 
     blob = " ".join(f"{k}={v}" for k, v in tags.items() if "aigc" not in k.lower())
     raw_bytes = _scan_bytes(path)
@@ -123,15 +128,15 @@ def provenance(info: VideoInfo) -> dict:
     for pattern, cat, label in SIGNATURES:
         if re.search(pattern, blob, re.I):
             hints[cat].append(label)
-            evidence.append({"kind": f"{cat}_signature", "detail": f"元数据包含 {label}", "weight": "medium"})
+            evidence.append({"kind": f"{cat}_signature", "detail": T("元数据包含 {l}", "Metadata contains {l}", l=label), "weight": "medium"})
         elif cat in ("generator", "renderer", "editor") and re.search(rf"\b(?:{pattern})\b", strings, re.I):
             # weaker: readable string inside container boxes (udta/uuid/xmp)
             hints[cat].append(f"{label}?")
-            evidence.append({"kind": f"{cat}_bytes", "detail": f"容器内可读字符串出现 {label}", "weight": "weak"})
+            evidence.append({"kind": f"{cat}_bytes", "detail": T("容器内可读字符串出现 {l}", "Readable string {l} found inside the container", l=label), "weight": "weak"})
 
     if b"c2pa" in raw_bytes or b"jumb" in raw_bytes:
-        evidence.append({"kind": "c2pa", "detail": "发现 C2PA/JUMBF 内容凭证盒", "weight": "strong"})
-        hints["generator"].append("C2PA 凭证")
+        evidence.append({"kind": "c2pa", "detail": T("发现 C2PA/JUMBF 内容凭证盒", "C2PA / JUMBF content-credential box found"), "weight": "strong"})
+        hints["generator"].append(T("C2PA 凭证", "C2PA credential"))
     if hints["camera"]:
         evidence.append({"kind": "camera_tags", "detail": "; ".join(hints["camera"][:4]), "weight": "strong"})
 
