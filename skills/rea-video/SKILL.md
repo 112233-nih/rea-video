@@ -41,7 +41,7 @@ rea-video summary out/ref/breakdown.json
 
 ```bash
 rea-video review out/ref                      # 写出 review_tasks.json（每镜要看的图、工具判断、优先级）和 review_answers.json（答案模板）
-# 读 review_tasks.json 的 instructions，逐镜看 images 里的图（priority=high 必看），把 label_probs / evidence / description / embedded_assets 填进 review_answers.json；若某镜头实为多刀合并（dark 底的图形与口播互相交替时容易合并成一个镜头），可加 split_suggestion（cuts 秒点 + labels + note），报告会标注拆分建议
+# 读 review_tasks.json 的 instructions，逐镜看 images 里的图（priority=high 必看），把 label_probs / evidence / description / embedded_assets 填进 review_answers.json；若某镜头实为多刀合并（暗底图形与暗底口播交替时容易被合成一个长镜头），可加 split_suggestion（cuts 切点秒数 + labels 各段类别 + note），报告会在该镜头标注拆分建议，镜头边界本身不变
 rea-video apply-review out/ref --by <你的名字>  # 并入：重写 breakdown.json、report.md、report.html，打印改判了哪些镜头
 rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
 ```

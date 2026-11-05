@@ -40,6 +40,8 @@ INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画
 每个镜头要填：label_probs（8 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
 description（主体、动作、场景、运镜）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
 kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。
+某个镜头其实是多刀合并的（暗底图形卡和暗底口播交替时，切点分数低容易被合成一个长镜头）就加 split_suggestion：
+{{"cuts": [切点秒数], "labels": [各段类别，比 cuts 多一个], "note": "看到的交替结构"}}，报告会在该镜头标注拆分建议；不是合并段就不要填。
 实拍或定格镜头被 AI 二次加工过时填 ai_edits：[{{"kind": "{"|".join(EDIT_KINDS)}", "evidence": "看到的破绽"}}]（换脸、对口型、风格化、换装、换背景、加删物体、美颜）；没有就留空。
 AI 生成 / 3D / 实拍镜头再填 replication：image_prompt（复刻首帧的中文图像提示词：主体、构图、光线、风格，具体可执行）、
 video_prompt（复刻该镜头的中文视频提示词：写清动作过程和结束状态、运镜；只写想要的内容，不写否定句）、video_prompt_en（英文版）。
@@ -136,6 +138,24 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
     return tasks, answers
 
 
+def _clean_split(sp) -> tuple[dict | None, str | None]:
+    """Optional reviewer note that a shot is really several cuts: {cuts: [秒], labels: [类别], note}. Malformed
+    input is reported, not raised: the answers file is written by an agent and one bad field must not stop apply-review."""
+    if not isinstance(sp, dict) or not sp.get("cuts"):
+        return None, None
+    cuts_in, labels_in = sp.get("cuts"), sp.get("labels") or []
+    if not isinstance(cuts_in, list) or not isinstance(labels_in, list):
+        return None, "split_suggestion 的 cuts / labels 要是列表"
+    try:
+        cuts = [float(c) for c in cuts_in]
+    except (TypeError, ValueError):
+        return None, "split_suggestion.cuts 里有不是数字的秒点"
+    bad = [x for x in labels_in if x not in LABELS]
+    if bad:
+        return None, f"split_suggestion.labels 有未知类别 {bad}（可选：{', '.join(LABELS)}）"
+    return {"cuts": sorted(cuts)[:12], "labels": list(labels_in)[:12], "note": str(sp.get("note", ""))[:300]}, None
+
+
 def _clean(ans: dict) -> tuple[dict | None, str | None]:
     probs = ans.get("label_probs") or {}
     bad = [k for k in probs if k not in LABELS]
@@ -160,11 +180,9 @@ def _clean(ans: dict) -> tuple[dict | None, str | None]:
         if isinstance(e, dict) and e.get("kind") in ASSET_KINDS:
             assets.append({"kind": e["kind"], "description": str(e.get("description", "")),
                            "is_real_material": bool(e.get("is_real_material", e["kind"] != "ai_image"))})
-    sp = ans.get("split_suggestion")
-    split = ({"cuts": [float(c) for c in sp.get("cuts", [])][:12],
-              "labels": [str(x) for x in (sp.get("labels") or [])][:12],
-              "note": str(sp.get("note", ""))[:300]}
-             if isinstance(sp, dict) and sp.get("cuts") else None)
+    split, err = _clean_split(ans.get("split_suggestion"))
+    if err:
+        return None, err
     return {"label_probs": soft, "raw_probs": {k: round(v / total, 3) for k, v in vals.items()}, "image_source": src,
             "evidence": [str(x) for x in (ans.get("evidence") or [])][:8], "description": str(ans.get("description", "")),
             "embedded_assets": assets, "replication": rep, "aspects": aspects.clean_answers(ans.get("aspects")),

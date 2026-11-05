@@ -388,9 +388,10 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
                     + [f"[{(rec.get('review') or {}).get('_by', 'agent')} 看图] {e}" for e in (rec.get("review") or {}).get("evidence", [])[:6]])
         split = (rec.get("review") or {}).get("split_suggestion")
         if split and split.get("cuts"):
-            evidence.append("[看图复核] 本镜头疑为多刀合并，建议在 "
-                            + "、".join(fmt_time(c) for c in split["cuts"][:6]) + " 处按 " + "→".join(split["labels"][:6]) + " 拆分"
-                            + (f"（{split['note']}）" if split.get("note") else ""))
+            by = (rec.get("review") or {}).get("_by", "agent")
+            seq = "→".join(LABEL_ZH.get(x, x) for x in split.get("labels") or [])
+            evidence.append(f"[{by} 看图] 本镜头疑为多刀合并，建议在 " + "、".join(fmt_time(c) for c in split["cuts"][:6])
+                            + " 处拆分" + (f"（{seq}）" if seq else "") + (f"：{split['note']}" if split.get("note") else ""))
         decided = "fused" if rec.get("vlm") else ("fused_agent" if rec.get("review") else "deterministic")
         user = rec.get("user") or {}
         if user.get("label") in LABEL_ZH:  # the user said what this shot is: that is the answer
