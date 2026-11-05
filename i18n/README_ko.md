@@ -7,13 +7,13 @@
 토킹헤드, 테이블탑, AI 영상, 3D, 모션 그래픽, 혼합 편집 영상 등 무엇이든 넣으면,<br>
 화면, 스타일 텍스트, 편집, 오디오가 어떻게 만들어졌는지 샷 단위로 알려 주고, 직접 만들 수 있는 계획까지 제시합니다.
 
-[中文](README_zh.md) | [English](README.md) | [日本語](README_ja.md) | 한국어 | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | 한국어 | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)
 ![Agent](https://img.shields.io/badge/runs%20in-Claude%20Code%20%7C%20Codex-8A2BE2)
 
-<img src="docs/cases/demo.gif" width="440" alt="왼쪽: 휴대폰으로 촬영한 TikTok 원본, 오른쪽: 다른 제품으로 바꾼 누군가의 AI 리메이크">
+<img src="../docs/cases/demo.gif" width="440" alt="왼쪽: 휴대폰으로 촬영한 TikTok 원본, 오른쪽: 다른 제품으로 바꾼 누군가의 AI 리메이크">
 
 왼쪽: 휴대폰으로 촬영한 TikTok 광고. 오른쪽: 다른 제품으로 바꿔 넣은 누군가의 AI 리메이크.<br>
 rea-video의 판정: 왼쪽은 전부 실사 촬영이며 세트 하나에 카메라 위치 두 곳, 오른쪽은 전부 AI 생성이며 8개 샷을 3번의 생성으로 만들 수 있습니다.
@@ -65,44 +65,44 @@ https://github.com/JuneYaooo/rea-video 를 설치하고, 이 영상을 분석해
 <table>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
+<a href="../docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="../docs/cases/dual_role/thumb.jpg"></a><br>
 <b>혼합 미디어 클립</b> · 19초 · 10샷<br>
 AI 캐릭터 대화 + 코드로 만든 UI + 실제 화면 녹화 8초. 대화 샷 5개는 UI 구간으로 나뉘어 있지만 세트가 같아서 한 번의 생성으로 처리할 수 있습니다.<br>
-<a href="docs/cases/videos/dual_role.mp4">영상</a> · <a href="docs/cases/dual_role/report_en.md">리포트</a>
+<a href="../docs/cases/videos/dual_role.mp4">영상</a> · <a href="../docs/cases/dual_role/report_en.md">리포트</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
+<a href="../docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="../docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D 설명 영상</b> · 67초 · 21샷<br>
 전부 3D, AI 내레이션. 영상 생성 10번으로 만들 수도 있고, LLM에게 Blender / Three.js 코드를 작성하게 할 수도 있습니다.<br>
-<a href="docs/cases/videos/salted_egg.mp4">영상</a> · <a href="docs/cases/salted_egg/report_en.md">리포트</a>
+<a href="../docs/cases/videos/salted_egg.mp4">영상</a> · <a href="../docs/cases/salted_egg/report_en.md">리포트</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
+<a href="../docs/cases.md#4-代码-ui-动效产品宣传片"><img src="../docs/cases/v10/thumb.jpg"></a><br>
 <b>제품 홍보 영상</b> · 70초 · 12샷<br>
 83%가 코드 기반 모션 그래픽, 12%가 화면 녹화. 영상 모델이 필요 없으며 Remotion 프로젝트 하나로 만들 수 있습니다.<br>
-<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">영상</a> · <a href="docs/cases/v10/report_en.md">리포트</a>
+<a href="../docs/cases/videos/v10_oiioii_gen_coding_first.mp4">영상</a> · <a href="../docs/cases/v10/report_en.md">리포트</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
+<a href="../docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="../docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>AI 뮤직비디오</b> · 165초 · 86샷<br>
 노래가 AI로 생성되었음을 정확히 판별했습니다(Suno로 제작). 비전 모델은 일부 샷을 "실사 드라마"로 판정했지만, 에이전트가 두루마리 위의 가짜 한자를 발견해 AI로 판정했습니다.<br>
-<a href="docs/cases/videos/qing_mv.mp4">영상</a> · <a href="docs/cases/qing_mv/report_en.md">리포트</a>
+<a href="../docs/cases/videos/qing_mv.mp4">영상</a> · <a href="../docs/cases/qing_mv/report_en.md">리포트</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
+<a href="../docs/cases.md#6-实拍带货沉浸式开箱"><img src="../docs/cases/unboxing/thumb.jpg"></a><br>
 <b>실사 언박싱</b> · 72초 · 29샷<br>
 전부 실제 촬영: 부감 휴대폰 거치대, 러그 한 장, 카메라 위치 한 곳, 보이스오버 없음, 현장음과 라이브러리 BGM. 플랫폼 트랜스코딩을 거친 영상이라 오프라인 도구는 35%를 AI로 판정했지만, 에이전트 검토 후 97% 실사로 바로잡았습니다.<br>
-<a href="docs/cases/videos/unboxing.mp4">영상</a> · <a href="docs/cases/unboxing/report_en.md">리포트</a>
+<a href="../docs/cases/videos/unboxing.mp4">영상</a> · <a href="../docs/cases/unboxing/report_en.md">리포트</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
+<a href="../docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="../docs/cases/ai_daihuo/thumb.jpg"></a><br>
 <b>AI + 실제 인물 혼합</b> · 58초 · 21샷<br>
 75%는 실제 촬영(토킹헤드 + 휴대폰 화면 촬영), 25%는 AI: 크리에이터가 자신의 출연 클립과 제품 사진 두 장을 Jimeng에 넣어 "실제 인물" 제품 구간을 생성했습니다. AI 부분은 Jimeng 워터마크와 선물 상자의 깨진 글자로 잡아냈습니다.<br>
-<a href="docs/cases/videos/ai_daihuo.mp4">영상</a> · <a href="docs/cases/ai_daihuo/report_en.md">리포트</a>
+<a href="../docs/cases/videos/ai_daihuo.mp4">영상</a> · <a href="../docs/cases/ai_daihuo/report_en.md">리포트</a>
 </td>
 </tr>
 </table>
@@ -118,20 +118,20 @@ rea-video로 영상을 분석한 뒤 [cheap-claude-video](https://github.com/Jun
 <tr><td>
 <b>부감 의상 체인지</b> · 12초<br>
 같은 교체: 여성 → 남성, 의상 세 벌 → 그에 맞는 남성복. 요소 교체: 중국식 서재에서 역사 한푸 세 벌을 입은 소녀, 리모컨은 둥근 부채로.<br>
-<img src="docs/cases/remake/outfit.gif"><br>
-<a href="docs/cases/remake/outfit_compare.mp4">HD 비교 영상(오디오 포함)</a> · <a href="docs/cases/remake/outfit_sheet.jpg">같은 순간 스틸</a>
+<img src="../docs/cases/remake/outfit.gif"><br>
+<a href="../docs/cases/remake/outfit_compare.mp4">HD 비교 영상(오디오 포함)</a> · <a href="../docs/cases/remake/outfit_sheet.jpg">같은 순간 스틸</a>
 </td></tr>
 <tr><td>
 <b>페이퍼 크래프트 / 수채화 애니메이션</b> · 30초<br>
 같은 교체: 새 점토 소녀를 주인공으로. 요소 교체: 여우, 숲 → 산호초, 구름 → 별이 빛나는 하늘, 노을 → 오로라.<br>
-<img src="docs/cases/remake/paper.gif"><br>
-<a href="docs/cases/remake/paper_compare.mp4">HD 비교 영상(오디오 포함)</a> · <a href="docs/cases/remake/paper_sheet.jpg">같은 순간 스틸</a>
+<img src="../docs/cases/remake/paper.gif"><br>
+<a href="../docs/cases/remake/paper_compare.mp4">HD 비교 영상(오디오 포함)</a> · <a href="../docs/cases/remake/paper_sheet.jpg">같은 순간 스틸</a>
 </td></tr>
 <tr><td>
 <b>핸드헬드 제품 영상</b> · 21초 · 11샷<br>
 같은 교체: 오리지널 신제품, 영어 스티커 → 중국어 자막. 요소 교체: 분홍색 제품, 주방 → 캠핑 테이블, 새로운 재료.<br>
-<img src="docs/cases/remake/juicer.gif"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">HD 비교 영상(오디오 포함)</a> · <a href="docs/cases/remake/juicer_sheet.jpg">같은 순간 스틸</a>
+<img src="../docs/cases/remake/juicer.gif"><br>
+<a href="../docs/cases/remake/juicer_compare.mp4">HD 비교 영상(오디오 포함)</a> · <a href="../docs/cases/remake/juicer_sheet.jpg">같은 순간 스틸</a>
 </td></tr>
 </table>
 
@@ -151,11 +151,11 @@ HD 비교 영상은 원본 오디오를 사용합니다. 원본과 OiiOii 버전
 
 원본 파일은 대부분 도구만으로 충분합니다. 플랫폼에서 내려받은 영상은 재압축되면서 노이즈 근거가 사라지기 때문에, 99% 이상으로 끌어올리려면 시각 검토가 필요합니다.
 
-실제 소재 탐지율은 97–99%이고, 샷 경계는 모두 정확합니다. 수치와 재현 방법: [eval/RESULTS.md](eval/RESULTS.md).
+실제 소재 탐지율은 97–99%이고, 샷 경계는 모두 정확합니다. 수치와 재현 방법: [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## 작동 방식
 
-![rea-video 파이프라인](docs/rea-flow_ko.svg)
+![rea-video 파이프라인](../docs/rea-flow_ko.svg)
 
 1. 분할: 영상을 샷 단위로 자르고, 오디오를 음성, 음악, 효과음으로 분리합니다.
 2. 근거 수집: 프레임을 측정하고(프레임 케이던스, 센서 노이즈, 화면 전체가 하나의 평면처럼 패닝하는지, 메타데이터의 AIGC 태그), 이미지를 보고(손, 글자, 물리), 소리를 듣습니다(BPM, 키, 노래인지 말인지).
@@ -185,7 +185,7 @@ rea-video는 영상을 렌더링하지 않습니다. 샷마다 촬영한 것인�
 <details>
 <summary>영상 전체를 자동으로 리메이크할 수 있나요?</summary>
 
-일부는 가능합니다. [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video)를 설치하면 AI 샷이 자동으로 생성되어 원본 타임라인에 배치됩니다. 실사 샷은 촬영 계획에 따라 직접 촬영하고, 코드 샷은 에이전트가 Remotion 프로젝트로 작성합니다. [docs/replicate.md](docs/replicate.md)를 참고하세요.
+일부는 가능합니다. [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video)를 설치하면 AI 샷이 자동으로 생성되어 원본 타임라인에 배치됩니다. 실사 샷은 촬영 계획에 따라 직접 촬영하고, 코드 샷은 에이전트가 Remotion 프로젝트로 작성합니다. [docs/replicate.md](../docs/replicate.md)를 참고하세요.
 
 </details>
 
@@ -198,13 +198,13 @@ rea-video는 영상을 렌더링하지 않습니다. 샷마다 촬영한 것인�
 
 ## 문서
 
-- [docs/what-it-detects.md](docs/what-it-detects.md): 탐지 항목 전체(10가지 화면 유형, 카메라, 조명, 색보정, 오디오)
-- [docs/replicate.md](docs/replicate.md): 리포트를 바탕으로 리메이크하기
-- [docs/cases.md](docs/cases.md): 사례 상세
-- [docs/decompose.md](docs/decompose.md): 판정 규칙
-- [docs/cli.md](docs/cli.md): CLI 사용법과 capsule-cinema 연동
-- [rea_video/capabilities/](rea_video/capabilities/README.md): 영상 / 이미지 / 오디오 모델의 능력표. 리메이크 계획의 모델 선택에 사용
-- [eval/RESULTS.md](eval/RESULTS.md): 평가 결과
+- [docs/what-it-detects.md](../docs/what-it-detects.md): 탐지 항목 전체(10가지 화면 유형, 카메라, 조명, 색보정, 오디오)
+- [docs/replicate.md](../docs/replicate.md): 리포트를 바탕으로 리메이크하기
+- [docs/cases.md](../docs/cases.md): 사례 상세
+- [docs/decompose.md](../docs/decompose.md): 판정 규칙
+- [docs/cli.md](../docs/cli.md): CLI 사용법과 capsule-cinema 연동
+- [rea_video/capabilities/](../rea_video/capabilities/README.md): 영상 / 이미지 / 오디오 모델의 능력표. 리메이크 계획의 모델 선택에 사용
+- [eval/RESULTS.md](../eval/RESULTS.md): 평가 결과
 
 문서는 현재 중국어로만 제공됩니다.
 

@@ -7,13 +7,13 @@ Haz ingeniería inversa de cualquier vídeo.
 Vídeos a cámara, tabletop, vídeo con IA, 3D, motion graphics, montajes mixtos: dale cualquiera de ellos,<br>
 y te explica plano a plano cómo se hicieron la imagen, los textos con estilo, el montaje y el audio, y luego te da un plan para hacerlo tú mismo.
 
-[中文](README_zh.md) | [English](README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | Español | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | Español | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)
 ![Agent](https://img.shields.io/badge/runs%20in-Claude%20Code%20%7C%20Codex-8A2BE2)
 
-<img src="docs/cases/demo.gif" width="440" alt="Izquierda: original de TikTok grabado con un móvil; derecha: el remake con IA que hizo otra persona con un producto distinto">
+<img src="../docs/cases/demo.gif" width="440" alt="Izquierda: original de TikTok grabado con un móvil; derecha: el remake con IA que hizo otra persona con un producto distinto">
 
 Izquierda: un anuncio de TikTok grabado con un móvil. Derecha: el remake con IA que hizo otra persona, cambiando el producto.<br>
 Veredicto de rea-video: el de la izquierda es todo imagen real, un decorado y dos posiciones de cámara; el de la derecha es todo generado por IA, y sus 8 planos se pueden producir en 3 generaciones.
@@ -65,44 +65,44 @@ Añade un modelo que entienda vídeo (sirven tanto Gemini como Doubao): dale al 
 <table>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
+<a href="../docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="../docs/cases/dual_role/thumb.jpg"></a><br>
 <b>Clip mixto</b> · 19 s · 10 planos<br>
 Personajes de IA conversando + UI hecha en código + 8 s de grabación de pantalla real. Los 5 planos de diálogo están separados por segmentos de UI, pero comparten decorado, así que basta una generación para todos.<br>
-<a href="docs/cases/videos/dual_role.mp4">Vídeo</a> · <a href="docs/cases/dual_role/report_en.md">Informe</a>
+<a href="../docs/cases/videos/dual_role.mp4">Vídeo</a> · <a href="../docs/cases/dual_role/report_en.md">Informe</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
+<a href="../docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="../docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>Vídeo explicativo en 3D</b> · 67 s · 21 planos<br>
 Todo en 3D, narración con IA. Se puede hacer en 10 generaciones de vídeo, o pedirle a un LLM que escriba código de Blender / Three.js.<br>
-<a href="docs/cases/videos/salted_egg.mp4">Vídeo</a> · <a href="docs/cases/salted_egg/report_en.md">Informe</a>
+<a href="../docs/cases/videos/salted_egg.mp4">Vídeo</a> · <a href="../docs/cases/salted_egg/report_en.md">Informe</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
+<a href="../docs/cases.md#4-代码-ui-动效产品宣传片"><img src="../docs/cases/v10/thumb.jpg"></a><br>
 <b>Vídeo promocional de producto</b> · 70 s · 12 planos<br>
 83 % motion graphics generados por código, 12 % grabación de pantalla. No hace falta modelo de vídeo; basta un proyecto de Remotion.<br>
-<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Vídeo</a> · <a href="docs/cases/v10/report_en.md">Informe</a>
+<a href="../docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Vídeo</a> · <a href="../docs/cases/v10/report_en.md">Informe</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
+<a href="../docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="../docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>Videoclip con IA</b> · 165 s · 86 planos<br>
 Identifica correctamente la canción como generada por IA (se hizo con Suno). El modelo de visión catalogó algunos planos como "drama de imagen real"; el agente detectó caracteres chinos falsos en un pergamino y los dictaminó como IA.<br>
-<a href="docs/cases/videos/qing_mv.mp4">Vídeo</a> · <a href="docs/cases/qing_mv/report_en.md">Informe</a>
+<a href="../docs/cases/videos/qing_mv.mp4">Vídeo</a> · <a href="../docs/cases/qing_mv/report_en.md">Informe</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
+<a href="../docs/cases.md#6-实拍带货沉浸式开箱"><img src="../docs/cases/unboxing/thumb.jpg"></a><br>
 <b>Unboxing con imagen real</b> · 72 s · 29 planos<br>
 Todo imagen real: un soporte cenital para el móvil, una alfombra, una sola posición de cámara, sin voz en off, sonido ambiente más música de fondo de biblioteca. Tras la recompresión de la plataforma, la herramienta offline marcó un 35 % como IA; la revisión del agente lo dejó en un 97 % de imagen real.<br>
-<a href="docs/cases/videos/unboxing.mp4">Vídeo</a> · <a href="docs/cases/unboxing/report_en.md">Informe</a>
+<a href="../docs/cases/videos/unboxing.mp4">Vídeo</a> · <a href="../docs/cases/unboxing/report_en.md">Informe</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
+<a href="../docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="../docs/cases/ai_daihuo/thumb.jpg"></a><br>
 <b>Híbrido de IA y persona real</b> · 58 s · 21 planos<br>
 75 % real (vídeo a cámara + grabación de la pantalla de un móvil) y 25 % IA: la creadora le dio a Jimeng un clip suyo a cámara y dos fotos del producto para generar un segmento de producto "con persona real". La parte de IA se detectó por la marca de agua de Jimeng y el texto deformado de la caja de regalo.<br>
-<a href="docs/cases/videos/ai_daihuo.mp4">Vídeo</a> · <a href="docs/cases/ai_daihuo/report_en.md">Informe</a>
+<a href="../docs/cases/videos/ai_daihuo.mp4">Vídeo</a> · <a href="../docs/cases/ai_daihuo/report_en.md">Informe</a>
 </td>
 </tr>
 </table>
@@ -118,20 +118,20 @@ Cada GIF reproduce cuatro versiones sincronizadas: original, remake de OiiOii, n
 <tr><td>
 <b>Cambio de ropa en cenital</b> · 12 s<br>
 Mismo cambio: mujer → hombre, tres conjuntos → ropa de hombre equivalente. Cambio de elementos: una chica con tres trajes históricos Hanfu en un estudio chino; el mando a distancia pasa a ser un abanico redondo.<br>
-<img src="docs/cases/remake/outfit.gif"><br>
-<a href="docs/cases/remake/outfit_compare.mp4">Vídeo comparativo en HD (con audio)</a> · <a href="docs/cases/remake/outfit_sheet.jpg">fotogramas del mismo instante</a>
+<img src="../docs/cases/remake/outfit.gif"><br>
+<a href="../docs/cases/remake/outfit_compare.mp4">Vídeo comparativo en HD (con audio)</a> · <a href="../docs/cases/remake/outfit_sheet.jpg">fotogramas del mismo instante</a>
 </td></tr>
 <tr><td>
 <b>Animación de papel / acuarela</b> · 30 s<br>
 Mismo cambio: una nueva chica de plastilina como protagonista. Cambio de elementos: un zorro; bosque → arrecife de coral, nubes → cielo estrellado, atardecer → aurora.<br>
-<img src="docs/cases/remake/paper.gif"><br>
-<a href="docs/cases/remake/paper_compare.mp4">Vídeo comparativo en HD (con audio)</a> · <a href="docs/cases/remake/paper_sheet.jpg">fotogramas del mismo instante</a>
+<img src="../docs/cases/remake/paper.gif"><br>
+<a href="../docs/cases/remake/paper_compare.mp4">Vídeo comparativo en HD (con audio)</a> · <a href="../docs/cases/remake/paper_sheet.jpg">fotogramas del mismo instante</a>
 </td></tr>
 <tr><td>
 <b>Vídeo de producto en mano</b> · 21 s · 11 planos<br>
 Mismo cambio: un producto nuevo original, sticker en inglés → subtítulo en chino. Cambio de elementos: producto rosa, cocina → mesa de camping, ingredientes nuevos.<br>
-<img src="docs/cases/remake/juicer.gif"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">Vídeo comparativo en HD (con audio)</a> · <a href="docs/cases/remake/juicer_sheet.jpg">fotogramas del mismo instante</a>
+<img src="../docs/cases/remake/juicer.gif"><br>
+<a href="../docs/cases/remake/juicer_compare.mp4">Vídeo comparativo en HD (con audio)</a> · <a href="../docs/cases/remake/juicer_sheet.jpg">fotogramas del mismo instante</a>
 </td></tr>
 </table>
 
@@ -151,11 +151,11 @@ Las dos cifras de holdout corresponden a holdout (9 vídeos) y holdout2 (7 víde
 
 Con archivos originales, las herramientas solas suelen bastar. Los vídeos descargados de plataformas se han recomprimido, lo que borra la evidencia del ruido, así que hace falta una revisión visual para volver a superar el 99 %.
 
-La detección de material real está entre el 97 y el 99 %, y los límites de plano son todos correctos. Cifras y cómo reproducirlas: [eval/RESULTS.md](eval/RESULTS.md).
+La detección de material real está entre el 97 y el 99 %, y los límites de plano son todos correctos. Cifras y cómo reproducirlas: [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## Cómo funciona
 
-![Pipeline de rea-video](docs/rea-flow_es.svg)
+![Pipeline de rea-video](../docs/rea-flow_es.svg)
 
 1. Dividir: corta el vídeo en planos y separa el audio en voz, música y efectos.
 2. Reunir evidencias: mide los fotogramas (cadencia de fotogramas, ruido del sensor, si toda la imagen se desplaza como un único plano, etiquetas AIGC en los metadatos); mira las imágenes (manos, texto, física); escucha (BPM, tonalidad, canto o habla).
@@ -185,7 +185,7 @@ No. El modo solo herramientas funciona offline, es gratis y ya es preciso con ar
 <details>
 <summary>¿Puede rehacer el vídeo entero automáticamente?</summary>
 
-En parte. Con [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) instalado, los planos de IA se generan y se colocan automáticamente en la línea de tiempo original. Los planos de imagen real los grabas tú siguiendo el plan de rodaje; los planos de código los escribe el agente como proyecto de Remotion. Consulta [docs/replicate.md](docs/replicate.md).
+En parte. Con [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) instalado, los planos de IA se generan y se colocan automáticamente en la línea de tiempo original. Los planos de imagen real los grabas tú siguiendo el plan de rodaje; los planos de código los escribe el agente como proyecto de Remotion. Consulta [docs/replicate.md](../docs/replicate.md).
 
 </details>
 
@@ -198,13 +198,13 @@ No. rea-video sirve para aprender la estructura, el ritmo y las técnicas de un 
 
 ## Documentación
 
-- [docs/what-it-detects.md](docs/what-it-detects.md): todo lo que detecta (10 tipos visuales, cámara, iluminación, etalonaje, audio)
-- [docs/replicate.md](docs/replicate.md): cómo hacer el remake a partir del informe
-- [docs/cases.md](docs/cases.md): detalles de los casos
-- [docs/decompose.md](docs/decompose.md): reglas de detección
-- [docs/cli.md](docs/cli.md): uso de la CLI e integración con capsule-cinema
-- [rea_video/capabilities/](rea_video/capabilities/README.md): tablas de capacidades de modelos de vídeo / imagen / audio, usadas para elegir modelos en el plan de remake
-- [eval/RESULTS.md](eval/RESULTS.md): resultados de la evaluación
+- [docs/what-it-detects.md](../docs/what-it-detects.md): todo lo que detecta (10 tipos visuales, cámara, iluminación, etalonaje, audio)
+- [docs/replicate.md](../docs/replicate.md): cómo hacer el remake a partir del informe
+- [docs/cases.md](../docs/cases.md): detalles de los casos
+- [docs/decompose.md](../docs/decompose.md): reglas de detección
+- [docs/cli.md](../docs/cli.md): uso de la CLI e integración con capsule-cinema
+- [rea_video/capabilities/](../rea_video/capabilities/README.md): tablas de capacidades de modelos de vídeo / imagen / audio, usadas para elegir modelos en el plan de remake
+- [eval/RESULTS.md](../eval/RESULTS.md): resultados de la evaluación
 
 La documentación está en chino por ahora.
 

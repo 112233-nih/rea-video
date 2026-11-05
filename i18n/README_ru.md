@@ -7,13 +7,13 @@
 «Говорящая голова», предметная съёмка на столе, ИИ-видео, 3D, моушн-графика, смешанный монтаж — дайте ему что угодно,<br>
 и он по каждому кадру расскажет, как сделаны изображение, оформленные надписи, монтаж и звук, а затем даст план, как снять такое же самому.
 
-[中文](README_zh.md) | [English](README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | Русский | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
+[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | Русский | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | [Deutsch](README_de.md)
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)
 ![Agent](https://img.shields.io/badge/runs%20in-Claude%20Code%20%7C%20Codex-8A2BE2)
 
-<img src="docs/cases/demo.gif" width="440" alt="Слева: оригинал из TikTok, снятый на телефон; справа: чей-то ИИ-ремейк с другим товаром">
+<img src="../docs/cases/demo.gif" width="440" alt="Слева: оригинал из TikTok, снятый на телефон; справа: чей-то ИИ-ремейк с другим товаром">
 
 Слева: реклама из TikTok, снятая на телефон. Справа: чей-то ИИ-ремейк, где товар заменён на другой.<br>
 Вердикт rea-video: слева всё снято вживую, одна локация и две точки съёмки; справа всё сгенерировано ИИ, и его 8 кадров можно получить за 3 генерации.
@@ -65,44 +65,44 @@ rea-video создан для ИИ-агентов. В Claude Code, Codex или 
 <table>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
+<a href="../docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="../docs/cases/dual_role/thumb.jpg"></a><br>
 <b>Смешанный ролик</b> · 19 с · 10 кадров<br>
 Диалог ИИ-персонажей + интерфейс на коде + 8 с настоящей записи экрана. 5 диалоговых кадров перемежаются фрагментами интерфейса, но снято всё в одной локации, поэтому хватает одной генерации.<br>
-<a href="docs/cases/videos/dual_role.mp4">Видео</a> · <a href="docs/cases/dual_role/report_en.md">Отчёт</a>
+<a href="../docs/cases/videos/dual_role.mp4">Видео</a> · <a href="../docs/cases/dual_role/report_en.md">Отчёт</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
+<a href="../docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="../docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D-научпоп</b> · 67 с · 21 кадр<br>
 Целиком 3D, озвучка ИИ. Можно сделать за 10 видеогенераций или поручить LLM написать код на Blender / Three.js.<br>
-<a href="docs/cases/videos/salted_egg.mp4">Видео</a> · <a href="docs/cases/salted_egg/report_en.md">Отчёт</a>
+<a href="../docs/cases/videos/salted_egg.mp4">Видео</a> · <a href="../docs/cases/salted_egg/report_en.md">Отчёт</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
+<a href="../docs/cases.md#4-代码-ui-动效产品宣传片"><img src="../docs/cases/v10/thumb.jpg"></a><br>
 <b>Промо продукта</b> · 70 с · 12 кадров<br>
 83% — моушн-графика на коде, 12% — запись экрана. Видеомодель не нужна, хватит одного проекта Remotion.<br>
-<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Видео</a> · <a href="docs/cases/v10/report_en.md">Отчёт</a>
+<a href="../docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Видео</a> · <a href="../docs/cases/v10/report_en.md">Отчёт</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
+<a href="../docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="../docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>ИИ-клип</b> · 165 с · 86 кадров<br>
 Песня верно определена как сгенерированная ИИ (её сделали в Suno). Визуальная модель приняла часть кадров за «игровое кино»; агент заметил несуществующие иероглифы на свитке и отнёс эти кадры к ИИ.<br>
-<a href="docs/cases/videos/qing_mv.mp4">Видео</a> · <a href="docs/cases/qing_mv/report_en.md">Отчёт</a>
+<a href="../docs/cases/videos/qing_mv.mp4">Видео</a> · <a href="../docs/cases/qing_mv/report_en.md">Отчёт</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
+<a href="../docs/cases.md#6-实拍带货沉浸式开箱"><img src="../docs/cases/unboxing/thumb.jpg"></a><br>
 <b>Распаковка, живая съёмка</b> · 72 с · 29 кадров<br>
 Всё снято вживую: телефон на штативе сверху, один коврик, одна точка съёмки, без закадрового голоса, звук помещения плюс библиотечная фоновая музыка. После перекодирования платформой офлайн-инструмент счёл 35% видео ИИ; после проверки агентом доля живой съёмки составила 97%.<br>
-<a href="docs/cases/videos/unboxing.mp4">Видео</a> · <a href="docs/cases/unboxing/report_en.md">Отчёт</a>
+<a href="../docs/cases/videos/unboxing.mp4">Видео</a> · <a href="../docs/cases/unboxing/report_en.md">Отчёт</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
+<a href="../docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="../docs/cases/ai_daihuo/thumb.jpg"></a><br>
 <b>Гибрид ИИ и живого человека</b> · 58 с · 21 кадр<br>
 75% — живая съёмка («говорящая голова» + съёмка экрана телефона), 25% — ИИ: автор загрузила в Jimeng собственный ролик, где она в кадре, и два фото товара, и сгенерировала «живой» фрагмент с товаром. ИИ-часть выдали водяной знак Jimeng и искажённый текст на подарочной коробке.<br>
-<a href="docs/cases/videos/ai_daihuo.mp4">Видео</a> · <a href="docs/cases/ai_daihuo/report_en.md">Отчёт</a>
+<a href="../docs/cases/videos/ai_daihuo.mp4">Видео</a> · <a href="../docs/cases/ai_daihuo/report_en.md">Отчёт</a>
 </td>
 </tr>
 </table>
@@ -118,20 +118,20 @@ rea-video создан для ИИ-агентов. В Claude Code, Codex или 
 <tr><td>
 <b>Смена нарядов, вид сверху</b> · 12 с<br>
 Та же замена: женщина → мужчина, три наряда → соответствующая мужская одежда. Замена элементов: девушка в трёх исторических ханьфу в китайском кабинете; пульт превращается в круглый веер.<br>
-<img src="docs/cases/remake/outfit.gif"><br>
-<a href="docs/cases/remake/outfit_compare.mp4">Видео для сравнения в HD (со звуком)</a> · <a href="docs/cases/remake/outfit_sheet.jpg">кадры в один и тот же момент</a>
+<img src="../docs/cases/remake/outfit.gif"><br>
+<a href="../docs/cases/remake/outfit_compare.mp4">Видео для сравнения в HD (со звуком)</a> · <a href="../docs/cases/remake/outfit_sheet.jpg">кадры в один и тот же момент</a>
 </td></tr>
 <tr><td>
 <b>Анимация в стиле бумажной аппликации / акварели</b> · 30 с<br>
 Та же замена: главная героиня — новая пластилиновая девочка. Замена элементов: лиса; лес → коралловый риф, облака → звёздное небо, закат → северное сияние.<br>
-<img src="docs/cases/remake/paper.gif"><br>
-<a href="docs/cases/remake/paper_compare.mp4">Видео для сравнения в HD (со звуком)</a> · <a href="docs/cases/remake/paper_sheet.jpg">кадры в один и тот же момент</a>
+<img src="../docs/cases/remake/paper.gif"><br>
+<a href="../docs/cases/remake/paper_compare.mp4">Видео для сравнения в HD (со звуком)</a> · <a href="../docs/cases/remake/paper_sheet.jpg">кадры в один и тот же момент</a>
 </td></tr>
 <tr><td>
 <b>Видео с товаром в руках</b> · 21 с · 11 кадров<br>
 Та же замена: оригинальный новый товар, английский стикер → китайская подпись. Замена элементов: розовый товар, кухня → походный столик, новые ингредиенты.<br>
-<img src="docs/cases/remake/juicer.gif"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">Видео для сравнения в HD (со звуком)</a> · <a href="docs/cases/remake/juicer_sheet.jpg">кадры в один и тот же момент</a>
+<img src="../docs/cases/remake/juicer.gif"><br>
+<a href="../docs/cases/remake/juicer_compare.mp4">Видео для сравнения в HD (со звуком)</a> · <a href="../docs/cases/remake/juicer_sheet.jpg">кадры в один и тот же момент</a>
 </td></tr>
 </table>
 
@@ -151,11 +151,11 @@ rea-video создан для ИИ-агентов. В Claude Code, Codex или 
 
 На исходных файлах обычно хватает одних инструментов. Видео, скачанные с платформ, пережаты, а это стирает признаки шума, поэтому, чтобы вернуться выше 99%, нужна визуальная проверка.
 
-Точность обнаружения реальных материалов — 97–99%, границы кадров определяются без ошибок. Цифры и как их воспроизвести: [eval/RESULTS.md](eval/RESULTS.md).
+Точность обнаружения реальных материалов — 97–99%, границы кадров определяются без ошибок. Цифры и как их воспроизвести: [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## Как это работает
 
-![Конвейер rea-video](docs/rea-flow_ru.svg)
+![Конвейер rea-video](../docs/rea-flow_ru.svg)
 
 1. Разделение: видео нарезается на кадры, звук разделяется на голос, музыку и эффекты.
 2. Сбор доказательств: измерения кадров (частота смены кадров, шум сенсора, движется ли всё изображение как одна плоскость, метки AIGC в метаданных); анализ изображения (руки, текст, физика); анализ звука (BPM, тональность, пение или речь).
@@ -185,7 +185,7 @@ rea-video не рендерит видео. Он по каждому кадру 
 <details>
 <summary>Может ли он переснять всё видео автоматически?</summary>
 
-Частично. Если установлен [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video), ИИ-кадры генерируются и автоматически ставятся обратно на исходный таймлайн. Живые кадры вы снимаете по плану съёмки; кадры на коде агент пишет как проект Remotion. См. [docs/replicate.md](docs/replicate.md).
+Частично. Если установлен [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video), ИИ-кадры генерируются и автоматически ставятся обратно на исходный таймлайн. Живые кадры вы снимаете по плану съёмки; кадры на коде агент пишет как проект Remotion. См. [docs/replicate.md](../docs/replicate.md).
 
 </details>
 
@@ -198,13 +198,13 @@ rea-video не рендерит видео. Он по каждому кадру 
 
 ## Документация
 
-- [docs/what-it-detects.md](docs/what-it-detects.md): всё, что он определяет (10 визуальных типов, камера, свет, цветокоррекция, звук)
-- [docs/replicate.md](docs/replicate.md): ремейк по отчёту
-- [docs/cases.md](docs/cases.md): подробности по примерам
-- [docs/decompose.md](docs/decompose.md): правила определения
-- [docs/cli.md](docs/cli.md): использование CLI и интеграция с capsule-cinema
-- [rea_video/capabilities/](rea_video/capabilities/README.md): таблицы возможностей моделей для видео, изображений и аудио, по которым подбираются модели для плана ремейка
-- [eval/RESULTS.md](eval/RESULTS.md): результаты оценки
+- [docs/what-it-detects.md](../docs/what-it-detects.md): всё, что он определяет (10 визуальных типов, камера, свет, цветокоррекция, звук)
+- [docs/replicate.md](../docs/replicate.md): ремейк по отчёту
+- [docs/cases.md](../docs/cases.md): подробности по примерам
+- [docs/decompose.md](../docs/decompose.md): правила определения
+- [docs/cli.md](../docs/cli.md): использование CLI и интеграция с capsule-cinema
+- [rea_video/capabilities/](../rea_video/capabilities/README.md): таблицы возможностей моделей для видео, изображений и аудио, по которым подбираются модели для плана ремейка
+- [eval/RESULTS.md](../eval/RESULTS.md): результаты оценки
 
 Документация пока только на китайском.
 

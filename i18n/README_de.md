@@ -7,13 +7,13 @@ Reverse Engineering für jedes Video.
 Talking Head, Tabletop, KI-Video, 3D, Motion Graphics, gemischte Schnitte: Gib ihm ein beliebiges davon,<br>
 und es sagt dir Shot für Shot, wie Bild, gestaltete Texte, Schnitt und Ton entstanden sind, und gibt dir dann einen Plan, um so ein Video selbst zu machen.
 
-[中文](README_zh.md) | [English](README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | Deutsch
+[中文](README_zh.md) | [English](../README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [Español](README_es.md) | [Português](README_pt.md) | [Français](README_fr.md) | Deutsch
 
 [![Stars](https://img.shields.io/github/stars/JuneYaooo/rea-video?style=flat)](https://github.com/JuneYaooo/rea-video/stargazers)
 ![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)
 ![Agent](https://img.shields.io/badge/runs%20in-Claude%20Code%20%7C%20Codex-8A2BE2)
 
-<img src="docs/cases/demo.gif" width="440" alt="Links: TikTok-Original, mit dem Handy gedreht; rechts: KI-Remake von jemand anderem mit einem anderen Produkt">
+<img src="../docs/cases/demo.gif" width="440" alt="Links: TikTok-Original, mit dem Handy gedreht; rechts: KI-Remake von jemand anderem mit einem anderen Produkt">
 
 Links: eine TikTok-Werbung, mit dem Handy gedreht. Rechts: das KI-Remake von jemand anderem, mit einem anderen Produkt.<br>
 Das Urteil von rea-video: Links ist alles echtes Filmmaterial, ein Set und zwei Kamerapositionen; rechts ist alles KI-generiert, und die 8 Shots lassen sich in 3 Generierungen erzeugen.
@@ -65,44 +65,44 @@ Füge ein videofähiges Modell hinzu – Gemini oder Doubao funktionieren beide:
 <table>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="docs/cases/dual_role/thumb.jpg"></a><br>
+<a href="../docs/cases.md#2-混合片ai-人物对话--代码界面--真实录屏"><img src="../docs/cases/dual_role/thumb.jpg"></a><br>
 <b>Gemischter Clip</b> · 19 s · 10 Shots<br>
 KI-Figuren im Gespräch + per Code gebaute UI + 8 s echte Bildschirmaufnahme. Die 5 Dialog-Shots werden durch UI-Segmente unterbrochen, teilen sich aber ein Set, daher reicht eine Generierung für alle.<br>
-<a href="docs/cases/videos/dual_role.mp4">Video</a> · <a href="docs/cases/dual_role/report_en.md">Bericht</a>
+<a href="../docs/cases/videos/dual_role.mp4">Video</a> · <a href="../docs/cases/dual_role/report_en.md">Bericht</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="docs/cases/salted_egg/thumb.jpg"></a><br>
+<a href="../docs/cases.md#3-3d-科普片咸鸭蛋为什么会流油"><img src="../docs/cases/salted_egg/thumb.jpg"></a><br>
 <b>3D-Erklärvideo</b> · 67 s · 21 Shots<br>
 Komplett 3D, KI-Sprecher. Machbar mit 10 Videogenerierungen, oder man lässt ein LLM Blender- / Three.js-Code schreiben.<br>
-<a href="docs/cases/videos/salted_egg.mp4">Video</a> · <a href="docs/cases/salted_egg/report_en.md">Bericht</a>
+<a href="../docs/cases/videos/salted_egg.mp4">Video</a> · <a href="../docs/cases/salted_egg/report_en.md">Bericht</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#4-代码-ui-动效产品宣传片"><img src="docs/cases/v10/thumb.jpg"></a><br>
+<a href="../docs/cases.md#4-代码-ui-动效产品宣传片"><img src="../docs/cases/v10/thumb.jpg"></a><br>
 <b>Produktvideo</b> · 70 s · 12 Shots<br>
 83 % codegesteuerte Motion Graphics, 12 % Bildschirmaufnahme. Kein Videomodell nötig; ein Remotion-Projekt erledigt das.<br>
-<a href="docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Video</a> · <a href="docs/cases/v10/report_en.md">Bericht</a>
+<a href="../docs/cases/videos/v10_oiioii_gen_coding_first.mp4">Video</a> · <a href="../docs/cases/v10/report_en.md">Bericht</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="docs/cases/qing_mv/thumb.jpg"></a><br>
+<a href="../docs/cases.md#5-ai-音乐-mv歌是-ai-写的还是曲库的"><img src="../docs/cases/qing_mv/thumb.jpg"></a><br>
 <b>KI-Musikvideo</b> · 165 s · 86 Shots<br>
 Erkennt den Song korrekt als KI-generiert (er wurde mit Suno gemacht). Das Vision-Modell hielt einige Shots für „Realfilm-Drama“; der Agent entdeckte falsche chinesische Schriftzeichen auf einer Schriftrolle und stufte sie als KI ein.<br>
-<a href="docs/cases/videos/qing_mv.mp4">Video</a> · <a href="docs/cases/qing_mv/report_en.md">Bericht</a>
+<a href="../docs/cases/videos/qing_mv.mp4">Video</a> · <a href="../docs/cases/qing_mv/report_en.md">Bericht</a>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<a href="docs/cases.md#6-实拍带货沉浸式开箱"><img src="docs/cases/unboxing/thumb.jpg"></a><br>
+<a href="../docs/cases.md#6-实拍带货沉浸式开箱"><img src="../docs/cases/unboxing/thumb.jpg"></a><br>
 <b>Unboxing mit echtem Filmmaterial</b> · 72 s · 29 Shots<br>
 Alles echtes Material: ein Handy-Rig von oben, ein Teppich, eine Kameraposition, kein Voice-over, Raumton plus Archiv-BGM. Nach der Transkodierung durch die Plattform stufte das Offline-Tool 35 % als KI ein; die Prüfung durch den Agenten brachte es auf 97 % echtes Material.<br>
-<a href="docs/cases/videos/unboxing.mp4">Video</a> · <a href="docs/cases/unboxing/report_en.md">Bericht</a>
+<a href="../docs/cases/videos/unboxing.mp4">Video</a> · <a href="../docs/cases/unboxing/report_en.md">Bericht</a>
 </td>
 <td width="50%" valign="top">
-<a href="docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="docs/cases/ai_daihuo/thumb.jpg"></a><br>
+<a href="../docs/cases.md#7-ai-与真人混合用自己的出镜视频生成带货片"><img src="../docs/cases/ai_daihuo/thumb.jpg"></a><br>
 <b>Hybrid aus KI und echter Person</b> · 58 s · 21 Shots<br>
 75 % echt (Talking Head + abgefilmter Handybildschirm) und 25 % KI: Die Creatorin gab Jimeng ihren eigenen Clip vor der Kamera und zwei Produktfotos, um ein Produktsegment mit „echter Person“ zu generieren. Der KI-Teil fiel durch das Jimeng-Wasserzeichen und verstümmelten Text auf der Geschenkbox auf.<br>
-<a href="docs/cases/videos/ai_daihuo.mp4">Video</a> · <a href="docs/cases/ai_daihuo/report_en.md">Bericht</a>
+<a href="../docs/cases/videos/ai_daihuo.mp4">Video</a> · <a href="../docs/cases/ai_daihuo/report_en.md">Bericht</a>
 </td>
 </tr>
 </table>
@@ -118,20 +118,20 @@ Jedes GIF spielt vier Versionen synchron ab: Original, OiiOii-Remake, unser Rema
 <tr><td>
 <b>Outfitwechsel von oben</b> · 12 s<br>
 Gleicher Austausch: Frau → Mann, drei Outfits → passende Herrenmode. Elementaustausch: ein Mädchen in drei historischen Hanfu-Outfits in einem chinesischen Studierzimmer; die Fernbedienung wird zu einem runden Fächer.<br>
-<img src="docs/cases/remake/outfit.gif"><br>
-<a href="docs/cases/remake/outfit_compare.mp4">HD-Vergleichsvideo (mit Ton)</a> · <a href="docs/cases/remake/outfit_sheet.jpg">Standbilder vom selben Moment</a>
+<img src="../docs/cases/remake/outfit.gif"><br>
+<a href="../docs/cases/remake/outfit_compare.mp4">HD-Vergleichsvideo (mit Ton)</a> · <a href="../docs/cases/remake/outfit_sheet.jpg">Standbilder vom selben Moment</a>
 </td></tr>
 <tr><td>
 <b>Papier- / Aquarell-Animation</b> · 30 s<br>
 Gleicher Austausch: ein neues Mädchen aus Knete als Hauptfigur. Elementaustausch: ein Fuchs; Wald → Korallenriff, Wolken → Sternenhimmel, Sonnenuntergang → Polarlicht.<br>
-<img src="docs/cases/remake/paper.gif"><br>
-<a href="docs/cases/remake/paper_compare.mp4">HD-Vergleichsvideo (mit Ton)</a> · <a href="docs/cases/remake/paper_sheet.jpg">Standbilder vom selben Moment</a>
+<img src="../docs/cases/remake/paper.gif"><br>
+<a href="../docs/cases/remake/paper_compare.mp4">HD-Vergleichsvideo (mit Ton)</a> · <a href="../docs/cases/remake/paper_sheet.jpg">Standbilder vom selben Moment</a>
 </td></tr>
 <tr><td>
 <b>Produktvideo aus der Hand</b> · 21 s · 11 Shots<br>
 Gleicher Austausch: ein eigenes neues Produkt, englischer Sticker → chinesische Bildunterschrift. Elementaustausch: rosa Produkt, Küche → Campingtisch, neue Zutaten.<br>
-<img src="docs/cases/remake/juicer.gif"><br>
-<a href="docs/cases/remake/juicer_compare.mp4">HD-Vergleichsvideo (mit Ton)</a> · <a href="docs/cases/remake/juicer_sheet.jpg">Standbilder vom selben Moment</a>
+<img src="../docs/cases/remake/juicer.gif"><br>
+<a href="../docs/cases/remake/juicer_compare.mp4">HD-Vergleichsvideo (mit Ton)</a> · <a href="../docs/cases/remake/juicer_sheet.jpg">Standbilder vom selben Moment</a>
 </td></tr>
 </table>
 
@@ -151,11 +151,11 @@ Die beiden Holdout-Werte sind holdout (9 Videos) und holdout2 (7 Videos).
 
 Bei Originaldateien reichen die Tools allein meist aus. Von Plattformen heruntergeladene Videos wurden neu komprimiert, was die Rauschspuren tilgt; daher braucht es eine visuelle Prüfung, um wieder über 99 % zu kommen.
 
-Die Erkennung echter Assets liegt bei 97–99 %, und alle Shot-Grenzen sind korrekt. Zahlen und wie man sie reproduziert: [eval/RESULTS.md](eval/RESULTS.md).
+Die Erkennung echter Assets liegt bei 97–99 %, und alle Shot-Grenzen sind korrekt. Zahlen und wie man sie reproduziert: [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## So funktioniert es
 
-![rea-video-Pipeline](docs/rea-flow_de.svg)
+![rea-video-Pipeline](../docs/rea-flow_de.svg)
 
 1. Aufteilen: das Video in Shots schneiden und den Ton in Stimme, Musik und Effekte trennen.
 2. Belege sammeln: die Frames messen (Frame-Takt, Sensorrauschen, ob sich das ganze Bild wie eine Ebene verschiebt, AIGC-Tags in den Metadaten); die Bilder ansehen (Hände, Text, Physik); hinhören (BPM, Tonart, Gesang oder Sprache).
@@ -185,7 +185,7 @@ Nein. Der reine Tool-Modus läuft offline, ist kostenlos und bei Originaldateien
 <details>
 <summary>Kann es das ganze Video automatisch nachbauen?</summary>
 
-Teilweise. Mit installiertem [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) werden KI-Shots automatisch generiert und auf die Original-Timeline zurückgesetzt. Realfilm-Shots drehst du nach dem Drehplan; Code-Shots schreibt der Agent als Remotion-Projekt. Siehe [docs/replicate.md](docs/replicate.md).
+Teilweise. Mit installiertem [capsule-cinema](https://github.com/JuneYaooo/cheap-claude-video) werden KI-Shots automatisch generiert und auf die Original-Timeline zurückgesetzt. Realfilm-Shots drehst du nach dem Drehplan; Code-Shots schreibt der Agent als Remotion-Projekt. Siehe [docs/replicate.md](../docs/replicate.md).
 
 </details>
 
@@ -198,13 +198,13 @@ Nein. rea-video ist dafür da, Struktur, Tempo und Techniken eines Videos zu ler
 
 ## Dokumentation
 
-- [docs/what-it-detects.md](docs/what-it-detects.md): alles, was erkannt wird (10 Bildtypen, Kamera, Licht, Grading, Audio)
-- [docs/replicate.md](docs/replicate.md): Nachbau anhand des Berichts
-- [docs/cases.md](docs/cases.md): Details zu den Fällen
-- [docs/decompose.md](docs/decompose.md): Erkennungsregeln
-- [docs/cli.md](docs/cli.md): CLI-Nutzung und capsule-cinema-Integration
-- [rea_video/capabilities/](rea_video/capabilities/README.md): Fähigkeitstabellen für Video- / Bild- / Audiomodelle, mit denen die Modelle für den Remake-Plan ausgewählt werden
-- [eval/RESULTS.md](eval/RESULTS.md): Evaluationsergebnisse
+- [docs/what-it-detects.md](../docs/what-it-detects.md): alles, was erkannt wird (10 Bildtypen, Kamera, Licht, Grading, Audio)
+- [docs/replicate.md](../docs/replicate.md): Nachbau anhand des Berichts
+- [docs/cases.md](../docs/cases.md): Details zu den Fällen
+- [docs/decompose.md](../docs/decompose.md): Erkennungsregeln
+- [docs/cli.md](../docs/cli.md): CLI-Nutzung und capsule-cinema-Integration
+- [rea_video/capabilities/](../rea_video/capabilities/README.md): Fähigkeitstabellen für Video- / Bild- / Audiomodelle, mit denen die Modelle für den Remake-Plan ausgewählt werden
+- [eval/RESULTS.md](../eval/RESULTS.md): Evaluationsergebnisse
 
 Die Dokumentation gibt es vorerst nur auf Chinesisch.
 
