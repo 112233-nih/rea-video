@@ -135,7 +135,11 @@ class VLMClient:
         return data["choices"][0]["message"]["content"]
 
     def ask_json(self, prompt: str, media: list[tuple[Path, str]], max_tokens: int = 4096) -> dict:
-        h = hashlib.sha1(prompt.encode())
+        # Use the configured order, not self.models: successful fallbacks reorder
+        # the latter during a run. Never include the API key in the cache identity.
+        request = {"prompt": prompt, "base_url": self.cfg.base_url.rstrip("/"),
+                   "models": self.cfg.models, "max_tokens": max_tokens}
+        h = hashlib.sha1(json.dumps(request, sort_keys=True, ensure_ascii=False).encode())
         for p, mime in media:
             h.update(mime.encode())
             h.update(hashlib.sha1(p.read_bytes()).digest())
