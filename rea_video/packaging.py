@@ -1396,6 +1396,28 @@ def merge_vlm(pack: dict, whole: dict | None) -> None:
     pack["vlm_text_effects"] = [e for e in (whole.get("text_effects") or []) if isinstance(e, dict)][:60]
 
 
+def relocalize(pack: dict, frame_h: int | None) -> None:
+    """Display labels (kind_zh, style_zh, colour names) are stored in the language of the first run.
+    Re-derive them from their codes so a report re-rendered with another --lang is not half one, half the other.
+    Free text from a VLM or reviewer (VLM / agent stickers) stays as written."""
+    name_to_code = {name: code for code in COLOR_ZH for name in (COLOR_ZH._zh[code], COLOR_ZH._en.get(code))}
+    for c in pack.get("text_cues", []):
+        if c.get("kind") in KIND_ZH:
+            c["kind_zh"] = KIND_ZH[c["kind"]]
+        for k in ("anim_in", "anim_out"):
+            if isinstance(c.get(k), dict) and c[k].get("kind") in ANIM_ZH:
+                c[k]["kind_zh"] = ANIM_ZH[c[k]["kind"]]
+        st = c.get("style")
+        if isinstance(st, dict):
+            for k in ("fill_name", "stroke_name", "box_name", "highlight_name"):
+                if st.get(k) in name_to_code:
+                    st[k] = COLOR_ZH[name_to_code[st[k]]]
+            c["style_zh"] = style_text(st, c.get("line_h"), frame_h)
+    for st in pack.get("stickers", []):
+        if st.get("source") not in ("vlm", "agent") and st.get("kind") in STICKER_ZH:
+            st["kind_zh"] = STICKER_ZH[st["kind"]]
+
+
 def apply_review(pack: dict) -> None:
     """An agent's look at the stickers and text kinds (rea-video review / apply-review) overrides the pixel pass."""
     rv = pack.get("review")

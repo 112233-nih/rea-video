@@ -95,3 +95,41 @@ def test_srt_timestamp_carries_into_seconds():
 
 def test_tiles_cmd_quotes_paths():
     assert "'/a/my video.mp4'" in _tiles_cmd("/a/my video.mp4", 1, 2, 0.2, "out/c.jpg")
+
+
+def test_relocalize_rewrites_stored_labels():
+    from rea_video.i18n import set_lang
+    from rea_video.packaging import relocalize
+
+    pack = {"text_cues": [{"kind": "subtitle", "kind_zh": "字幕", "line_h": 0.05,
+                           "style": {"fill_name": "白", "stroke": True, "stroke_name": "黑"}, "style_zh": "白字、黑描边",
+                           "anim_in": {"kind": "pop", "kind_zh": "缩放弹出"}}],
+            "stickers": [{"kind": "static_sticker", "kind_zh": "静态贴纸/图片", "source": "pixels"},
+                         {"kind": "static_sticker", "kind_zh": "一只猫的贴纸", "source": "vlm"}]}
+    try:
+        set_lang("en")
+        relocalize(pack, 1920)
+    finally:
+        set_lang("zh")
+    c = pack["text_cues"][0]
+    assert c["kind_zh"] == "subtitle" and c["anim_in"]["kind_zh"] == "scale pop"
+    assert c["style"]["fill_name"] == "white" and "black outline" in c["style_zh"] and "line height" in c["style_zh"]
+    assert pack["stickers"][0]["kind_zh"] == "static sticker / image"
+    assert pack["stickers"][1]["kind_zh"] == "一只猫的贴纸"  # free text from the VLM is kept
+
+
+def test_variable_frame_rate_cuts_use_real_timestamps(tmp_path):
+    """30 fps + 10 fps + 30 fps segments, 2 s each: cuts at 2 s and 4 s, not at frame / average-fps."""
+    from rea_video.shots import build_track, detect_shots
+
+    srcs = ["testsrc2=s=160x120:r=30:d=2", "mandelbrot=s=160x120:r=10", "testsrc2=s=160x120:r=30:d=2"]
+    for k, src in enumerate(srcs):
+        vf = ["-vf", "hue=h=180,vflip"] if k == 2 else []
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", src, "-t", "2", *vf, "-c:v", "libx264",
+                        "-pix_fmt", "yuv420p", "-video_track_timescale", "90000", str(tmp_path / f"{k}.mp4")], check=True)
+    (tmp_path / "list.txt").write_text("".join(f"file {k}.mp4\n" for k in range(3)))
+    vfr = tmp_path / "vfr.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-i", str(tmp_path / "list.txt"), "-c", "copy", str(vfr)], check=True)
+    shots = detect_shots(build_track(str(vfr), video_info(vfr)))
+    assert [round(s.start, 2) for s in shots] == [0.0, 2.0, 4.0]
+    assert abs(shots[-1].end - 6.0) < 0.05

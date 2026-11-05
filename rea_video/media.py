@@ -139,6 +139,26 @@ def scaled_size(info: VideoInfo, width: int) -> tuple[int, int]:
     return width, max(2, height)
 
 
+def frame_times(path: str | Path, n: int, fps: float) -> np.ndarray | None:
+    """Real timestamps (s, from 0) of the n frames iter_frames passes through, read from packet pts
+    (no decoding). None when they match frame / fps to within half a frame (constant frame rate; the
+    caller keeps index / fps) or when the packet count does not line up with the decoded frames."""
+    if n < 2 or fps <= 0:
+        return None
+    try:
+        out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "packet=pts_time",
+                              "-of", "csv=p=0", str(path)], capture_output=True, text=True, timeout=120).stdout
+        pts = sorted(float(x.strip().rstrip(",")) for x in out.split() if x.strip().rstrip(",") not in ("", "N/A"))
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+    if len(pts) != n:
+        return None
+    t = np.asarray(pts) - pts[0]
+    if np.max(np.abs(t - np.arange(n) / fps)) <= 0.5 / fps:
+        return None
+    return t
+
+
 def iter_frames(
     path: str | Path,
     info: VideoInfo,

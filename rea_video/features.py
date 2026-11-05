@@ -165,7 +165,7 @@ def collect_samples(path: str, info: VideoInfo, shot: Shot, n_frames: int = 16, 
             out.sharpness.append(float(cv2.Laplacian(gray, cv2.CV_32F).var()))
             if i in keep:
                 out.frames.append(bgr.copy())
-                out.frame_times.append(shot.start + i / shot.fps)
+                out.frame_times.append(shot.t(shot.start_frame + i))
             if prev_gray is not None and i - 1 >= lo:
                 d = cv2.absdiff(gray, prev_gray)
                 out.pair_mad.append(float(d.mean()))

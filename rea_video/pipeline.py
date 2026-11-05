@@ -51,7 +51,7 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
     track = build_track(str(video), info)
     shots = detect_shots(track)
     LOG.info("detected %d shots", len(shots))
-    marks = [b / s.fps for s in shots for b in s.beats]
+    marks = [s.t(b) for s in shots for b in s.beats]
     audio = analyze_audio(str(video), [s.start for s in shots[1:]], marks) if info.has_audio else {"has_audio": False}
     stem_info: dict = {}
     if info.has_audio and stems:  # strip the soundtrack: original.wav / vocals.wav / music.wav
@@ -390,6 +390,10 @@ def finalize(breakdown: dict, out: Path, engine: str | None = None) -> dict:
         from .packaging import apply_review as apply_pack_review
 
         apply_pack_review(pack)
+        from .packaging import relocalize
+
+        src = breakdown["source"]
+        relocalize(pack, src.get("width") if src.get("rotation") in (90, 270) else src.get("height"))
     vctx = video_context(shot_records, prov, breakdown["source"].get("fps"))
     breakdown["video_context"] = vctx
     for rec in shot_records:

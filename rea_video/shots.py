@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 import cv2
 import numpy as np
 
-from .media import VideoInfo, iter_frames
+from .media import VideoInfo, frame_times, iter_frames
 
 THUMB_W = 96
 
@@ -24,6 +24,7 @@ class FrameTrack:
     luma: np.ndarray            # mean luma 0..255
     thumbs: list[np.ndarray] = field(repr=False, default_factory=list)  # small gray thumbs, uint8 (for dissolve check)
     hists: list[np.ndarray] = field(repr=False, default_factory=list)
+    times: np.ndarray | None = field(repr=False, default=None)  # per-frame pts (s) for variable frame rate; None = i / fps
 
     @property
     def n(self) -> int:
@@ -39,24 +40,35 @@ class Shot:
     transition_in: str = "cut"
     boundary_score: float = 0.0
     beats: list[int] = field(default_factory=list)  # frame indices of MG/slide beat changes inside the shot
+    times: np.ndarray | None = field(repr=False, default=None)  # FrameTrack.times
+
+    def t(self, frame: int) -> float:
+        """Time of a frame index. Variable-frame-rate video uses the real pts; past the last frame,
+        one median frame interval after it."""
+        if self.times is None:
+            return frame / self.fps
+        if frame < len(self.times):
+            return float(self.times[frame])
+        step = float(np.median(np.diff(self.times))) if len(self.times) > 1 else 1 / self.fps
+        return float(self.times[-1]) + step * (frame - len(self.times) + 1)
 
     @property
     def start(self) -> float:
-        return self.start_frame / self.fps
+        return self.t(self.start_frame)
 
     @property
     def end(self) -> float:
-        return self.end_frame / self.fps
+        return self.t(self.end_frame)
 
     @property
     def duration(self) -> float:
-        return (self.end_frame - self.start_frame) / self.fps
+        return self.end - self.start
 
     def to_dict(self) -> dict:
         return {"index": self.index, "start": round(self.start, 3), "end": round(self.end, 3),
                 "duration": round(self.duration, 3), "start_frame": self.start_frame, "end_frame": self.end_frame,
                 "transition_in": self.transition_in, "boundary_score": round(self.boundary_score, 3),
-                "beats": [round(b / self.fps, 3) for b in self.beats]}
+                "beats": [round(self.t(b), 3) for b in self.beats]}
 
 
 def _hist(bgr: np.ndarray) -> np.ndarray:
@@ -88,7 +100,7 @@ def build_track(path: str, info: VideoInfo) -> FrameTrack:
         prev_h, prev_g = h, g
     fps = info.fps if info.fps > 0 else 30.0
     return FrameTrack(fps=fps, hist_dist=np.array(hist_d), pix_diff=np.array(pix_d), changed=np.array(chg), luma=np.array(luma),
-                      thumbs=thumbs, hists=hists)
+                      thumbs=thumbs, hists=hists, times=frame_times(path, len(luma), fps))
 
 
 def _local_median(x: np.ndarray, radius: int) -> np.ndarray:
@@ -182,7 +194,8 @@ def detect_shots(track: FrameTrack, min_shot_s: float = 0.35, cut_threshold: flo
         if b == n and shots and b - start < min_len:
             shots[-1].end_frame = n
             break
-        shots.append(Shot(index=len(shots) + 1, start_frame=start, end_frame=b, fps=fps, transition_in=trans, boundary_score=bscore))
+        shots.append(Shot(index=len(shots) + 1, start_frame=start, end_frame=b, fps=fps, transition_in=trans, boundary_score=bscore,
+                              times=track.times))
         if b < n:
             trans, bscore = boundaries[b]
         start = b
