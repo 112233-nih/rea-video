@@ -547,17 +547,27 @@ def markdown(b: dict) -> str:
 
 _RE_IMG = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)\)")
 _RE_LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+# 只有报告自己生成的这几种行可以原样进 HTML；VLM / OCR 文字里换行带出来的标签一律转义
+_RE_RAW_OK = re.compile(r"<details><summary>[^<>]*</summary>|</details>|<!--[^<>]*-->")
+
+
+def _safe_url(m: re.Match, tpl: str) -> str:
+    """Links / images only to http(s) or relative paths (no javascript:, data: ...)."""
+    url = m.group(2)
+    if ":" in url.split("/", 1)[0] and not url.lower().startswith(("http://", "https://")):
+        return m.group(0)
+    return tpl.format(text=m.group(1), url=url)
 _RE_BOLD = re.compile(r"\*\*(.+?)\*\*")
 _RE_CODE = re.compile(r"`([^`]+)`")
 _RE_SEP = re.compile(r"^\|(\s*:?-+:?\s*\|)+\s*$")
 
 
 def _inline(s: str) -> str:
-    s = html.escape(s, quote=False)
+    s = html.escape(s, quote=True)
     s = _RE_CODE.sub(r"<code>\1</code>", s)
     s = _RE_BOLD.sub(r"<b>\1</b>", s)
-    s = _RE_IMG.sub(r'<img src="\2" alt="\1" loading="lazy">', s)
-    s = _RE_LINK.sub(r'<a href="\2">\1</a>', s)
+    s = _RE_IMG.sub(lambda m: _safe_url(m, '<img src="{url}" alt="{text}" loading="lazy">'), s)
+    s = _RE_LINK.sub(lambda m: _safe_url(m, '<a href="{url}">{text}</a>'), s)
     return s
 
 
@@ -612,7 +622,7 @@ def _md_to_html(lines: list[str], b: dict) -> str:
             flush()
             out.append(_stems_html(b))
             continue
-        if line.startswith("<"):  # details / summary / comments pass through
+        if _RE_RAW_OK.fullmatch(line):  # our own details / summary / comments pass through
             flush()
             out.append(line)
             continue

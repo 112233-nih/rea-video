@@ -94,7 +94,7 @@ rea-video capsule-draft out/ref/breakdown.json --capsule-root $CC --capsule-name
 | `eval labels.yaml` | 在带标注的样本上评测准确率和切点 F1 |
 | `capsule breakdown.json` | 导出 capsule-cinema 的视频分析 JSON |
 | `remake-plan` / `assemble` | 生成复刻任务、拼回成片 |
-| `remake-run JOBS [--dry-run] [--only]` | 用 capsule-cinema 执行复刻任务（会计费） |
+| `remake-run JOBS [--dry-run] [--only] [--capsule-root]` | 用 capsule-cinema 执行复刻任务（会计费） |
 | `capsule-draft breakdown.json` | 生成 capsule-cinema 胶囊草稿 |
 
 ## 工作流（设计目标；目前完成到拆解和 AI 镜头复刻）

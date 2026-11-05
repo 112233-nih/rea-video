@@ -33,6 +33,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", required=True)
     ap.add_argument("--only", default="", help="comma-separated shot indices")
+    ap.add_argument("--capsule-root", required=True)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -41,6 +42,16 @@ def main() -> None:
     only = {int(x) for x in args.only.split(",") if x.strip()}
     results_path = jobs_path.with_name("results.json")
     results = json.loads(results_path.read_text(encoding="utf-8")) if results_path.is_file() else {"results": {}}
+
+    root = Path(args.capsule_root).expanduser().resolve()
+    planned = Path(spec.get("capsule_root") or "").expanduser().resolve()
+    if planned != root:
+        sys.exit(f"jobs.json 的 capsule_root（{planned}）与 --capsule-root（{root}）不一致；确认来源可信后用 --capsule-root 指定")
+    out_root = root / "output"
+    for j in spec["jobs"]:
+        od = Path(j.get("params", {}).get("output_dir", "")).expanduser().resolve()
+        if j.get("executor") == "capsule_cinema" and not od.is_relative_to(out_root):
+            sys.exit(f"shot {j.get('shot')}: output_dir 不在 {out_root} 下，拒绝执行")
 
     todo = [j for j in spec["jobs"] if j["executor"] == "capsule_cinema" and (not only or j["shot"] in only)]
     print(f"{len(todo)} generation job(s); run dir {spec['run_dir']}")
@@ -51,7 +62,6 @@ def main() -> None:
             print(json.dumps({"shot": j["shot"], "label": j["label"], **p}, ensure_ascii=False))
         return
 
-    root = Path(spec["capsule_root"]).expanduser().resolve()
     sys.path.insert(0, str(root / "lib"))
     sys.path.insert(0, str(root / "scripts"))
     from env_loader import load_video_agent_env  # noqa: E402

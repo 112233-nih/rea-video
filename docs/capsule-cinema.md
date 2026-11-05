@@ -23,3 +23,4 @@ rea-video assemble out/ref/breakdown.json out/ref/remake/results.json
 - 静态图推拉、静帧：不调模型，`assemble` 用测得的缩放/平移参数在本地重建。
 - 代码渲染、录屏镜头：默认保留原片（`keep_original`），重建请按报告中的文字轨/版式用 Remotion 实现。
 - 只复刻部分镜头：`remake-run ... --only 2,5`。
+- capsule-cinema 不在默认路径时，`remake-run` 也要带上和 `remake-plan` 一样的 `--capsule-root`；jobs.json 里记录的路径对不上会拒绝执行。

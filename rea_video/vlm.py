@@ -51,7 +51,7 @@ class VLMConfig:
         return cfg
 
     def describe(self) -> str:
-        host = re.sub(r"^https?://", "", self.base_url).split("/")[0]
+        host = re.sub(r"^https?://", "", self.base_url).split("/")[0].rsplit("@", 1)[-1]  # 去掉 user:pass@
         return f"{','.join(self.models)} @ {host}"
 
 
@@ -118,6 +118,9 @@ class VLMClient:
         self.cache_dir = cache_dir
         self.dead_requests = 0
         self.models = list(cfg.models)  # reordered: the last model that answered goes first
+        host = re.sub(r"^https?://", "", cfg.base_url).split("/")[0].rsplit("@", 1)[-1].split(":")[0]
+        if cfg.base_url.lower().startswith("http://") and host not in ("localhost", "127.0.0.1", "::1", "[::1]"):
+            LOG.warning("REA_VLM_BASE_URL 不是 https，API key 会明文发送到 %s", host)
         if cache_dir:
             cache_dir.mkdir(parents=True, exist_ok=True)
 

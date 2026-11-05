@@ -18,7 +18,8 @@ DEFAULT_CAPSULE_ROOT = os.getenv("CAPSULE_CINEMA_ROOT", str(Path.home() / "code/
 def _env(args) -> None:
     from .memory import pref
 
-    files = [Path.cwd() / ".env", Path(__file__).resolve().parent.parent / ".env"]
+    # 不读当前目录的 .env：在别人的仓库里运行时，它可以改 VLM 地址或 CAPSULE_CINEMA_PYTHON
+    files = [Path(__file__).resolve().parent.parent / ".env"]
     env_file = getattr(args, "env_file", None) or pref("env_file")
     if env_file:
         files.insert(0, Path(env_file))
@@ -176,8 +177,9 @@ def _run_integration(script: str, python: str, argv: list[str]) -> int:
 
 def cmd_remake_run(args) -> int:
     jobs = Path(args.jobs).expanduser().resolve()
-    root = Path(read_json(jobs).get("capsule_root") or DEFAULT_CAPSULE_ROOT)
-    argv = ["--jobs", str(jobs)] + (["--only", args.only] if args.only else []) + (["--dry-run"] if args.dry_run else [])
+    # capsule-root 只认命令行（jobs.json 可能是别人给的，不能让它决定跑哪个解释器、import 哪里的代码）
+    root = Path(args.capsule_root).expanduser().resolve()
+    argv = ["--jobs", str(jobs), "--capsule-root", str(root)] + (["--only", args.only] if args.only else []) + (["--dry-run"] if args.dry_run else [])
     # 试跑不调用 capsule-cinema，用当前解释器即可
     python = sys.executable if args.dry_run and not args.python else _capsule_python(args.python, root)
     return _run_integration("run_remake.py", python, argv)
@@ -415,6 +417,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rr = sub.add_parser("remake-run", help="用 capsule-cinema 执行 remake-plan 生成的任务（会计费，先 --dry-run）")
     rr.add_argument("jobs", help="remake-plan 输出的 jobs.json")
+    rr.add_argument("--capsule-root", default=DEFAULT_CAPSULE_ROOT, help="须与 remake-plan 时一致")
     rr.add_argument("--dry-run", action="store_true", help="只列出任务和参数，不调用模型")
     rr.add_argument("--only", default="", help="只跑这些镜头（逗号分隔）")
     rr.add_argument("--python", help="capsule-cinema 的 Python；默认 $CAPSULE_CINEMA_PYTHON 或 <capsule-root>/.venv/bin/python")
