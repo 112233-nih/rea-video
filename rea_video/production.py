@@ -195,7 +195,7 @@ def _unit(seg: list[dict], k: int, lim: dict, model: dict | None, style: str, ca
                          ": reference for action, camera movement and cutting rhythm (reference only, do not copy the picture)"), "user": False})
     cont = None
     if prev_unit and same_scene_prev and seg[0].get("transition_in") == "cut" and abs(prev_unit["ranges"][-1][1] - t0) < 1e-3:
-        cont = T("首帧用 {p} 的尾帧，接上动作（S05）", "first frame = last frame of {p}, continue the action (S05)", p=prev_unit["id"])
+        cont = T("首帧用 {p} 的尾帧，接上动作", "first frame = last frame of {p}, continue the action", p=prev_unit["id"])
     elif lim["first_frame"]:
         cont = T("首帧：参照原片第 {i} 镜首帧（{f}）的构图出图", "first frame: generate an image matching the composition of source shot {i}'s first frame ({f})",
                  i=seg[0]["index"], f=seg[0]["assets"]["first_frame"]) + (T("，产品换成 @图片1", ", with the product replaced by @图片1") if product else "")
@@ -254,10 +254,10 @@ def _unit(seg: list[dict], k: int, lim: dict, model: dict | None, style: str, ca
                         "lip sync and motion must be frame-accurate (R19)")
     if label == "cg_3d" or "cg_3d" in votes:
         unit["alt"] = T("另一条路：3D 工程。让 LLM 写 Blender 脚本或 Three.js 场景，角色/道具建模一次、按镜头设机位渲染，"
-                        "多角度和角色一致性最好，改文案和镜头也只是改代码（R08）",
+                        "多角度和角色一致性最好，改文案和镜头也只是改代码",
                         "Alternative: a 3D project. Have an LLM write a Blender script or a Three.js scene; model the characters / props once and "
                         "render each shot from its own camera. Best for multiple angles and character consistency, and changing copy or shots is "
-                        "just a code change (R08)")
+                        "just a code change")
     return unit
 
 
@@ -418,9 +418,9 @@ def report_md(plan: dict) -> list[str]:
         L += [f"- {plan['engine_note']}"]
     if plan["units"]:
         lim = plan["model_limits"]
-        L += [T("- 分组规则：同场景、硬切相连的 AI 镜头合并为一次生成（S01）；单次 ≤{mx:.0f}s；单元内连续硬切尽量 ≤{p}s、最多 {m}s（S06）；在叠化/淡入淡出和换场景处切开（S03）",
-                "- Grouping: AI shots in the same scene joined by hard cuts are generated in one call (S01); ≤{mx:.0f}s per call; "
-                "consecutive hard cuts inside a unit preferably ≤{p}s, at most {m}s (S06); split at dissolves / fades and scene changes (S03)",
+        L += [T("- 分组规则：同场景、硬切相连的 AI 镜头合并为一次生成；单次 ≤{mx:.0f}s；单元内连续硬切尽量 ≤{p}s、最多 {m}s；在叠化/淡入淡出和换场景处切开",
+                "- Grouping: AI shots in the same scene joined by hard cuts are generated in one call; ≤{mx:.0f}s per call; "
+                "consecutive hard cuts inside a unit preferably ≤{p}s, at most {m}s; split at dissolves / fades and scene changes",
                 mx=lim["max"], p=plan["rules"]["hardcut_s"]["prefer"], m=plan["rules"]["hardcut_s"]["max"])]
         if plan.get("audio_note"):
             L.append(T("- 声音：{a}", "- Audio: {a}", a=plan["audio_note"]))

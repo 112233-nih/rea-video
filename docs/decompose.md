@@ -78,7 +78,9 @@
 ```
 out/<name>/
   breakdown.json   Video IR（rea_video.breakdown.v1）：每镜特征、证据、概率、叠加层、复刻计划
-  report.html/md   人读报告
+  report.html/md   人读报告（同一份内容，HTML 由 Markdown 渲染）：结论 → 内容与结构（概括、钩子、结构时间轴、脚本）→ 角色、场景与道具 →
+                   声音（人声 / 背景音乐 / 音效 / 环境声各一张卡）→ 拍法、打光与剪辑 → 剪辑包装层 → 复刻方案（含真实素材和参考素材清单）→
+                   分镜表 → 不确定点 → 附录（逐镜取证折叠、元数据）。角色、场景、道具和脚本来自 VLM 整片分析或 agent 看图（review_answers.json 顶层 cast）
   storyboard.jpg   分镜总览（按制作方式着色）
   shots/           每镜联系表、首帧、尾帧（首尾帧也是复刻输入）
   clips/, vlm_cache/  VLM 输入片段和缓存（仅 --vlm）

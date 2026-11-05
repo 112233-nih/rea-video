@@ -236,7 +236,8 @@ WHOLE_PROMPT = """你是短视频拆解专家。完整观看并**仔细收听**�
 每一个音效出现的时间点、类型，以及它对应画面上的什么事件。
 剪辑包装要拆全：字幕之外的花字、标题、章节牌、标签（含跟着物体走的标注）逐个列出时间、样式和动画；
 后期贴上去的表情包、GIF 动图、emoji、贴纸、画中画小窗、箭头圈注逐个列出出现/消失时间和位置（画面本身的内容不算）。
-已检测到的镜头切分（秒）：{shots}
+角色要跨镜头认成同一个：给每个主要角色（人、动物、卡通形象、数字人、作为主角的商品）一个编号，外观写到能据此把同一个角色再画出来；场景同理（同一地点不同机位算一个场景）；道具 / 商品 / Logo 单独列。
+已检测到的镜头切分（秒，按顺序即镜头 #1、#2…）：{shots}
 
 只返回 JSON：
 {{
@@ -245,7 +246,7 @@ WHOLE_PROMPT = """你是短视频拆解专家。完整观看并**仔细收听**�
   "hook": "开头 3 秒如何抓人",
   "segments": [{{"start": 0.0, "end": 3.0, "beat": "这一段在叙事上的作用", "copy": "这一段的旁白/字幕文案", "audio": "人声/音乐/音效"}}],
   "narration": {{"type": "tts|human|none|mixed", "voice": "性别/年龄感/音色", "style": "语速、情绪、口癖", "language": "zh|en|...",
-                 "lines": [{{"start": 0.0, "end": 2.0, "text": "台词/旁白原文"}}]}},
+                 "lines": [{{"start": 0.0, "end": 2.0, "speaker": "角色编号或 旁白", "text": "台词/旁白原文"}}]}},
   "music": {{"present": true, "segments": [{{"start": 0.0, "end": 10.0}}], "style": "风格", "genre": "流派", "mood": "情绪",
             "instruments": ["主要乐器"], "bpm_estimate": 0, "has_vocals": false,
             "source_guess": "ai_generated|stock_library|popular_song|original|unknown", "song_guess": "若是知名歌曲写歌名，否则空",
@@ -261,6 +262,12 @@ WHOLE_PROMPT = """你是短视频拆解专家。完整观看并**仔细收听**�
                     "animation": "弹出/缩放/抖动/打字机/逐字高亮/滑入/无"}}],
   "stickers": [{{"t0": 0.0, "t1": 1.0, "what": "表情包/GIF 动图/emoji/静态贴纸/画中画小窗/箭头圈注", "where": "画面位置",
                 "description": "贴的是什么", "animated": true}}],
+  "style": "整体视觉风格与调色：画风、质感、色调、可参照的风格（如皮克斯 / 胶片感 / ins 风）",
+  "characters": [{{"id": "A", "name": "称呼（角色名 / 商品名 / 主播 / 旁白者）", "kind": "person|animal|cartoon|avatar|product|other",
+                  "look": "外观：体型、发型或毛色、服装、配饰、标志性特征", "role": "在视频里的作用（主角 / 配角 / 被介绍的商品 / 旁白）",
+                  "voice": "有台词时的音色，没有留空", "shots": [1, 2]}}],
+  "scenes": [{{"id": "S1", "where": "地点 / 环境", "when": "白天|夜晚|室内|不明", "look": "布景、色调、光线", "shots": [1, 2]}}],
+  "props": [{{"name": "道具 / 商品 / Logo / 文件", "note": "出现在哪、起什么作用", "shots": [1]}}],
   "aspects": <<VIDEO_ASPECTS>>,
   "overall_production": "整体制作方式判断（实拍/AI生成/代码渲染/混合）与理由",
   "warnings": []

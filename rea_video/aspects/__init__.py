@@ -152,13 +152,14 @@ def shot_text(r: dict) -> str:
 # ---------------------------------------------------------------- report -----------------------------------------
 
 def _src(row: dict) -> str:
+    """Who said what. A source that agrees with the verdict is named only; one that differs shows its own value."""
+    final = str(row.get("final", "")).strip()
     bits = []
-    if row.get("measured") not in (None, ""):
-        bits.append(T("测量：{v}", "measured: {v}", v=row["measured"]))
-    if row.get("vlm"):
-        bits.append(T("VLM：{v}", "VLM: {v}", v=row["vlm"]))
-    if row.get("agent"):
-        bits.append(T("看图：{v}", "agent review: {v}", v=row["agent"]))
+    for key, name in (("measured", T("测量", "measured")), ("vlm", "VLM"), ("agent", T("看图", "agent review"))):
+        v = row.get(key)
+        if v in (None, ""):
+            continue
+        bits.append(name if str(v).strip() == final else f"{name}{T('：', ': ')}{v}")
     return semi().join(bits)
 
 
@@ -178,9 +179,11 @@ def report_md(b: dict) -> list[str]:
             L += [T("- 注意：{n}", "- Note: {n}", n=n) for n in li["setup"]["notes"]]
     rows = [(a, r) for a in REGISTRY for r in (A.get(a.key) or {}).get("fields", [])]
     if rows:
-        L += ["", T("| 维度 | 项目 | 结论 | 来源 |", "| Aspect | Item | Verdict | Sources |"), "|---|---|---|---|"]
+        L += ["", f"<details><summary>{html.escape(T('逐项测量与看图结果（{n} 项）', 'Per-item measurements and image readings ({n})', n=len(rows)))}</summary>", "",
+              T("| 维度 | 项目 | 结论 | 来源 |", "| Aspect | Item | Verdict | Sources |"), "|---|---|---|---|"]
         for a, r in rows:
             L.append(f"| {a.title} | {r['zh']} | {str(r['final']).replace('|', '/')} | {_src(r).replace('|', '/')} |")
+        L += ["", "</details>"]
     L += ["", T("- 说明：光比、软硬、色温、景别由主体像素测得（有人脸用人脸，没有用画面清晰区域，后者是估算）；平台转码会压暗部，软硬和补光偏保守；"
                 "机位角度、光源种类、眼神光、轮廓光以看图结果为准。测量和看图不一致时两者都列出。",
                 "- Note: lighting ratio, soft / hard, colour temperature and shot size are measured on the subject's pixels (the face when there is one, "

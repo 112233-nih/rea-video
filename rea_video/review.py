@@ -53,6 +53,10 @@ video_prompt（复刻该镜头的中文视频提示词：写清动作过程和�
 拍摄方式（自拍/支架）、主光是什么光源、眼神光、轮廓光/背景灯、画面里可见的光源；和测量冲突时写明依据。
 最后在答案顶层的 aspects 里写整片：机位/场景、推测设备、整体布光、剪辑手法、视频形式。
 
+答案顶层的 cast 写整片的角色、场景和道具（看 storyboard.jpg 和各镜截图）：characters 每个主要角色一条（id 编号、name 称呼、kind person|animal|cartoon|avatar|product|other、
+look 外观写到能据此再画出同一个角色、role 作用、voice 音色、shots 出场镜头号）；同一个角色在不同镜头要认成同一个。scenes 每个地点一条（id、where、when、look、shots）；
+props 道具 / 商品 / Logo（name、note、shots）；style 一句整体视觉风格与调色。
+
 剪辑包装（tasks.packaging，有才做）：
 - stickers：工具找到的贴纸 / 动图 / 画中画，看 image（贴纸截图）和 frame_cmd 抽的帧，在答案 packaging.stickers 里填
   is_overlay（true = 后期贴上去的；false = 画面本身的东西，例如 3D 里突然出现的物体）和 what（表情包 / GIF / emoji / 箭头 / 小窗里放的什么）。
@@ -132,7 +136,9 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
                                      "evidence": [], "description": "", "embedded_assets": [], "ai_edits": [],
                                      "replication": {"image_prompt": "", "video_prompt": "", "video_prompt_en": ""},
                                      "aspects": aspects.review_template()} for s in shots],
-               "aspects": aspects.review_template(video=True)}
+               "aspects": aspects.review_template(video=True),
+               "cast": {"style": "", "characters": [{"id": "A", "name": "", "kind": "", "look": "", "role": "", "voice": "", "shots": []}],
+                        "scenes": [{"id": "S1", "where": "", "when": "", "look": "", "shots": []}], "props": [{"name": "", "note": "", "shots": []}]}}
     if pk_answers:
         answers["packaging"] = pk_answers
     return tasks, answers
@@ -223,6 +229,12 @@ def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict
     whole = aspects.clean_answers(answers.get("aspects"), video=True)
     if whole:
         breakdown["review_aspects"] = whole
+    from .entities import clean_cast
+
+    cast = clean_cast(answers.get("cast"))
+    if cast:
+        cast["by"] = by
+        breakdown["review_cast"] = cast
     breakdown.setdefault("analysis", {})["review"] = {"by": by, "shots": len(applied), "of": len(breakdown["shots"]),
                                                        "time": time.strftime("%Y-%m-%d %H:%M"), "problems": problems}
     return {"applied": applied, "problems": problems, "before": dict(changes)}

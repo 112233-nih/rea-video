@@ -266,6 +266,15 @@ def cmd_summary(args) -> int:
                      + (f" | {shot_text(r)}" if r["base"]["label"] in ("live_action", "avatar") and shot_text(r) else ""))
     if s.get("aspects"):
         lines += [""] + s["aspects"]
+    from .entities import cast
+
+    c = cast(b)
+    if c["characters"] or c["scenes"]:
+        lines.append("")
+        for ch in c["characters"]:
+            lines.append(f"{T('角色', 'Character')} {ch['id']} {ch['name']} | {ch['look']} | {T('镜头', 'shots')} {','.join(str(i) for i in ch['shots']) or '-'}")
+        for sc in c["scenes"]:
+            lines.append(f"{T('场景', 'Scene')} {sc['id']} {sc['where']} {sc['when']} | {sc['look']} | {T('镜头', 'shots')} {','.join(str(i) for i in sc['shots']) or '-'}")
     a = b.get("audio", {})
     if a.get("has_audio"):
         mu = a.get("music", {})
