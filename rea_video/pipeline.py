@@ -331,6 +331,19 @@ def _top_group(probs: dict[str, float]) -> str:
     return max(g, key=g.get)
 
 
+def _agent_review_dispute(dt: str, vt: dict | None, rv: dict | None, reviewed: bool, decided: str) -> str | None:
+    """An agent-only review (no VLM) disagreeing with the tools on the AI/live axis cannot flip
+    the label — the fusion deliberately follows the tools there (eval-calibrated, see _vlm_gate)
+    — but the disagreement must stay visible instead of hiding inside a confident-looking label.
+    Mirrors the VLM disputed flag above."""
+    if decided == "user" or vt or not rv or sum(rv.values()) == 0 or reviewed:
+        return None
+    if (group_of(_top_group_label(rv)) == "live_action") != (group_of(dt) == "live_action"):
+        return (f"工具判{LABEL_ZH[dt]}、看图复核判{LABEL_ZH[_top_group_label(rv)]}，融合规则在 AI/实拍轴上"
+                "跟了工具（评测校准）：请对照截图核实复核证据是否真的看得见")
+    return None
+
+
 def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
     """(Re)classify every shot from stored features + VLM answers, plan replication,
     summarise and write breakdown.json / reports. Safe to call again after the
@@ -394,6 +407,9 @@ def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
             follow = "VLM" if group_of(label) == group_of(_top_group_label(vt)) else "工具"
             rec["base"]["disputed"] = (f"工具判{LABEL_ZH[dt]}、VLM 判{LABEL_ZH[_top_group_label(vt)]}，结论跟了{follow}："
                                        "请对照截图核实 VLM 的证据是否真的看得见")
+        agent_dispute = _agent_review_dispute(dt, vt, rv, reviewed, decided)
+        if agent_dispute:
+            rec["base"]["disputed"] = agent_dispute
         seen_live = (seen.get("label_probs") or {}).get("live_action", 0.0) / (sum((seen.get("label_probs") or {}).values()) or 1.0)
         doubt = None if decided == "user" else _ai_or_live_doubt(label, rec["deterministic"]["facts"], prov, vctx, seen_live,
                                                                   seen=bool(seen.get("label_probs")))
