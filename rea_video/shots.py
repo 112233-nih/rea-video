@@ -22,7 +22,7 @@ class FrameTrack:
     pix_diff: np.ndarray        # mean |diff| of gray thumbs, 0..1
     changed: np.ndarray         # fraction of thumb pixels that changed noticeably
     luma: np.ndarray            # mean luma 0..255
-    thumbs: list[np.ndarray] = field(repr=False, default_factory=list)  # small gray thumbs (for dissolve check)
+    thumbs: list[np.ndarray] = field(repr=False, default_factory=list)  # small gray thumbs, uint8 (for dissolve check)
     hists: list[np.ndarray] = field(repr=False, default_factory=list)
 
     @property
@@ -83,7 +83,7 @@ def build_track(path: str, info: VideoInfo) -> FrameTrack:
             thr = max(6.0, 0.35 * float(min(g.std(), prev_g.std())))
             chg.append(float((d > thr).mean()))
         luma.append(float(g.mean()))
-        thumbs.append(g)
+        thumbs.append(g.astype(np.uint8))  # lossless (gray of uint8 frames); 4x less memory on long videos
         hists.append(h)
         prev_h, prev_g = h, g
     fps = info.fps if info.fps > 0 else 30.0
@@ -149,7 +149,7 @@ def detect_shots(track: FrameTrack, min_shot_s: float = 0.35, cut_threshold: flo
         for k in sorted({max(2, int(round(fps * 0.12))), max(3, int(round(fps * 0.2))), max(5, int(round(fps * 0.45)))}):
             cand = []
             for i in range(k, n - k):
-                A, B, M = track.thumbs[i - k], track.thumbs[i + k], track.thumbs[i]
+                A, B, M = (track.thumbs[j].astype(np.float32) for j in (i - k, i + k, i))
                 D = B - A
                 thr = max(6.0, 0.35 * float(min(A.std(), B.std())))
                 far = float((np.abs(D) > thr).mean())
@@ -213,7 +213,7 @@ def _mg_beats(track: FrameTrack, boundaries: dict[int, tuple[str, float]], fps: 
     for (a0, a1), (b0, b1) in zip(runs, runs[1:]):
         if any(a1 - 1 <= k <= b0 + 1 for k in boundaries):
             continue  # already separated by a detected cut/fade
-        ta, tb = track.thumbs[(a0 + a1) // 2], track.thumbs[(b0 + b1) // 2]
+        ta, tb = (track.thumbs[j].astype(np.float32) for j in ((a0 + a1) // 2, (b0 + b1) // 2))
         thr = max(6.0, 0.35 * float(min(ta.std(), tb.std())))
         frac = float((np.abs(ta - tb) > thr).mean())
         if frac > 0.12:

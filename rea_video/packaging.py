@@ -1221,10 +1221,11 @@ def analyze(path: str | Path, info: VideoInfo, cuts: list[float], out_dir: Path 
 # ----------------------------------------------------------------------------- exports
 
 def _ts(t: float, sep: str = ",") -> str:
-    t = max(0.0, t)
-    h, rem = divmod(t, 3600)
-    m, s = divmod(rem, 60)
-    return f"{int(h):02d}:{int(m):02d}:{int(s):02d}{sep}{int(round((s % 1) * 1000)) % 1000:03d}"
+    ms = int(round(max(0.0, t) * 1000))  # round once, then split: 3.9996 -> 00:00:04,000 (not 03,000)
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    s, ms = divmod(ms, 1000)
+    return f"{h:02d}:{m:02d}:{s:02d}{sep}{ms:03d}"
 
 
 def to_srt(cues: list[dict], kinds=("subtitle",)) -> str:
@@ -1264,7 +1265,8 @@ def to_ass(cues: list[dict], width: int, height: int) -> str:
             tags += "\\fscx60\\fscy60\\t(0,180,\\fscx110\\fscy110)\\t(180,260,\\fscx100\\fscy100)"
         elif ak == "fade" or (c.get("anim_out") or {}).get("kind") == "fade_out":
             tags += "\\fad(200,200)"
-        text = c["text"].replace("/", "\\N")
+        # OCR text is literal: "{...}" would be read as override tags and "\\" as an escape
+        text = c["text"].replace("\\", "＼").replace("{", "｛").replace("}", "｝").replace("/", "\\N")
         events.append(f"Dialogue: {0 if c['kind'] == 'subtitle' else 1},{_ts(c['t0'], '.')[1:-1]},{_ts(c['t1'], '.')[1:-1]},{name},,0,0,0,,{{{tags}}}{text}")
     return "\n".join(head + list(styles.values()) + ["", "[Events]",
                      "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"] + events) + "\n"
@@ -1465,12 +1467,15 @@ def finalize_pack(breakdown: dict, out: Path) -> dict | None:
     d.mkdir(parents=True, exist_ok=True)
     srt = to_srt(cues)
     pack["files"] = {}
+    for stale in ("subtitles.srt", "overlays.ass"):  # a re-run with no subtitles must not keep the old export
+        (d / stale).unlink(missing_ok=True)
     if srt.strip():
         (d / "subtitles.srt").write_text(srt, encoding="utf-8")
         pack["files"]["srt"] = "packaging/subtitles.srt"
     src = breakdown["source"]
+    w, h = (src["height"], src["width"]) if src.get("rotation") in (90, 270) else (src["width"], src["height"])  # as displayed
     if cues:
-        (d / "overlays.ass").write_text(to_ass([c for c in cues if not c.get("part_of_picture")], src["width"], src["height"]), encoding="utf-8")
+        (d / "overlays.ass").write_text(to_ass([c for c in cues if not c.get("part_of_picture")], w, h), encoding="utf-8")
         pack["files"]["ass"] = "packaging/overlays.ass"
     timeline = {"text": [{k: c.get(k) for k in ("id", "kind", "kind_zh", "t0", "t1", "text", "bbox", "style", "style_zh", "anim_in",
                                                  "anim_out", "mid_motion", "follows", "part_of_picture")} for c in cues],

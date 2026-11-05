@@ -24,7 +24,7 @@ from . import aspects
 from .faces import shot_faces
 from .visual import LABEL_SHORT, shot_sheet, storyboard
 from .i18n import T, join, semi, set_lang
-from .vlm import SHOT_PROMPT, WHOLE_PROMPT, VLMClient, VLMConfig, normalize_shot_result, prompt_lang_note, shot_hints, vlm_note
+from .vlm import SHOT_PROMPT, WHOLE_PROMPT, VLMClient, VLMConfig, normalize_shot_result, normalize_whole, prompt_lang_note, shot_hints, vlm_note
 
 
 def _sha256_head(path: Path, limit: int = 64 << 20) -> str:
@@ -107,8 +107,9 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         layers = overlay_layers(ov, text, template)
         sid = f"shot_{s.index:03d}"
         shot_sheet(smp.frames, smp.frame_times, out / "shots" / f"{sid}.jpg")
-        extract_frame(video, s.start + min(0.05, s.duration / 4), out / "shots" / f"{sid}_first.jpg", width=min(1080, info.width or 1080))
-        extract_frame(video, max(s.start, s.end - min(0.08, s.duration / 4)), out / "shots" / f"{sid}_last.jpg", width=min(1080, info.width or 1080))
+        still_w = min(1080, info.display_size[0] or 1080)  # never upscale; rotated video: displayed width
+        extract_frame(video, s.start + min(0.05, s.duration / 4), out / "shots" / f"{sid}_first.jpg", width=still_w)
+        extract_frame(video, max(s.start, s.end - min(0.08, s.duration / 4)), out / "shots" / f"{sid}_last.jpg", width=still_w)
         rec = {
             "id": sid, **s.to_dict(), "features": round_floats(feats), "faces": round(faces, 3),
             "aspects": round_floats(asp), "overlay": round_floats(ov), "text": text, "layers": layers, "embedded_assets": round_floats(embedded),
@@ -162,7 +163,7 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
                 try:
                     low = cut_clip(video, 0, info.duration, out / "clips" / "whole_480p.mp4", width=480, audio=True, crf=30)
                     cuts = ", ".join(f"{r['start']:.2f}" for r in shot_records)
-                    whole = client.ask_json(WHOLE_PROMPT.format(shots=cuts) + prompt_lang_note(), [(low, "video/mp4")], max_tokens=6000)
+                    whole = normalize_whole(client.ask_json(WHOLE_PROMPT.format(shots=cuts) + prompt_lang_note(), [(low, "video/mp4")], max_tokens=6000))
                 except Exception as exc:
                     vlm_info["errors"].append(f"whole: {str(exc)[:160]}")
             asked = shot_records[:max_shots_vlm]
@@ -363,12 +364,16 @@ def _agent_review_dispute(dt: str, vt: dict | None, rv: dict | None, reviewed: b
     return None
 
 
-def finalize(breakdown: dict, out: Path, engine: str = "seedance2.0") -> dict:
+def finalize(breakdown: dict, out: Path, engine: str | None = None) -> dict:
     """(Re)classify every shot from stored features + VLM answers, plan replication,
     summarise and write breakdown.json / reports. Safe to call again after the
     classifier changes (no re-decoding)."""
     out = Path(out)
     set_lang(breakdown.get("lang", "zh"))
+    # remember the engine: apply-review / correct / eval call finalize without one and must not reset it
+    engine = breakdown["engine"] = engine or breakdown.get("engine") or "seedance2.0"
+    if breakdown.get("whole_video_vlm") is not None:  # older runs stored the raw answer
+        breakdown["whole_video_vlm"] = normalize_whole(breakdown["whole_video_vlm"])
     shot_records = breakdown["shots"]
     audio = breakdown.get("audio", {})
     prov = breakdown.get("provenance", {})

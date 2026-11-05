@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from .util import LOG, OCR_LANGS, load_env_files, read_json, setup_logging
-from .i18n import LANGS, set_lang
+from .i18n import LANGS, T, set_lang
 from .classify import LABELS
 from .vlm import vlm_note
 
@@ -20,8 +20,15 @@ def _env(args) -> None:
 
     # 不读当前目录的 .env：在别人的仓库里运行时，它可以改 VLM 地址或 CAPSULE_CINEMA_PYTHON
     files = [Path(__file__).resolve().parent.parent / ".env"]
-    env_file = getattr(args, "env_file", None) or pref("env_file")
+    explicit = getattr(args, "env_file", None)
+    env_file = explicit or pref("env_file")
     if env_file:
+        if not Path(env_file).expanduser().is_file():
+            # silently skipping it made people think the VLM was configured
+            msg = T("找不到配置文件 {p}", "env file not found: {p}", p=env_file)
+            if explicit:
+                raise SystemExit(f"rea-video: {msg}")
+            LOG.warning("%s%s", msg, T("（来自 prefs env_file）", " (from prefs env_file)"))
         files.insert(0, Path(env_file))
     loaded = load_env_files(files)
     if loaded:
@@ -151,10 +158,8 @@ def cmd_remake_plan(args) -> int:
     from .integrations.capsule_cinema import build_remake_jobs
 
     bdir = Path(args.breakdown).parent
-    from .memory import pref
-
     jobs = build_remake_jobs(read_json(Path(args.breakdown)), bdir, capsule_root=Path(args.capsule_root),
-                             engine=args.engine or pref("engine", "seedance2.0"),
+                             engine=args.engine,  # None: keep the engine chosen at decompose time
                              mode=args.mode, labels=args.labels.split(",") if args.labels else None)
     print(jobs)
     return 0
@@ -410,7 +415,7 @@ def main(argv: list[str] | None = None) -> int:
     r = sub.add_parser("remake-plan", help="为 AI 类镜头生成 capsule-cinema 复刻任务")
     r.add_argument("breakdown")
     r.add_argument("--capsule-root", default=DEFAULT_CAPSULE_ROOT)
-    r.add_argument("--engine", help="默认 prefs 里的 engine，否则 seedance2.0")
+    r.add_argument("--engine", help="换用另一个视频引擎；默认沿用拆解时的引擎")
     r.add_argument("--mode", default="first_last_frame", choices=["first_last_frame", "image_to_video", "text_to_video"])
     r.add_argument("--labels", default="", help="只复刻这些底层类别（逗号分隔），默认 ai_video,cg_3d,live_action,avatar")
     r.set_defaults(func=cmd_remake_plan)
@@ -488,10 +493,25 @@ def main(argv: list[str] | None = None) -> int:
     me.add_argument("--export-labels", metavar="YAML")
     me.set_defaults(func=cmd_memory)
 
+    for sp in sub.choices.values():  # also accept `rea-video decompose x.mp4 --env-file ...`
+        sp.add_argument("--env-file", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+
     args = ap.parse_args(argv)
     setup_logging(args.verbose)
     _env(args)
-    return args.func(args)
+    from .media import MediaError
+
+    try:
+        return args.func(args)
+    except MediaError as exc:  # missing ffmpeg / unreadable video: one line, not a traceback
+        hint = ""
+        if "not found on PATH" in str(exc):
+            hint = T("\n安装 ffmpeg：macOS `brew install ffmpeg`，Ubuntu/Debian `sudo apt install ffmpeg`",
+                     "\ninstall ffmpeg: macOS `brew install ffmpeg`, Ubuntu/Debian `sudo apt install ffmpeg`")
+        print(f"rea-video: {exc}{hint}", file=sys.stderr)
+        if args.verbose:
+            raise
+        return 2
 
 
 if __name__ == "__main__":

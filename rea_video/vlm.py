@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import re
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -106,7 +107,10 @@ def parse_json(text: str) -> dict:
     m = re.search(r"\{[\s\S]*\}", text)
     if not m:
         raise ValueError("no JSON object in VLM response")
-    return json.loads(m.group(0))
+    out = json.loads(m.group(0))
+    if not isinstance(out, dict):
+        raise ValueError("VLM answer is not a JSON object")
+    return out
 
 
 class VLMClient:
@@ -118,6 +122,7 @@ class VLMClient:
         self.cache_dir = cache_dir
         self.dead_requests = 0
         self.models = list(cfg.models)  # reordered: the last model that answered goes first
+        self._lock = threading.Lock()
         host = re.sub(r"^https?://", "", cfg.base_url).split("/")[0].rsplit("@", 1)[-1].split(":")[0]
         if cfg.base_url.lower().startswith("http://") and host not in ("localhost", "127.0.0.1", "::1", "[::1]"):
             LOG.warning("REA_VLM_BASE_URL 不是 https，API key 会明文发送到 %s", host)
@@ -135,7 +140,15 @@ class VLMClient:
                                      headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.cfg.api_key}"})
         with urllib.request.urlopen(req, timeout=self.cfg.timeout) as resp:
             data = json.loads(resp.read().decode())
-        return data["choices"][0]["message"]["content"]
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:  # e.g. "choices": [] after a safety block -> try the next model
+            raise ValueError(f"no answer in VLM response: {str(data)[:160]}") from exc
+        if isinstance(content, list):  # some gateways return content parts
+            content = "".join(p.get("text", "") for p in content if isinstance(p, dict))
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("empty VLM answer")
+        return content
 
     def ask_json(self, prompt: str, media: list[tuple[Path, str]], max_tokens: int = 4096) -> dict:
         # Use the configured order, not self.models: successful fallbacks reorder
@@ -165,9 +178,10 @@ class VLMClient:
                     if self.cache_dir:
                         (self.cache_dir / f"{key}.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
                     self.dead_requests = 0
-                    if self.models[0] != model:
-                        self.models.remove(model)
-                        self.models.insert(0, model)
+                    with self._lock:  # shots run in a thread pool
+                        if model in self.models and self.models[0] != model:
+                            self.models.remove(model)
+                            self.models.insert(0, model)
                     return out
                 except (urllib.error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError) as exc:
                     last = exc
@@ -291,8 +305,74 @@ def shot_hints(features: dict, facts: dict, det_top: str, det_prob: float) -> st
     return "; ".join(parts)
 
 
+def _sec(v) -> float | None:
+    """0.5 / "0.5" / "00:03" / "1:02.5" -> seconds; anything else -> None."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v) if v == v else None
+    if isinstance(v, str):
+        try:
+            parts = [float(x) for x in v.strip().rstrip("s").split(":")]
+        except ValueError:
+            return None
+        if 1 <= len(parts) <= 3:
+            return sum(x * 60 ** i for i, x in enumerate(reversed(parts)))
+    return None
+
+
+_TIME_KEYS = ("t", "t0", "t1", "start", "end")
+
+
+def _items(v) -> list[dict]:
+    """A list of dicts with clean time fields (bad times dropped, not crashing consumers)."""
+    out = []
+    for e in v if isinstance(v, list) else []:
+        if not isinstance(e, dict):
+            continue
+        e = dict(e)
+        for k in _TIME_KEYS:
+            if k in e:
+                sec = _sec(e[k])
+                if sec is None:
+                    del e[k]
+                else:
+                    e[k] = sec
+        out.append(e)
+    return out
+
+
+def normalize_whole(raw) -> dict | None:
+    """Coerce the whole-video answer to the shape WHOLE_PROMPT asks for, so one malformed field (a model answering
+    "narration": "none", or "t": "00:03") cannot crash finalize -- and keep crashing, since the answer is cached."""
+    if not isinstance(raw, dict):
+        return None
+    w = dict(raw)
+    for k in ("narration", "music", "subtitles", "aspects"):
+        if k in w and not isinstance(w[k], dict):
+            del w[k]
+    for k in ("segments", "sfx", "text_effects", "stickers", "characters", "scenes", "props"):
+        if k in w:
+            w[k] = _items(w[k])
+    for k, sub in (("narration", "lines"), ("music", "segments")):
+        if k in w and sub in w[k]:
+            w[k] = dict(w[k], **{sub: _items(w[k][sub])})
+    for k in ("summary", "format", "hook", "ambience", "mix", "style", "overall_production"):
+        if k in w and w[k] is not None and not isinstance(w[k], str):
+            w[k] = str(w[k])
+    if "warnings" in w and not isinstance(w["warnings"], list):
+        w["warnings"] = [str(w["warnings"])] if w["warnings"] else []
+    return w
+
+
 def normalize_shot_result(raw: dict) -> dict:
-    probs = raw.get("label_probs") or {}
+    probs = raw.get("label_probs")
+    probs = probs if isinstance(probs, dict) else {}
+    ev = raw.get("evidence")
+    if isinstance(ev, str):  # a bare string would otherwise be listed one character per line
+        raw["evidence"] = [ev] if ev.strip() else []
+    elif not isinstance(ev, list):
+        raw["evidence"] = []
     clean = {}
     for k in LABELS:
         try:

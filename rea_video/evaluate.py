@@ -201,6 +201,13 @@ def evaluate(labels_path: Path, out: Path, use_vlm: bool = False, ocr: bool = Tr
             from .probe import provenance
 
             b["provenance"] = {k: v for k, v in provenance(video_info(path)).items() if k != "tags"}  # signatures evolve
+            if not use_vlm:  # tool-only score: drop answers a previous --vlm / review / correct run left in this dir
+                for sh in b["shots"]:
+                    for k in ("vlm", "review", "user"):
+                        sh.pop(k, None)
+                b.pop("whole_video_vlm", None)
+                b.setdefault("analysis", {})["vlm"] = {"requested": False, "used": False}
+                b["analysis"].pop("review", None)
             if b["source"].get("has_audio"):  # audio analysis is cheap: always redo with current code
                 from .audio import analyze_audio
 

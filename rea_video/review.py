@@ -5,6 +5,7 @@ into the breakdown so the summary, reports and replication plan reflect what the
 from __future__ import annotations
 
 import re
+import shlex
 import time
 
 from .classify import LABEL_ZH, LABELS, top
@@ -37,7 +38,7 @@ INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画
 
 {CONFUSIONS}
 
-每个镜头要填：label_probs（8 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
+每个镜头要填：label_probs（{len(LABELS)} 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
 description（主体、动作、场景、运镜）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
 kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。
 某个镜头其实是多刀合并的（暗底图形卡和暗底口播交替时，切点分数低容易被合成一个长镜头）就加 split_suggestion：
@@ -63,6 +64,12 @@ props 道具 / 商品 / Logo（name、note、shots）；style 一句整体视觉
 - text：工具分好类的花字 / 标题 / 文字标注，分错了就在 packaging.text 里填 kind（subtitle / huazi / title / label / scene）。
 - 工具漏掉的贴纸、动图，写进 packaging.missed：{{"t0": 秒, "t1": 秒, "what": "...", "where": "画面位置"}}。"""
 
+
+
+def _tiles_cmd(video, t0: float, t1: float, every: float, out: str) -> str:
+    """Shell-ready `rea-video tiles` command (paths quoted: file names often have spaces)."""
+    return (f"rea-video tiles {shlex.quote(str(video))} --start {t0:.2f} --end {t1:.2f} --every {every:g} "
+            f"-o {shlex.quote(out)}")
 
 def _priority(rec: dict, ctx: dict) -> tuple[str, list[str]]:
     det = (rec.get("deterministic") or {}).get("probs") or {}
@@ -109,8 +116,7 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
             "hints": shot_hints(rec["features"], rec["deterministic"]["facts"], dl, dp),
             "aspects": {k: v["result"] for k, v in (rec.get("aspects") or {}).items() if v.get("result")},
             "images": {"sheet": rec["assets"]["sheet"], "first": rec["assets"]["first_frame"], "last": rec["assets"]["last_frame"]},
-            "zoom_cmd": f"rea-video tiles {video} --start {rec['start']:.2f} --end {rec['end']:.2f} --every 0.2 "
-                        f"-o {out_dir}/check_{rec['id']}.jpg",
+            "zoom_cmd": _tiles_cmd(video, rec["start"], rec["end"], 0.2, f"{out_dir}/check_{rec['id']}.jpg"),
         })
     pack = breakdown.get("packaging") or {}
     pk_tasks, pk_answers = None, None
@@ -119,8 +125,8 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
         txt = [c for c in pack.get("text_cues", []) if c["kind"] not in ("subtitle",)]
         pk_tasks = {"stickers": [{"id": st["id"], "t0": st["t0"], "t1": st["t1"], "kind_zh": st["kind_zh"], "confidence": st.get("confidence"),
                                   "in_picture": bool(st.get("in_picture")), "image": st.get("image"), "bbox": st["bbox"],
-                                  "frame_cmd": f"rea-video tiles {video} --start {st['t0']:.2f} --end {st['t1']:.2f} --every 0.25 "
-                                               f"-o {out_dir}/check_{st['id']}.jpg"} for st in sts],
+                                  "frame_cmd": _tiles_cmd(video, st["t0"], st["t1"], 0.25, f"{out_dir}/check_{st['id']}.jpg")}
+                                 for st in sts],
                     "text": [{"id": c["id"], "t0": c["t0"], "t1": c["t1"], "text": c["text"], "kind": c["kind"], "style": c.get("style_zh", "")}
                              for c in txt[:80]]}
         pk_answers = {"stickers": [{"id": st["id"], "is_overlay": None, "what": ""} for st in sts],
