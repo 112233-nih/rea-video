@@ -210,7 +210,7 @@ rea-video は動画をレンダリングしません。ショットごとに、�
 
 ## コミュニティ
 
-[linux.do](https://linux.do/)（中国語のコミュニティ）で、分析結果やリメイクのアイデアを共有してください。
+[linux.do](https://linux.do/)（中国語のコミュニティ）で、分析結果やリメイクのアイデアを共有してください。[Discord](https://discord.gg/dZj8D3GqWT) でも気軽に話しかけてください。
 
 分析してほしい動画があれば、リンクを添えて [issue](https://github.com/JuneYaooo/rea-video/issues/new?template=request_breakdown.yml) を立ててください。結果は事例として公開します。
 

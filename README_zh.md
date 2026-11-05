@@ -208,7 +208,7 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 
 ## 社区
 
-欢迎来 [linux.do](https://linux.do/) 交流使用体验、拆解案例和复刻思路。
+欢迎来 [linux.do](https://linux.do/) 交流使用体验、拆解案例和复刻思路。也可以加入 [Discord](https://discord.gg/dZj8D3GqWT) 聊天。
 
 有想拆的视频，开一个[「求拆解」issue](https://github.com/JuneYaooo/rea-video/issues/new?template=request_breakdown.yml)，贴上链接就行，拆完会发成案例。
 

@@ -210,7 +210,7 @@ The docs are in Chinese for now.
 
 ## Community
 
-Questions, breakdowns and remake ideas: [GitHub Discussions](https://github.com/JuneYaooo/rea-video/discussions). Chinese speakers can also find us on [linux.do](https://linux.do/).
+Questions, breakdowns and remake ideas: [GitHub Discussions](https://github.com/JuneYaooo/rea-video/discussions). Chat with us on [Discord](https://discord.gg/dZj8D3GqWT). Chinese speakers can also find us on [linux.do](https://linux.do/).
 
 Want a video broken down? Open a [request issue](https://github.com/JuneYaooo/rea-video/issues/new?template=request_breakdown.yml) with the link and we'll publish the result as a case.
 
