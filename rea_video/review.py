@@ -160,9 +160,15 @@ def _clean(ans: dict) -> tuple[dict | None, str | None]:
         if isinstance(e, dict) and e.get("kind") in ASSET_KINDS:
             assets.append({"kind": e["kind"], "description": str(e.get("description", "")),
                            "is_real_material": bool(e.get("is_real_material", e["kind"] != "ai_image"))})
+    sp = ans.get("split_suggestion")
+    split = ({"cuts": [float(c) for c in sp.get("cuts", [])][:12],
+              "labels": [str(x) for x in (sp.get("labels") or [])][:12],
+              "note": str(sp.get("note", ""))[:300]}
+             if isinstance(sp, dict) and sp.get("cuts") else None)
     return {"label_probs": soft, "raw_probs": {k: round(v / total, 3) for k, v in vals.items()}, "image_source": src,
             "evidence": [str(x) for x in (ans.get("evidence") or [])][:8], "description": str(ans.get("description", "")),
             "embedded_assets": assets, "replication": rep, "aspects": aspects.clean_answers(ans.get("aspects")),
+            "split_suggestion": split,
             "ai_edits": [{"kind": e["kind"], "evidence": str(e.get("evidence", ""))} for e in (ans.get("ai_edits") or [])
                          if isinstance(e, dict) and e.get("kind") in EDIT_KINDS]}, None
 

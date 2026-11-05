@@ -73,3 +73,14 @@ def test_two_of_three_beat_one_confident_model():
     # hard constraints still win: a frozen shot is never a generated video
     frozen = fuse(p(static_hold=0.6), p(ai_video=0.9), "frozen", majority="ai_video")
     assert max(frozen, key=frozen.get) == "static_hold" or frozen["ai_video"] < 0.5
+
+
+def test_split_suggestion_kept_when_valid_and_dropped_when_empty():
+    from rea_video.review import _clean
+
+    ok, err = _clean({"id": "shot_001", "label_probs": {"ai_video": 1.0},
+                      "split_suggestion": {"cuts": [12.5, 40], "labels": ["code_render", "live_action"], "note": "n"}})
+    assert err is None and ok["split_suggestion"]["cuts"] == [12.5, 40.0]
+    assert ok["split_suggestion"]["labels"] == ["code_render", "live_action"]
+    bad, err2 = _clean({"id": "shot_001", "label_probs": {"ai_video": 1.0}, "split_suggestion": {"cuts": []}})
+    assert err2 is None and not bad.get("split_suggestion")
