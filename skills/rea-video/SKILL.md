@@ -70,7 +70,8 @@ rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
    - 贴纸：标了「需要看图确认」的，看 `packaging/sticker_XX.jpg` 和 `review_tasks.json` 里的 `frame_cmd`，在 `review_answers.json` 的 `packaging.stickers` 里填 `is_overlay` 和 `what`；工具漏掉的写进 `packaging.missed`。3D / 动画 / 版式画面里突然出现的物体工具不算贴纸，你看到是后期贴的再补。
    - 花字和标签分错类时在 `packaging.text` 里改 `kind`。
    - 音效「对应画面」一列是按时间就近对齐的，没开 VLM 时补出的候选（来源 `deterministic_anchored`）实测只有约四成是真音效，写成"可能"。
-8. 如果你的判断和工具不同，以你的复核为准，在回复里写明理由；有价值的话，建议用户把这条视频加进评测集（仓库 `docs/dev/evaluation.md`）。
+8. 第 3、5、6、7 步改了 `review_answers.json` 的，改完**再跑一次** `rea-video apply-review out/ref --by <你的名字>`，否则这些修改进不了报告。
+9. 如果你的判断和工具不同，以你的复核为准，在回复里写明理由；有价值的话，建议用户把这条视频加进评测集（仓库 `docs/dev/evaluation.md`）。
 
 用户指出判错或说出长期偏好时，按 `references/memory.md` 记下来（`rea-video correct` / `rea-video prefs`）。
 
@@ -100,7 +101,7 @@ rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
 | `references/remake.md` | 复刻、对接 capsule-cinema |
 | `references/memory.md` | 记住纠正和偏好 |
 
-## 5. 不要做的事
+## 4. 不要做的事
 
 - 不要只凭画风判断。卡通 3D 风格既可能是 AI 视频，也可能是 Blender 渲染，要看形变、闪烁和几何稳定性。
 - 不要把代码渲染画面里的文字算成"叠加层"，那些文字就是画面本身。
