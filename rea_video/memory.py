@@ -114,9 +114,10 @@ def _top(p: dict | None) -> str | None:
 
 def _select(breakdown: dict, shots: str | None, start: float | None, end: float | None) -> list[dict]:
     recs = breakdown["shots"]
-    if shots in (None, "", "all") and start is None:
+    if shots in (None, "", "all") and start is None and end is None:
         return recs
-    if start is not None:
+    if start is not None or end is not None:
+        start = start if start is not None else 0.0
         e = end if end is not None else breakdown["source"]["duration"]
         return [r for r in recs if min(r["end"], e) - max(r["start"], start) > 0.5 * r["duration"]]
     want = set()
