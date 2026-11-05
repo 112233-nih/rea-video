@@ -233,6 +233,11 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
                     "Per-frame sharpness oscillates periodically (period {p} frames, correlation {ac:.2f}): the footage was frame-interpolated / frame-rate converted from a lower source rate",
                     p=f.get('sharp_period'), ac=f.get('sharp_period_ac', 0)))
     facts["pulldown"] = pulldown
+    # this shot's own cadence: a 30 fps file whose frames never repeat was captured at 30 fps (phones) rather than
+    # generated at 24 and pulled up. Per shot, unlike ctx["native30"], so a mixed edit (AI opener + phone footage)
+    # keeps the signature on the filmed shots. Platform re-encodes add a GOP sharpness rhythm, so that cue is skipped there.
+    facts["native_cadence"] = bool(fps and 29 <= fps <= 31 and dup < 0.02 and not pulldown
+                                   and (ctx.get("transcoded") or f.get("sharp_period_ac", 0) < 0.45))
     if pulldown:
         ev.append(T("重复帧呈 {pd} 规律（{dup:.0%}，周期 {per}）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材",
                     "Duplicate frames follow a {pd} pattern ({dup:.0%}, period {per}): a 24/25fps source transcoded up, typical of AI-generated video, 3D / animation renders or cinema footage",

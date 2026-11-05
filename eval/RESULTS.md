@@ -367,3 +367,35 @@ rea-video --env-file $CAPSULE_CINEMA_ROOT/.env eval eval/labels.yaml -o out/eval
 - 两段即梦成片文件里没有 AIGC 标识，抖音接口的 `show_ai_corner` 也是 false；认出 AI 靠的是画面里的即梦水印和礼盒英文乱码。
 
 复现：`rea-video eval eval/daihuo.yaml -o out/eval_daihuo`（工具）、`--vlm -o out/eval_daihuo_vlm`（Gemini）；agent 复核的结果是把 `rea-video apply-review` 后的输出目录复制到 `out/eval_daihuo_review/<id>/` 再 `eval --vlm` 复用。
+
+
+## 2026-11-04：混合结构视频里，看图复核的实拍判断按镜头放行（issue #8）
+
+issue #8 的口红带货片（抖音转码，HEVC 1080x1920 30fps，98 秒 38 镜）：AI 猫店员开场 23 秒（24→30 重复帧）+ 2 秒促销版式卡 + 75 秒真人试色素材（没有重复帧）。工具把真人部分全判成 AI 低置信，agent 看图复核判实拍后**一个都没改**：`_vlm_gate` 在转码视频上只认整片的 `native30`，而整片因为混了 AI 开场只有 64% 时长原生 30fps（阈值 70%），于是「转码 24fps 素材不改实拍」这条挡住了所有镜头，报告写成「AI 86%」、复刻方案给了 20 个生成单元。
+
+改动：
+
+- `classify.deterministic` 新增逐镜 `facts["native_cadence"]`：30fps 文件里这一镜 `dup_ratio < 0.02`、没有 pulldown（转码文件不看 GOP 清晰度周期）。只是事实，不参与打分。
+- `pipeline._vlm_gate`：转码视频上看图判实拍时，整片 `native30` 或**这一镜** `native_cadence` 二者有一即放行；另外工具前三名都不到 0.4、且看图类别只比次选差 ≤0.08 时（唇部微距没有人脸，工具给 3D 0.35 / AI 0.27 / 实拍 0.22），看图结果也计入。
+- `pipeline._ai_or_live_doubt`：实拍「待确认」文案按这一镜有没有重复帧区分，镜头有相机节奏且看图判实拍（≥0.5）时不再标待确认。
+- 这条视频并入后：实拍 75% + AI 25%，改判 31 镜；残留 #4 促销卡（2 秒）仍判 AI（工具 0.46，看图的版式类不在前两名）。
+
+回归（重新解码；labels / holdout2 只剩本机有文件的 7 / 3 条，capsule-cinema 的产出已不在）：
+
+| 集合 | 只用工具 | 说明 |
+|---|---|---|
+| labels（7 条） | 1.000 | 真实素材 0.958，与改前逐条一致 |
+| holdout（7 条） | 0.995 | lulukong_b 0.962，与改前一致 |
+| holdout2（3 条） | 0.995 | — |
+| articles（10 条） | 0.886 | 与 11-02 一致 |
+| koubo（2 条） | 0.755 | 0.51 / 0.99，与改前一致 |
+| daihuo（2 条） | 0.464 | 与 11-04 一致 |
+
+只用工具的分数不受影响（新事实不参与打分）。用缓存的看图答案重新融合 daihuo：
+
+| 组合 | daihuo_unboxing | daihuo_ai_tutorial | 真实素材 |
+|---|---|---|---|
+| + Gemini VLM（改前 → 改后） | 96.9% → 96.9% | 22.9% → **37.2%** | 86.8% → **92.6%** |
+| + agent 看图复核 | 97.4% → 97.4% | 97.7% → 97.7% | 97.5% → 97.5% |
+
+教程片里「相机拍真实手机屏幕」的镜头有一部分因为镜头自身没有重复帧被 Gemini 的实拍判断纠回来了，剩下的仍是「工具判 3D、看图判实拍」跟了工具（待做）。issue #8 的视频作者未勾选公开，没有加进评测集。

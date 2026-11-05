@@ -227,8 +227,11 @@ def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict, seen_live
                      "AI or 24p camera footage, to confirm: only frame-rate evidence (24fps source) and no AIGC label, needs an image reader")
     if not facts.get("transcode_degraded"):
         return None
-    if label == "live_action" and vctx.get("native30") and not facts.get("pulldown"):
-        return None
+    if label == "live_action" and not facts.get("pulldown"):
+        if vctx.get("native30") or (facts.get("native_cadence") and seen_live >= 0.5):
+            return None  # camera cadence on the file, or on this shot plus an image reader that saw filmed footage
+        return T("实拍还是 AI 待确认：平台转码抹掉了噪声证据，这一镜没有 24fps 源的重复帧，但整片不是原生 30fps，需要看图确认",
+                 "Live action or AI, to confirm: the platform transcode erased the noise cues; this shot carries no 24fps-source duplicate frames, but the file is not native 30fps throughout, needs an image reader")
     if label == "ai_video":
         return T("实拍 / 定格还是 AI 待确认：没有 AIGC 标识；24fps 源痕迹在 AI、定格动画、电影机拍摄里都会出现",
                  "Live action / stop motion or AI, to confirm: no AIGC label; 24fps-source marks appear in AI video, stop motion and cinema-camera footage alike")
@@ -290,14 +293,22 @@ def _vlm_gate(rec: dict, vprobs: dict | None, vctx: dict) -> dict | None:
               and bool(facts.get("big_face") or facts.get("lowlight") or facts.get("face_area", 0) >= RULES["big_face"]["area"]))
     if v in UNMEASURED:  # 2D animation / stop motion: the tools cannot score them, so they cannot back them either
         return vprobs
-    if v not in (d, ranked[1][0]) and not person:  # it must back one of the tools' two best guesses
+    # the tools are undecided when no label reaches 0.4 and the reader's pick trails the runner-up by a hair:
+    # a lip macro with no face found scores 3D 0.35 / AI 0.27 / live 0.22 (issue #8 #22-#27), which is no call
+    undecided = dp < 0.4 and vprobs.get(v, 0.0) > 0 and rec["deterministic"]["probs"].get(v, 0.0) >= 0.15 \
+        and sp - rec["deterministic"]["probs"].get(v, 0.0) <= 0.08
+    if v not in (d, ranked[1][0]) and not person and not undecided:  # it must back one of the tools' two best guesses
         return None
     # the tools' confidence only protects the AI / live axis (frame-rate evidence), not a "rendered" texture call
     if (d in AI_LIVE_AXIS or v in AI_LIVE_AXIS) and not (person and d not in AI_LIVE_AXIS):
         if dp >= 0.65 and dp - sp >= 0.25:  # tools are sure: frame-rate evidence beats "looks real / looks like a presenter"
             return None
-    if v == "live_action" and facts.get("transcode_degraded") and not vctx.get("native30"):
-        return None  # transcoded 24fps-source footage never becomes live action on looks alone
+    if (v == "live_action" and facts.get("transcode_degraded") and not vctx.get("native30")
+            and not facts.get("native_cadence")):
+        # transcoded 24fps-source footage never becomes live action on looks alone; a shot that itself carries
+        # no duplicate frames in a 30 fps file has the camera cadence, so the reader's eye decides there
+        # (issue #8 lipstick ad: AI opener with pulldown + 75 s of phone footage without, whole-video native30 False)
+        return None
     return vprobs
 
 

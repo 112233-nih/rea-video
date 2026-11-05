@@ -113,8 +113,10 @@ def test_single_image_reader_cannot_flip_ai_vs_live_axis():
     assert _vlm_gate(rec(p(ai_video=0.9, avatar=0.03)), vlm_avatar, {}) is None          # tools sure + not in top-2
     assert _vlm_gate(rec(p(ai_video=0.74, cg_3d=0.1)), p(cg_3d=0.95), {}) is None         # tools sure on AI axis
     assert _vlm_gate(rec(p(cg_3d=0.56, code_render=0.36)), p(code_render=0.8), {})        # 3D vs code: VLM helps
-    assert _vlm_gate(rec(p(ai_video=0.46, live_action=0.38), {"transcode_degraded": True}),
+    assert _vlm_gate(rec(p(ai_video=0.46, live_action=0.38), {"transcode_degraded": True, "pulldown": "24→30"}),
                      p(live_action=0.85), {"native30": False}) is None                    # 24fps transcode never -> live
+    assert _vlm_gate(rec(p(ai_video=0.46, live_action=0.38), {"transcode_degraded": True, "native_cadence": True}),
+                     p(live_action=0.85), {"native30": False})                            # this shot has camera cadence: the reader decides
     assert _vlm_gate(rec(p(ai_video=0.46, live_action=0.38), {"transcode_degraded": True}),
                      p(live_action=0.85), {"native30": True})
     agent_only = {"deterministic": {"probs": p(ai_video=0.9, avatar=0.03), "facts": {}}, "review": {"label_probs": vlm_avatar}}
