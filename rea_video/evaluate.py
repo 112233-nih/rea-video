@@ -156,7 +156,7 @@ def packaging_check(truth_path: str | Path, pack: dict, sfx: list[dict] | None =
             cand = [c for c in others if overlap(g["t0"], g["t1"], c["t0"], c["t1"]) > 0 and _similar(g["text"], c["text"]) >= 0.5]
             if cand:
                 found += 1
-                kind_ok += any(c["kind"] == kind for c in cand)
+                kind_ok += any(c["kind"] == kind or (kind == "label" and c["kind"] == "counter") for c in cand)
         out[key] = {"truth": len(items), "found": found, "kind_ok": kind_ok}
     out["image_stickers_false"] = sum(1 for st in pack.get("stickers", []) if not st.get("in_picture"))
     if sfx is not None and sfx_truth is not None:

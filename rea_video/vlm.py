@@ -200,7 +200,7 @@ SHOT_PROMPT = """你是视频制作逆向工程专家。判断这个镜头的「
 - ai_video：AI 生成视频（文生/图生/参考生视频）。常见破绽：物体或手指形变、纹理"沸腾"闪烁、物理不合理、文字乱码、背景人物畸形、过于完美的光线与皮肤、动作缓慢漂浮、镜头结尾定格
 - avatar：数字人口播（一张人像被音频驱动说话，嘴型驱动、头部轻微摆动、身体几乎不动）
 - cg_3d：传统 3D 渲染（Blender/C4D/UE），几何干净、材质规则、光影一致、运动精确无形变
-- code_render：代码/模板渲染的 2D 画面（MG 动效、文字排版、UI、图表、PPT 式卡片）
+- code_render：代码/模板渲染的画面（MG 动效、文字排版、UI、图表、PPT 式卡片、渐变/毛玻璃/霓虹辉光背景、分形和着色器生成的色场，以及暗底上的粒子/点云/线框数据可视化：Remotion/HTML/Canvas、Three.js、Manim、AE Plexus/Trapcode 这类按参数生成的图形）
 - screen_capture：屏幕录制或网页/应用截图（真实界面元素、光标、滚动）
 - still_motion：一张静态图片做推拉摇移（Ken Burns），画面内部无独立运动
 - static_hold：静帧定格（图片或卡片停留不动）
@@ -215,7 +215,9 @@ SHOT_PROMPT = """你是视频制作逆向工程专家。判断这个镜头的「
 
 注意区分：卡通/3D 风格的 AI 视频（形变、闪烁、不精确）与真正的 3D 渲染（几何稳定、精确）；
 AI 生成的写实视频与实拍（看手、文字、背景细节、物理）；AI 生成的动画风视频（形变、线条游移）与真正的 2D 动画（线条稳定、按帧精确）；
-AI 仿定格风格（材质在帧间漂移）与真正的定格动画（同一实物、光照不变、只有逐帧位移）。
+AI 仿定格风格（材质在帧间漂移）与真正的定格动画（同一实物、光照不变、只有逐帧位移）；
+暗底发光粒子拼成的器官、人体、地球、分子等科普画面是代码渲染（粒子系统），不是 3D 实体模型，也不是 AI 视频或实拍：亮部由成千上万个点或细线组成、没有连续的明暗表面，常配 HUD 式章节牌和引线标注。
+代码绘制的画面没有材质纹理：大面积平滑渐变、纯色块、辉光、毛玻璃卡片、CSS 3D 翻转卡片都是代码渲染，不是 3D 渲染（3D 渲染有布料/木纹/金属等材质、有投影和物体间的光影关系）；分形缩放、plasma 之类彩虹色场是着色器生成，不是实拍或 AI 视频。
 
 实拍（或定格）画面如果被 AI 二次加工过，在 ai_edits 里逐个列出：换脸、对口型/改台词、整段风格化重绘、AI 换装、抠像换背景/绿幕、
 加删换物体、美颜瘦脸。依据要写看得到的破绽（脸部边缘、嘴型和下巴不跟、头发与背景交界、光线不一致）。没有就写 []。
@@ -229,7 +231,7 @@ AI 仿定格风格（材质在帧间漂移）与真正的定格动画（同一�
   "image_source": "ai_image|photo|graphic|screenshot|unknown",
   "evidence": ["具体可见证据，尽量指明位置/时间"],
   "generator_guess": "可能的生成模型或工具（如 Seedance/Kling/Veo/Hailuo/Blender/Remotion/剪映 模板），无法判断写 unknown",
-  "description": "镜头内容：主体、动作、场景、景别、运镜、光线",
+  "description": "镜头内容：主体、动作、场景、景别、运镜、光线；代码渲染画面写清图形元素是什么（粒子/渐变/图表/卡片/文字/矢量图形）、拼成什么形状、颜色、怎么动（进场方式、流向、变形、镜头推/环绕）、文字和数字组件在哪",
   "shot_size": "特写|近景|中景|全景|远景",
   "camera_move": "固定|推|拉|摇|移|跟|环绕|手持",
   "style": "画风/质感关键词",
@@ -300,7 +302,7 @@ WHOLE_PROMPT = WHOLE_PROMPT.replace("<<VIDEO_ASPECTS>>", _aspect_block(video=Tru
 def shot_hints(features: dict, facts: dict, det_top: str, det_prob: float) -> str:
     keys = ["noise_sigma", "temporal_noise", "flat_ratio", "palette95", "dup_ratio", "camera", "kenburns_score", "local_motion_ratio"]
     parts = [f"{k}={features.get(k):.3g}" if isinstance(features.get(k), float) else f"{k}={features.get(k)}" for k in keys]
-    parts.append(f"temporal_family={facts.get('temporal_family')}, pulldown={facts.get('pulldown')}, graphic_score={facts.get('graphic_score')}")
+    parts.append(f"temporal_family={facts.get('temporal_family')}, pulldown={facts.get('pulldown')}, graphic_score={facts.get('graphic_score')}, fine_dark={facts.get('fine_dark')}, vector_fill={facts.get('vector_fill')}")
     parts.append(f"确定性初判={det_top} ({det_prob:.0%})")
     return "; ".join(parts)
 

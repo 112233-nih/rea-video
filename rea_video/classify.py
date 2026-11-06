@@ -89,6 +89,25 @@ RULES = {
     "ui_text": {"height": 0.02, "mid": 4.5, "width": 0.7},
     # an avatar is a fixed frame; a moving / shaking camera argues for someone filming
     "avatar_moving_camera": 0.3,
+    # fine graphics on black (particles, point clouds, thin lines, small text): the lit part has almost no gently
+    # shaded pixels and many small bright peaks. Eval photo / 3D / AI frames on dark ground keep lit_smooth >= 0.47
+    # and lit_peaks <= 10; a particle explainer video sits at lit_smooth 0.01-0.22, lit_peaks 5-67
+    "fine_dark": {"dark": 0.4, "smooth": 0.3, "peaks": 4.0, "lit_max": 0.4, "lit_min": 0.002},
+    # thin dark lines / dots on a light ground: fine_dark on the inverted picture, with a looser smoothness bound
+    # (anti-aliased dark strokes shade more than glowing dots)
+    "fine_light": {"smooth": 0.35},
+    # pictures made of vector fills, gradients and glows (no material texture). tex_fine = share of pixels with
+    # fine detail left after a median filter and removing the smooth component (high-pass), so gradients and glows
+    # count as zero and light film grain is mostly removed. Eval photo / AI shots >= 0.12 except one compressed
+    # night street shot at 0.066; Blender plush >= 0.073 (plain walls, nearly colourless: sat_p90 <= 0.35); code
+    # gradients 0.006-0.04, glass / neon / dashboards 0.03-0.13. The gradient test cuts at 0.06 and needs colour,
+    # the colour-field and neon tests cut at 0.12 and need saturated colour. dark_guard: a rendered dark ground is
+    # exactly flat (dark_flat >= 0.85 in the code sets); night footage keeps grain (dark_flat <= 0.77).
+    # Procedural colour fields (fractals, shaders) are textured but almost all vivid (> 0.9) and either rainbow
+    # (plasma: 8 hue bands) or very cleanly curving (fractal zoom 0.93). Vivid AI cartoons (capybara / lulukong in
+    # holdout) reach vivid 0.97 but keep 2-3 hue bands and grad_clean <= 0.86
+    "vector_fill": {"tex": 0.06, "grad": 0.12, "sat": 0.3, "vivid": 0.3, "vivid_tex": 0.12, "dark_flat": 0.8,
+                    "neon_dark": 0.6, "neon_sat": 0.8, "neon_tex": 0.12, "rainbow": 0.85, "hues": 4.5, "clean": 0.9},
 }
 
 
@@ -186,6 +205,63 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
                     "A face covers {area:.0%} of the frame and appears in {faces:.0%} of sampled frames: a close-up of a person, flat colour blocks mostly come from walls / clothing, rendered-texture cues down-weighted",
                     area=f.get('face_area', 0), faces=faces))
         graphic *= bf["graphic_factor"]
+    fd = RULES["fine_dark"]
+    fine_dark = 0.0
+    if fd["lit_min"] < f.get("lit_ratio", 0.0):
+        fine_dark = (_sig((f.get("dark_ratio", 0.0) - fd["dark"]) / 0.05) * _sig((fd["smooth"] - f.get("lit_smooth", 1.0)) / 0.05)
+                     * _sig((f.get("lit_peaks", 0.0) - fd["peaks"]) / 1.0) * _sig((fd["lit_max"] - f.get("lit_ratio", 0.0)) / 0.04))
+    facts["fine_dark"] = round(fine_dark, 3)
+    if fine_dark > 0.5:
+        ev.append(T("暗底上的亮部几乎全是细碎亮点/细线（亮部平滑过渡只占 {sm:.0%}，每百个亮像素 {pk:.0f} 个亮峰）：粒子/点云/线框类图形，"
+                    "不是有明暗过渡的实拍、3D 表面或 AI 画面",
+                    "On a dark ground the lit part is almost all fine dots / thin lines (only {sm:.0%} of lit pixels shade gently, "
+                    "{pk:.0f} bright peaks per 100 lit pixels): particle / point-cloud / wireframe graphics, not a shaded photo, 3D surface or AI picture",
+                    sm=f.get("lit_smooth", 0.0), pk=f.get("lit_peaks", 0.0)))
+        graphic = max(graphic, fine_dark)
+    # the same on a light ground: thin dark lines / dots (line art, generative ink, dot matrices). Pages of small text
+    # are left to the screenshot cues (RULES["ui_text"]), they are a document rather than line art
+    ut = RULES["ui_text"]
+    small_lines = sum(1 for tr in (text or {}).get("tracks", []) if tr.get("text_height", 1.0) < ut["height"])
+    fl = RULES["fine_light"]
+    fine_light = 0.0
+    if fd["lit_min"] < f.get("ink_ratio", 0.0):
+        fine_light = (_sig((f.get("light_ratio", 0.0) - fd["dark"]) / 0.05) * _sig((fl["smooth"] - f.get("ink_smooth", 1.0)) / 0.05)
+                      * _sig((f.get("ink_peaks", 0.0) - fd["peaks"]) / 1.0) * _sig((fd["lit_max"] - f.get("ink_ratio", 0.0)) / 0.04)
+                      * (1.0 - _sig((small_lines - ut["mid"]) / ut["width"])))
+    facts["fine_light"] = round(fine_light, 3)
+    if fine_light > 0.5:
+        ev.append(T("浅色底上的深色部分几乎全是细线/细点（平滑过渡只占 {sm:.0%}）：线稿、生成式线条或点阵图形，不是有明暗的实拍或 3D 表面",
+                    "On a light ground the dark part is almost all thin lines / dots (only {sm:.0%} shade gently): line art, generative strokes "
+                    "or dot graphics, not a shaded photo or 3D surface", sm=f.get("ink_smooth", 0.0)))
+        graphic = max(graphic, fine_light)
+    vf = RULES["vector_fill"]
+    tex = f.get("tex_fine", 1.0)
+    # a rendered dark ground is one exact colour; dark parts of night footage keep grain after transcoding
+    dark_guard = 1.0 - min(1.0, f.get("dark_ratio", 0.0) / 0.3) * (1.0 - _sig((f.get("dark_flat", 0.0) - vf["dark_flat"]) / 0.03))
+    vec_parts = {
+        # smooth coloured gradients with no texture at all (mesh-gradient backgrounds, CSS cards, UI)
+        "gradient": _sig((vf["tex"] - tex) / 0.01) * _sig((f.get("grad_share", 0.0) - vf["grad"]) / 0.04)
+                    * _sig((f.get("sat_p90", 0.0) - vf["sat"]) / 0.06),
+        # large saturated colour fields with little texture (flat illustration, glassmorphism, brand colour blocks)
+        "colour_fields": _sig((f.get("vivid", 0.0) - vf["vivid"]) / 0.08) * _sig((vf["vivid_tex"] - tex) / 0.02),
+        # saturated glow on a dark ground (neon text, glowing lines)
+        "neon": _sig((f.get("dark_ratio", 0.0) - vf["neon_dark"]) / 0.08) * _sig((f.get("sat_p90", 0.0) - vf["neon_sat"]) / 0.05)
+                * _sig((vf["neon_tex"] - tex) / 0.02),
+        # procedural rainbow colour fields (fractal zooms, plasma / noise shaders)
+        "procedural": _sig((f.get("vivid", 0.0) - vf["rainbow"]) / 0.02)
+                      * max(_sig((f.get("hue_n", 0.0) - vf["hues"]) / 0.3), _sig((f.get("grad_clean", 0.0) - vf["clean"]) / 0.01)),
+    }
+    vector = max(vec_parts.values()) * dark_guard * (1.0 - (0.8 if big_face else 0.0))
+    facts["vector_fill"] = round(vector, 3)
+    kind = max(vec_parts, key=vec_parts.get)
+    facts["vector_kind"] = kind if vector > 0.5 else None
+    if vector > 0.5:
+        what = {"gradient": T("平滑彩色渐变", "smooth colour gradients"), "colour_fields": T("大块饱和纯色", "large saturated colour fields"),
+                "neon": T("暗底上的饱和辉光", "saturated glow on a dark ground"), "procedural": T("程序生成的彩虹色场（分形/着色器）", "procedural rainbow colour fields (fractal / shader)")}[kind]
+        ev.append(T("画面由{what}构成、几乎没有材质纹理（细纹理像素 {tex:.0%}；实拍、AI 和 3D 渲染的布料/皮肤/噪点都会留下纹理）：代码绘制的矢量/渐变图形",
+                    "The picture is {what} with almost no material texture ({tex:.0%} fine-texture pixels; footage, AI and 3D renders keep fabric / skin / noise texture): vector / gradient graphics drawn by code",
+                    what=what, tex=tex))
+        graphic = max(graphic, vector)
     # (overlay text is a separate layer, so OCR coverage does not count toward the base)
     photo = 1.0 - graphic
     # fine high-frequency detail on flat ground = small text / UI (screenshots, docs, code cards)
@@ -309,7 +385,8 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
         s["code_render"] += 1.6 * graphic * (1 + 0.5 * rsb) * (1 - 0.5 * text_like * _sig((0.12 - f.get("saturation", 0.3)) / 0.04))
         s["screen_capture"] += 1.5 * graphic * text_like * (0.3 + _sig((0.12 - f.get("saturation", 0.3)) / 0.04))
         s["static_hold"] += 0.5 * photo
-        s["cg_3d"] += 0.4 * graphic * (1 - text_like)
+        s["cg_3d"] += 0.4 * graphic * (1 - text_like) * (1 - 0.8 * max(fine_dark, fine_light, vector))
+        s["code_render"] += 1.2 * graphic * max(fine_dark, fine_light, vector)
         s["ai_video"] += 0.8 * photo * (1.4 if pulldown else 1.0)
         s["live_action"] += 0.3 * photo * live_hint
     else:
@@ -318,8 +395,9 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
         # cards, dark editors), not shaded 3D renders: shading spreads colours, product 3D is coloured
         ui_gray = _sig((0.04 - f.get("saturation", 0.3)) / 0.01) * _sig((20 - pal) / 3)
         facts["ui_gray"] = round(ui_gray, 3)
-        s["code_render"] += 1.5 * graphic * (0.3 + 1.2 * rsb + 1.0 * text_like + 0.8 * ui_gray) * axis_f
-        s["cg_3d"] += 1.5 * graphic * max(0.0, 1.1 - rsb - 0.8 * text_like) * (1 - 0.8 * ui_gray) * (1 - 0.8 * ui_text)
+        code_cue = max(fine_dark, fine_light, vector)
+        s["code_render"] += 1.5 * graphic * (0.3 + 1.2 * rsb + 1.0 * text_like + 0.8 * ui_gray + 1.2 * code_cue) * axis_f
+        s["cg_3d"] += 1.5 * graphic * max(0.0, 1.1 - rsb - 0.8 * text_like) * (1 - 0.8 * ui_gray) * (1 - 0.8 * ui_text) * (1 - 0.8 * code_cue)
         s["screen_capture"] += 1.2 * graphic * ui_text
         if ui_gray > 0.5 and graphic > 0.6:
             ev.append(T("画面几乎无彩色（饱和度 {sat:.2f}）、只用 {pal} 种颜色：界面/文档类平面画面，不是有光影的 3D 渲染",

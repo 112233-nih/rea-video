@@ -18,6 +18,7 @@ from .media import cut_clip, extract_frame, require_tools, video_info
 from .overlay import ocr_frames, persistent_template, static_overlays, summarize_text
 from .plan import Planner
 from .probe import provenance
+from .motion import element_crops, motion_events, palette, strip_frames
 from .shots import build_track, detect_shots
 from .util import LOG, fmt_time, round_floats, write_json
 from . import aspects
@@ -110,6 +111,18 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         still_w = min(1080, info.display_size[0] or 1080)  # never upscale; rotated video: displayed width
         extract_frame(video, s.start + min(0.05, s.duration / 4), out / "shots" / f"{sid}_first.jpg", width=still_w)
         extract_frame(video, max(s.start, s.end - min(0.08, s.duration / 4)), out / "shots" / f"{sid}_last.jpg", width=still_w)
+        motion = None
+        if top(probs)[0] in ("code_render", "screen_capture") or facts.get("graphic_score", 0.0) >= 0.5:
+            # rendered picture: element-level motion timeline, key-frame strip and hex palette for a code remake
+            motion = motion_events(video, info, s.start, s.duration, text.get("items"))
+            sframes, stimes = strip_frames(video, info, s.start, s.duration)
+            if sframes:
+                shot_sheet(sframes, stimes, out / "shots" / f"{sid}_strip.jpg", n=len(sframes), cell_w=200)
+                motion["palette"] = palette(sframes[-1])
+                motion["palette_start"] = palette(sframes[0])
+            sheet = element_crops(video, info, s.start, s.end, motion, out / "shots", sid, min(1080, info.display_size[0] or 1080))
+            if sheet:
+                motion["elements_sheet"] = sheet
         rec = {
             "id": sid, **s.to_dict(), "features": round_floats(feats), "faces": round(faces, 3),
             "aspects": round_floats(asp), "overlay": round_floats(ov), "text": text, "layers": layers, "embedded_assets": round_floats(embedded),
@@ -117,6 +130,10 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
             "assets": {"sheet": f"shots/{sid}.jpg", "first_frame": f"shots/{sid}_first.jpg", "last_frame": f"shots/{sid}_last.jpg"},
             "vlm": None,
         }
+        if motion is not None:
+            rec["motion"] = round_floats(motion)
+            if (out / "shots" / f"{sid}_strip.jpg").exists():
+                rec["assets"]["strip"] = f"shots/{sid}_strip.jpg"
         shot_records.append(rec)
         dl, dp = top(probs)
         LOG.info("%s %s-%s det=%s(%.0f%%) %s", sid, fmt_time(s.start), fmt_time(s.end), dl, dp * 100, facts.get("temporal_family"))
@@ -298,7 +315,11 @@ def _vlm_gate(rec: dict, vprobs: dict | None, vctx: dict) -> dict | None:
     # a lip macro with no face found scores 3D 0.35 / AI 0.27 / live 0.22 (issue #8 #22-#27), which is no call
     undecided = dp < 0.4 and vprobs.get(v, 0.0) > 0 and rec["deterministic"]["probs"].get(v, 0.0) >= 0.15 \
         and sp - rec["deterministic"]["probs"].get(v, 0.0) <= 0.08
-    if v not in (d, ranked[1][0]) and not person and not undecided:  # it must back one of the tools' two best guesses
+    # inside the tools' first group (3D vs code render: both "rendered") the reader picks the subtype; the tools
+    # only measured "rendered texture", which is the part the reader cannot see wrong (particle explainer #5 / #21:
+    # tools 3D then AI, reader code render)
+    same_group = group_of(v) == group_of(d) == "rendered"
+    if v not in (d, ranked[1][0]) and not person and not undecided and not same_group:  # it must back one of the tools' two best guesses
         return None
     # the tools' confidence only protects the AI / live axis (frame-rate evidence), not a "rendered" texture call
     if (d in AI_LIVE_AXIS or v in AI_LIVE_AXIS) and not (person and d not in AI_LIVE_AXIS):

@@ -308,13 +308,13 @@ class Lighting(Aspect):
                     kinds.append(s["kind"])
         if not per:
             return {}
-        out = {"subject": max(set(kinds), key=kinds.count), "frames": len(per)}
+        out = {"subject": max(dict.fromkeys(kinds), key=kinds.count), "frames": len(per)}
         for k in MEASURES:
             vals = [m[k] for m in per if m.get(k) is not None]
             if vals:
                 out[k] = round(float(np.median(vals)), 3)
         sides = [m["key_side"] for m in per]
-        out["key_side"] = max(set(sides), key=sides.count)
+        out["key_side"] = max(dict.fromkeys(sides), key=sides.count)
         return out
 
     def interpret(self, shot: dict) -> dict:

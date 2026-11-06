@@ -43,8 +43,9 @@ SMALL_W = 160            # sticker search resolution
 CELL = 8                 # sticker search cell size (px at SMALL_W)
 MIN_CONF = 0.6
 
-KIND_ZH = LangDict({"subtitle": "字幕", "huazi": "花字", "title": "标题", "label": "文字标注", "scene": "画面里的字"},
-                   en={"subtitle": "subtitle", "huazi": "styled text", "title": "title", "label": "text label", "scene": "text in the scene"})
+KIND_ZH = LangDict({"subtitle": "字幕", "huazi": "花字", "title": "标题", "label": "文字标注", "counter": "数字计数", "scene": "画面里的字"},
+                   en={"subtitle": "subtitle", "huazi": "styled text", "title": "title", "label": "text label", "counter": "counter",
+                       "scene": "text in the scene"})
 ANIM_ZH = LangDict({"cut": "直接出现", "pop": "缩放弹出", "fade": "淡入", "slide": "滑入", "reveal": "逐字出现",
                     "cut_out": "直接消失", "pop_out": "缩小消失", "fade_out": "淡出", "slide_out": "滑出"},
                    en={"cut": "hard in", "pop": "scale pop", "fade": "fade in", "slide": "slide in", "reveal": "type-on",
@@ -100,11 +101,15 @@ def _hex(bgr) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def text_style(frame: np.ndarray, box: tuple[int, int, int, int]) -> dict | None:
+def text_style(frame: np.ndarray, box: tuple[int, int, int, int], rendered: bool = False) -> dict | None:
     """Colours and decoration of one OCR'd text line. box = (x0, y0, x1, y1) in frame pixels.
     Glyph fill = colour blobs inside the box that do not reach the ring around it (letters are closed shapes;
     the background between them connects to the outside). Stroke = the colour that surrounds those blobs, when
-    it differs from the background. Works on busy backgrounds where the fill colour also occurs in the scene."""
+    it differs from the background. Works on busy backgrounds where the fill colour also occurs in the scene.
+    rendered=True: the text sits on a code-rendered / recorded picture (plain or gradient grounds), where the ground
+    showing through closed glyph counters is read as the fill or a highlight and anti-aliasing as an outline; those
+    readings are corrected. Not used on footage / AI pictures, where white subtitles with dark outlines over bright
+    scenes would be mistaken for dark text."""
     H, W = frame.shape[:2]
     x0, y0, x1, y1 = box
     lh = max(4, y1 - y0)
@@ -128,6 +133,7 @@ def text_style(frame: np.ndarray, box: tuple[int, int, int, int]) -> dict | None
                           ring_px[rng.choice(len(ring_px), min(len(ring_px), 1000), replace=False)]])
     k = 6
     crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
+    cv2.setRNGSeed(0)  # k-means++ seeding draws from OpenCV's per-thread RNG: fix it so reruns give the same colours
     _, _, centers = cv2.kmeans(pts, k, None, crit, 2, cv2.KMEANS_PP_CENTERS)
     lbl = np.argmin(((lab[:, None, :] - centers[None]) ** 2).sum(-1), axis=1).reshape(ch, cw)
     # enclosed pixels per colour: connected blobs that stay inside the box
@@ -191,8 +197,19 @@ def text_style(frame: np.ndarray, box: tuple[int, int, int, int]) -> dict | None
     if s_c is not None and neigh[s_c] >= 0.4 and neigh[s_c] > 2.0 * ring_share[s_c]:
         sm = (lbl == s_c) & cv2.dilate(fm.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool) & ~fm
         perim = max(1.0, float((d1 & ~fm).sum()))
-        out.update(stroke=_hex(bgr_of(s_c)), stroke_name=color_name(bgr_of(s_c)),
-                   stroke_ratio=round(float(sm.sum()) / perim / lh, 3))
+        ratio = float(sm.sum()) / perim / lh
+        bg_c = int(np.argmax(ring_share))
+        if rendered and ring_share[bg_c] >= 0.6 and contrast(fill, bg_c) < 12 and contrast(s_c, bg_c) > 60:
+            # the "fill" is the background showing through closed glyph counters (口, 日, 回) and the "outline" is
+            # the text itself: dark text on a plain light ground (or the reverse)
+            fill = s_c
+            fm = enc_mask == fill if (enc_mask == s_c).any() else (lbl == s_c)
+            out.update(fill=_hex(bgr_of(fill)), fill_name=color_name(bgr_of(fill)))
+            s_c = None
+        elif rendered and ratio < 0.01:  # a one-pixel tint around the glyphs is anti-aliasing against the ground
+            s_c = None
+        else:
+            out.update(stroke=_hex(bgr_of(s_c)), stroke_name=color_name(bgr_of(s_c)), stroke_ratio=round(ratio, 3))
     else:
         s_c = None
     # a second enclosed colour far from the fill, with solid strokes of its own (not an anti-aliased rim):
@@ -205,6 +222,9 @@ def text_style(frame: np.ndarray, box: tuple[int, int, int, int]) -> dict | None
             continue
         cm = enc_mask == c
         if core(cm) / max(1.0, float(cm.sum())) < 0.5 * fill_core:
+            continue
+        # the ground seen through closed glyph counters (口, 日, o) is a ring colour, not a second text colour
+        if rendered and any(ring_share[x] >= 0.2 and contrast(c, x) < 15 for x in range(k)):
             continue
         # a colour between the fill and the stroke / background in lightness with the same hue is an edge blend
         others_l = [float(centers[x][0]) for x in range(k) if x != fill and (x == s_c or ring_share[x] > 0.2)]
@@ -462,12 +482,13 @@ def merge_style(styles: list[dict]) -> dict:
         return {}
     def vote(key):
         vals = [s.get(key) for s in styles if s.get(key)]
-        return max(set(vals), key=vals.count) if vals else None
+        return max(dict.fromkeys(vals), key=vals.count) if vals else None  # ties: first seen (set order varies per run)
     n = len(styles)
     out = {"fill_name": vote("fill_name"), "fill": vote("fill")}
     stroked = [s for s in styles if s.get("stroke")]
     if len(stroked) >= max(1, 0.5 * n):
-        out.update(stroke_name=max({s["stroke_name"] for s in stroked}, key=[s["stroke_name"] for s in stroked].count),
+        names = [s["stroke_name"] for s in stroked]
+        out.update(stroke_name=max(dict.fromkeys(names), key=names.count),
                    stroke=stroked[0]["stroke"], stroke_ratio=round(float(np.median([s["stroke_ratio"] for s in stroked])), 3))
     boxed = [s for s in styles if s.get("box")]
     if len(boxed) >= max(1, 0.5 * n):
@@ -476,7 +497,8 @@ def merge_style(styles: list[dict]) -> dict:
         out["gradient"] = True
     multi = [s for s in styles if s.get("multicolor")]
     if multi and len(multi) >= 0.25 * n:
-        out.update(multicolor=True, highlight_name=max({s["highlight_name"] for s in multi}, key=[s["highlight_name"] for s in multi].count))
+        hl = [s["highlight_name"] for s in multi]
+        out.update(multicolor=True, highlight_name=max(dict.fromkeys(hl), key=hl.count))
     w = [s["weight"] for s in styles if s.get("weight")]
     if w:
         out["weight"] = round(float(np.median(w)), 3)
@@ -519,6 +541,9 @@ def _decor_score(c: dict) -> tuple[int, list[str]]:
     return len(why), why
 
 
+_NUMERIC = re.compile(r"[+\-−]?[¥$€£]?[\d.,，．:：%+\-−万亿千百kKmMwW]*\d[\d.,，．:：%+\-−万亿千百kKmMwW]*")
+
+
 def classify_cues(cues: list[dict], duration: float) -> None:
     """Assign each cue a kind (subtitle / huazi / title / label / scene)."""
     # lanes: cues stacked at the same place one after another
@@ -541,8 +566,11 @@ def classify_cues(cues: list[dict], duration: float) -> None:
         h = float(np.median([c["line_h"] for c in lane]))
         tilted = float(np.median([abs(c["angle"]) for c in lane])) >= 4
         # readable lines (kinetic typography flashing words for a fraction of a second is not a subtitle track)
-        is_sub = (changing >= 3 or (changing >= 2 and duration < 15)) and 0.7 <= med <= 7.0 and h < 0.07 and not tilted
+        # a lane of changing numbers is a counter / chart value drawn by the picture, not a subtitle track
+        counter = changing >= 2 and all(_NUMERIC.fullmatch(_norm(c["text"])) for c in lane)
+        is_sub = (changing >= 3 or (changing >= 2 and duration < 15)) and 0.7 <= med <= 7.0 and h < 0.07 and not tilted and not counter
         for c in lane:
+            c["_counter"] = counter
             c["lane"] = lanes.index(lane)
             c["_sub_lane"] = is_sub
             c["_lane_texts"] = changing
@@ -566,6 +594,8 @@ def classify_cues(cues: list[dict], duration: float) -> None:
         else:
             kind = "label"
         c["kind"], c["kind_zh"] = kind, KIND_ZH[kind]
+        if c.pop("_counter", False):
+            c["kind"], c["kind_zh"] = "counter", KIND_ZH["counter"]
         c["decor"] = why
         if moving and kind != "scene":
             c["follows"] = True  # tracked to an object in the picture (label with a leader / tag)
@@ -1181,7 +1211,7 @@ def analyze(path: str | Path, info: VideoInfo, cuts: list[float], out_dir: Path 
     for lane in lanes.values():
         for key, keys in (("fill_name", ("fill_name", "fill")), ("stroke_name", ("stroke_name", "stroke", "stroke_ratio"))):
             vals = [c["style"].get(key) for c in lane]
-            top_ = max(set(vals), key=vals.count)
+            top_ = max(dict.fromkeys(vals), key=vals.count)
             if vals.count(top_) >= 0.6 * len(vals):
                 donor = next(c["style"] for c in lane if c["style"].get(key) == top_)
                 for c in lane:
@@ -1272,6 +1302,39 @@ def to_ass(cues: list[dict], width: int, height: int) -> str:
                      "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"] + events) + "\n"
 
 
+def restyle_rendered(pack: dict, shots: list[dict], video: str | Path, frame_h: int | None) -> int:
+    """Text on shots judged code-rendered / screen-recorded: measure its style again with the rendered-picture rules
+    (text_style(rendered=True)); text on other shots gets its original reading back (a review may relabel a shot).
+    Run after classification, so footage / AI subtitles are never touched. Returns how many cues were re-measured."""
+    rendered = {r["index"] for r in shots if r["base"]["label"] in ("code_render", "screen_capture")}
+    todo = []
+    for c in pack.get("text_cues", []):
+        if c.get("shot") in rendered and c.get("style") and "style_overlay" not in c:
+            todo.append(c)
+        elif c.get("shot") not in rendered and "style_overlay" in c:
+            c["style"] = c.pop("style_overlay")
+            c["style_zh"] = style_text(c["style"], c.get("line_h"), frame_h)
+    if not todo or not Path(video).is_file():
+        return 0
+    cap = cv2.VideoCapture(str(video))
+    n = 0
+    for c in todo:
+        cap.set(cv2.CAP_PROP_POS_MSEC, (c["t0"] + c["t1"]) / 2 * 1000)
+        ok, fr = cap.read()
+        if not ok:
+            continue
+        H, W = fr.shape[:2]
+        x, y, w, h = c["bbox"]
+        st = text_style(fr, (int(x * W), int(y * H), int((x + w) * W), int((y + h) * H)), rendered=True)
+        if st:
+            c["style_overlay"] = c["style"]
+            c["style"] = {**{k: v for k, v in c["style"].items() if k in ("highlight_timing",)}, **st}
+            c["style_zh"] = style_text(c["style"], c.get("line_h"), frame_h)
+            n += 1
+    cap.release()
+    return n
+
+
 def summary_lines(pack: dict, sfx_align: dict | None = None) -> list[str]:
     cues = pack.get("text_cues", [])
     L = []
@@ -1290,7 +1353,7 @@ def summary_lines(pack: dict, sfx_align: dict | None = None) -> list[str]:
                  + (T("；入场：{a}", "; entrance: {a}", a=join(f'{k}×{v}' for k, v in sorted(anim.items(), key=lambda kv: -kv[1]))) if anim else "")
                  + (T("；说到关键词时变色", "; keywords change colour as they are spoken") if any((c.get('style') or {}).get('highlight_timing') == 'spoken' for c in subs) else "")
                  + (T("；句中有弹跳/变色动效", "; bounce / colour-change motion inside lines") if sum(1 for c in subs if c.get("mid_motion")) >= max(2, 0.2 * len(subs)) else ""))
-    for kind in ("huazi", "title", "label"):
+    for kind in ("huazi", "title", "label", "counter"):
         cs = [c for c in cues if c["kind"] == kind]
         if cs:
             names = join(T("「{t}」", "\"{t}\"", t=c['text'].replace('/', ' ')[:14]) for c in cs[:6]) + (T("等", " …") if len(cs) > 6 else "")
@@ -1470,6 +1533,10 @@ def finalize_pack(breakdown: dict, out: Path) -> dict | None:
         c["shot"] = r["index"] if r else None
         # on a rendered / recorded picture, words are the picture's content, not a separate overlay
         c["part_of_picture"] = bool(r and labels[r["id"]] in ("code_render", "screen_capture") and c["kind"] not in ("subtitle",))
+    src = breakdown.get("source") or {}
+    frame_h = src.get("width") if src.get("rotation") in (90, 270) else src.get("height")
+    if src.get("path"):
+        restyle_rendered(pack, breakdown["shots"], src["path"], frame_h)
     stickers = [s for s in pack.get("stickers", []) if not s.get("in_picture")]
     cues = [c for c in pack.get("text_cues", []) if c["kind"] != "scene"]
     cuts = [r["start"] for r in breakdown["shots"][1:]]

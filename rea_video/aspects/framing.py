@@ -43,7 +43,7 @@ class Framing(Aspect):
         if not subs:
             return {}
         kinds = [s["kind"] for s in subs]
-        kind = max(set(kinds), key=kinds.count)
+        kind = max(dict.fromkeys(kinds), key=kinds.count)
         use = [s for s in subs if s["kind"] == kind]
         hs = [s["box"][3] for s in use]
         cx = float(np.median([s["box"][0] + s["box"][2] / 2 for s in use]))

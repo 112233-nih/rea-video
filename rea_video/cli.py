@@ -283,7 +283,10 @@ def cmd_summary(args) -> int:
                      + (T("  ← 有分歧：{d}", "  ← disputed: {d}", d=base["disputed"]) if base.get("disputed") else "")
                      + (T("  ← 用户纠正过素材来源", "  ← material origin corrected by the user") if (r.get("material") or {}).get("user_corrected") else "")
                      + (f"  ← {past}" if past else "")
-                     + (f" | {shot_text(r)}" if r["base"]["label"] in ("live_action", "avatar") and shot_text(r) else ""))
+                     + (f" | {shot_text(r)}" if r["base"]["label"] in ("live_action", "avatar") and shot_text(r) else "")
+                     + (T(" | 动效 {n} 个，元素截图 {f}", " | {n} motion events, element crops {f}", n=len(r["motion"].get("events", [])),
+                          f=r["motion"]["elements_sheet"]) if r["base"]["label"] in ("code_render", "screen_capture")
+                        and (r.get("motion") or {}).get("elements_sheet") else ""))
     if s.get("aspects"):
         lines += [""] + s["aspects"]
     from .entities import cast

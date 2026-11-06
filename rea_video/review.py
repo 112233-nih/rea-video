@@ -39,7 +39,7 @@ INSTRUCTIONS = f"""你是这次的 VLM：逐个镜头看图，判断「底层画
 {CONFUSIONS}
 
 每个镜头要填：label_probs（{len(LABELS)} 类，和为 1）、image_source（{"|".join(IMAGE_SOURCES)}）、evidence（看到的具体证据）、
-description（主体、动作、场景、运镜）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
+description（主体、动作、场景、运镜；代码渲染画面写清图形元素是什么（粒子/渐变/图表/卡片/文字/矢量图形）、拼成什么形状、颜色、怎么动、文字和数字组件在哪，报告的「代码合成」逐镜表直接用它；代码镜头另有 images.strip 关键帧条（约每 0.5 秒一张），报告「逐镜动效时间轴」已测好每个元素的位置、出现时间、方向、快慢和色值，你按编号补「它是什么」即可，例如"1–12：圆角图标卡片，依次弹入"）、embedded_assets（画面里的真实素材：截图、照片、实拍片段、Logo，
 kind 取 {"|".join(ASSET_KINDS)}，is_real_material 为 true/false）。
 某个镜头其实是多刀合并的（暗底图形卡和暗底口播交替时，切点分数低容易被合成一个长镜头）就加 split_suggestion：
 {{"cuts": [切点秒数], "labels": [各段类别，比 cuts 多一个], "note": "看到的交替结构"}}，报告会在该镜头标注拆分建议；不是合并段就不要填。
@@ -61,7 +61,7 @@ props 道具 / 商品 / Logo（name、note、shots）；style 一句整体视觉
 剪辑包装（tasks.packaging，有才做）：
 - stickers：工具找到的贴纸 / 动图 / 画中画，看 image（贴纸截图）和 frame_cmd 抽的帧，在答案 packaging.stickers 里填
   is_overlay（true = 后期贴上去的；false = 画面本身的东西，例如 3D 里突然出现的物体）和 what（表情包 / GIF / emoji / 箭头 / 小窗里放的什么）。
-- text：工具分好类的花字 / 标题 / 文字标注，分错了就在 packaging.text 里填 kind（subtitle / huazi / title / label / scene）。
+- text：工具分好类的花字 / 标题 / 文字标注，分错了就在 packaging.text 里填 kind（subtitle / huazi / title / label / counter / scene；counter 是跳动的数字）。
 - 工具漏掉的贴纸、动图，写进 packaging.missed：{{"t0": 秒, "t1": 秒, "what": "...", "where": "画面位置"}}。"""
 
 
@@ -115,7 +115,8 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
                      "evidence": rec["deterministic"]["evidence"][:6]},
             "hints": shot_hints(rec["features"], rec["deterministic"]["facts"], dl, dp),
             "aspects": {k: v["result"] for k, v in (rec.get("aspects") or {}).items() if v.get("result")},
-            "images": {"sheet": rec["assets"]["sheet"], "first": rec["assets"]["first_frame"], "last": rec["assets"]["last_frame"]},
+            "images": {"sheet": rec["assets"]["sheet"], "first": rec["assets"]["first_frame"], "last": rec["assets"]["last_frame"],
+                       **({"strip": rec["assets"]["strip"]} if rec["assets"].get("strip") else {})},
             "zoom_cmd": _tiles_cmd(video, rec["start"], rec["end"], 0.2, f"{out_dir}/check_{rec['id']}.jpg"),
         })
     pack = breakdown.get("packaging") or {}
@@ -225,7 +226,7 @@ def apply_answers(breakdown: dict, answers: dict, by: str | None = None) -> dict
         changes.append((sid, before))
     pk = answers.get("packaging")
     if isinstance(pk, dict) and breakdown.get("packaging"):
-        kinds = ("subtitle", "huazi", "title", "label", "scene")
+        kinds = ("subtitle", "huazi", "title", "label", "counter", "scene")
         clean_pk = {"stickers": {str(a["id"]): {"is_overlay": bool(a["is_overlay"]), "what": str(a.get("what", ""))[:80]}
                                  for a in pk.get("stickers") or [] if isinstance(a, dict) and isinstance(a.get("is_overlay"), bool)},
                     "text": {str(a["id"]): a["kind"] for a in pk.get("text") or [] if isinstance(a, dict) and a.get("kind") in kinds},

@@ -28,6 +28,14 @@ def _aspect(b: dict) -> str:
     return ar if ar in ("9:16", "16:9", "1:1") else "unknown"
 
 
+TRANS_ZH = {"cut": "硬切", "flash": "闪亮切", "fade": "淡入淡出", "dissolve": "叠化", "mg_transition": "版式切换", "start": "开场"}
+
+
+def _top_tr(s: dict) -> str:
+    tr = {k: v for k, v in s["transitions"].items() if k != "start"} or s["transitions"]
+    return max(tr, key=tr.get)
+
+
 def _mmss(t: float) -> str:
     return fmt_time(t)
 
@@ -95,7 +103,7 @@ def export_capsule_analysis(b: dict, out_path: Path) -> Path:
     lens = [x["duration"] for x in shots]
     structure_rules = [
         f"全片约 {s['duration']:.0f}s，{s['shots']} 个镜头，平均每镜 {s['avg_shot_s']}s（最短 {min(lens):.1f}s，最长 {max(lens):.1f}s）",
-        f"转场以 {max(s['transitions'], key=s['transitions'].get)} 为主：" + "、".join(f"{k}×{v}" for k, v in s["transitions"].items()),
+        f"转场以 {TRANS_ZH.get(_top_tr(s), _top_tr(s))} 为主：" + "、".join(f"{TRANS_ZH.get(k, k)}×{v}" for k, v in s["transitions"].items() if k != "start"),
     ]
     if whole.get("hook"):
         structure_rules.append(f"开头钩子：{whole['hook']}")

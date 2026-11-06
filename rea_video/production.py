@@ -18,7 +18,7 @@ import cv2
 
 from .classify import LABEL_ZH
 from .aspects.camera import SUPPORT_ZH
-from .plan import Planner, shot_prompts
+from .plan import CODE_STYLES, Planner, code_scene, shot_prompts
 
 GEN_LABELS = ("ai_video", "cg_3d", "anim_2d")
 SHOOT_LABELS = ("live_action", "stop_motion")
@@ -56,6 +56,77 @@ def scene_distance(a: list, b: list) -> float:
     """Smallest colour-distribution distance between any key frame of two shots (0 = same, 1 = unrelated)."""
     d = [cv2.compareHist(x, y, cv2.HISTCMP_BHATTACHARYYA) for x in a for y in b]
     return float(min(d)) if d else 1.0
+
+
+HUES = ((10, "红", "red"), (22, "橙", "orange"), (35, "黄", "yellow"), (78, "绿", "green"),  # OpenCV hue (0-180) bands
+        (100, "青", "cyan"), (130, "蓝", "blue"), (170, "紫", "purple"), (181, "红", "red"))
+
+
+def lit_colours(paths: list[Path], top: int = 3, min_share: float = 0.15) -> list[str]:
+    """Main colours of the lit part of a shot's key frames (what the glowing elements are coloured), most first."""
+    votes: dict[tuple, float] = {}
+    n = 0
+    for p in paths:
+        im = cv2.imread(str(p))
+        if im is None:
+            continue
+        hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV).reshape(-1, 3)
+        lit = hsv[hsv[:, 2] > 60]
+        if not len(lit):
+            continue
+        n += 1
+        grey = lit[:, 1] < 60
+        votes[("白", "white")] = votes.get(("白", "white"), 0.0) + float(grey.mean())
+        hue = lit[~grey][:, 0]
+        lo = 0
+        for hi, zh, en in HUES:
+            votes[(zh, en)] = votes.get((zh, en), 0.0) + float(((hue >= lo) & (hue < hi)).sum()) / len(lit)
+            lo = hi
+    ranked = sorted(votes.items(), key=lambda kv: -kv[1])
+    return [T(*w) for w, v in ranked[:top] if n and v / n >= min_share]
+
+
+def code_motion_md(scenes: list[dict]) -> list[str]:
+    """Per-shot motion timeline of the code shots (measured): what appears where, when, how and in what colour."""
+    from .motion import event_line, layer_line, static_line
+
+    L = ["", T("逐镜动效时间轴（工具测量：位置是占画面宽高的百分比，颜色是元素稳定后的取色；配合关键帧条看）",
+               "Per-shot motion timeline (measured: positions in % of frame width / height, colours sampled once the element settles; "
+               "read together with the key-frame strip)"), ""]
+    for sc in scenes:
+        head = f"#{sc['shot']} {sc['start']:.1f}–{sc['end']:.1f}s"
+        if sc.get("transition_in") == "flash":
+            head += T("（闪亮切入：切进来时整幅画面先变亮，{s:.1f}s 内回落）", " (flash cut: the picture opens bright and settles in {s:.1f}s)",
+                      s=sc.get("flash_s") or 0)
+        elif sc.get("transition_in") in ("dissolve", "fade"):
+            head += T("（{t}切入）", " ({t} in)", t=T("叠化", "dissolve") if sc["transition_in"] == "dissolve" else T("淡入", "fade"))
+        n_ev = len(sc.get("events") or [])
+        L.append("<details><summary>" + T("动效 {h} · {n} 个", "Motion {h} · {n} events", h=head, n=n_ev) + "</summary>")
+        L.append("")
+        if sc.get("strip"):
+            L += [f"![{head}]({sc['strip']})", ""]
+        if sc.get("background"):
+            L.append(T("- 背景 {bg}；其他主色 {c}", "- Ground {bg}; other main colours {c}", bg=sc["background"],
+                       c=" ".join(c for c in sc.get("palette") or [] if c != sc["background"]) or "—"))
+        if sc.get("elements_sheet"):
+            L += [T("元素截图（编号对应下面的动效；L 是持续运动层的镜头中段和结尾，S 是整镜不动的元素），原分辨率单张在 `shots/` 里：",
+                    "Element crops (numbers match the motion list below; L = the continuously moving layer mid-shot and at the end, "
+                    "S = elements that never move), full-size files in `shots/`:"),
+                  "", f"![{head}]({sc['elements_sheet']})", ""]
+        for k, e in enumerate(sc.get("static") or [], 1):
+            L.append(f"- S{k}. " + T("整镜不动：", "never moves: ") + static_line(e))
+        if sc.get("layer"):
+            L.append("- " + layer_line(sc["layer"]))
+        for q in sc.get("sequences") or []:
+            L.append("- " + T("依次出现：{n} 个同样大小的元素，间隔 {i:.2f}s，每个用时约 {e:.2f}s（下面第 {k} 条）",
+                             "In sequence: {n} same-size elements, {i:.2f}s apart, about {e:.2f}s each (items {k} below)",
+                             n=q["n"], i=q["interval"], e=q["each"], k=T("、", ", ").join(str(x + 1) for x in q["events"])))
+        for i, ev in enumerate(sc.get("events") or [], 1):
+            L.append(f"{i}. " + event_line(ev))
+        if not (sc.get("events") or sc.get("layer") or sc.get("static")):
+            L.append(T("- 没有测到元素运动（静止画面或只有细微变化）", "- No element motion measured (still picture or only slight changes)"))
+        L += ["", "</details>", ""]
+    return L
 
 
 # ---------------------------------------------------------------- model choice
@@ -105,7 +176,7 @@ def _runs(shots: list[dict], same_scene, labels: tuple) -> list[list[dict]]:
                 runs.append(cur)
             cur, gap = [], False
             continue
-        joinable = cur and same_scene(cur[-1], r) and (gap or r.get("transition_in") == "cut")
+        joinable = cur and same_scene(cur[-1], r) and (gap or r.get("transition_in") in ("cut", "flash"))
         if cur and not joinable:
             runs.append(cur)
             cur = []
@@ -194,7 +265,7 @@ def _unit(seg: list[dict], k: int, lim: dict, model: dict | None, style: str, ca
                      + T("：参考动作、运镜和剪辑节奏（只作参考，不复制画面）",
                          ": reference for action, camera movement and cutting rhythm (reference only, do not copy the picture)"), "user": False})
     cont = None
-    if prev_unit and same_scene_prev and seg[0].get("transition_in") == "cut" and abs(prev_unit["ranges"][-1][1] - t0) < 1e-3:
+    if prev_unit and same_scene_prev and seg[0].get("transition_in") in ("cut", "flash") and abs(prev_unit["ranges"][-1][1] - t0) < 1e-3:
         cont = T("首帧用 {p} 的尾帧，接上动作", "first frame = last frame of {p}, continue the action", p=prev_unit["id"])
     elif lim["first_frame"]:
         cont = T("首帧：参照原片第 {i} 镜首帧（{f}）的构图出图", "first frame: generate an image matching the composition of source shot {i}'s first frame ({f})",
@@ -356,7 +427,10 @@ def production_plan(b: dict, out: Path, engine: str = "seedance2.0") -> dict:
             code.append({"id": T("段{n}", "Part {n}", n=len(code) + 1), "kind": "code", "shots": [x["index"] for x in cur],
                          "start": cur[0]["start"], "end": cur[-1]["end"], "duration": round(cur[-1]["end"] - cur[0]["start"], 3),
                          "screen_capture": [x["index"] for x in cur if x["base"]["label"] == "screen_capture"],
-                         "text_tracks": sum(len((x.get("text") or {}).get("tracks", [])) for x in cur)})
+                         "text_tracks": sum(len((x.get("text") or {}).get("tracks", [])) for x in cur),
+                         "scenes": [{"shot": x["index"], "start": x["start"], "end": x["end"], **code_scene(x),
+                                     "colours": lit_colours([out / x["assets"][k] for k in ("first_frame", "last_frame")
+                                                             if (x.get("assets") or {}).get(k)])} for x in cur]})
             cur = []
     plan["code"] = code
     plan["local"] = [{"shot": r["index"], "label_zh": r["base"]["label_zh"], "duration": r["duration"]}
@@ -485,6 +559,40 @@ def report_md(plan: dict) -> list[str]:
                        id=c["id"], sh=join("#" + str(i) for i in c["shots"]), a=c["start"], z=c["end"])
                      + (semi() + T("其中 {sh} 用真实界面录屏", "{sh} use real screen recordings", sh=join("#" + str(i) for i in c["screen_capture"]))
                         if c["screen_capture"] else ""))
+        scenes = [sc for c in plan["code"] for sc in c.get("scenes", [])]
+        if any(sc.get("strip") or sc.get("elements_sheet") for sc in scenes):
+            L += ["", T("复刻资产（都在报告目录里，复刻时和下面的数据一起交给写代码的人或 LLM）：",
+                        "Remake assets (all in the report folder; hand them over together with the data below to whoever writes the code, or to an LLM):"),
+                  T("- `shots/shot_XXX_first.jpg` / `_last.jpg`：每镜首尾帧原分辨率，对版式、字号、留白",
+                    "- `shots/shot_XXX_first.jpg` / `_last.jpg`: first / last frame of each shot at full size, for layout, type size and margins"),
+                  T("- `shots/shot_XXX_strip.jpg`：约每 0.5 秒一张的关键帧条，看动画过程",
+                    "- `shots/shot_XXX_strip.jpg`: key frames about every 0.5 s, to follow the animation"),
+                  T("- `shots/shot_XXX_elements.jpg` 和 `_el_NN.jpg` / `_st_NN.jpg` / `_ly_NN.jpg`：每个元素停稳后的原分辨率截图，编号对应动效时间轴；"
+                    "图形照着重画，图标、Logo、插画这类画不出来的可以直接抠图用",
+                    "- `shots/shot_XXX_elements.jpg` and `_el_NN.jpg` / `_st_NN.jpg` / `_ly_NN.jpg`: full-size crop of every element once settled, "
+                    "numbered as in the motion timeline; redraw shapes from them, cut out icons, logos and illustrations that cannot be redrawn"),
+                  T("- `packaging/overlays.ass`、`packaging/timeline.json`：文字的时间、位置、颜色",
+                    "- `packaging/overlays.ass`, `packaging/timeline.json`: timing, position and colour of the text")]
+        if scenes:
+            styles = CODE_STYLES()
+            used = list(dict.fromkeys(sc.get("style", "shapes") for sc in scenes))
+            L += ["", T("画面做法（按工具测得的画面类型）：", "How to build the pictures (by the measured picture type):")]
+            L += [f"- {styles[k][0]}{T('：', ': ')}{styles[k][1]}" for k in used]
+            if "particles" in used:
+                L += ["", T("粒子类镜头：每一镜粒子拼成什么形状、怎么动是复刻好坏的关键，章节牌、标注、数字等 HUD 文字用 HTML 层叠在上面，"
+                            "按下表逐镜做，不要所有镜头共用一个背景。",
+                            "Particle shots: what shape the particles form in each shot and how it moves decides whether the remake works; "
+                            "chapter cards, labels and counters go in an HTML layer on top. Build shot by shot from the table below, not one shared background.")]
+            L += ["", T("| 镜头 | 时间 | 做法 | 画面 | 运镜 | 主色 | 画面文字 |", "| Shot | Time | Build | Picture | Camera | Colours | On-screen text |"),
+                  "|---|---|---|---|---|---|---|"]
+            for sc in scenes:
+                pic = sc["picture"].replace("|", "/").replace("\n", " ") or T("（待看图补：画面元素拼成什么、怎么动）",
+                                                                              "(to fill from the images: what the elements form and how they move)")
+                cols = (T("底 {bg}", "ground {bg}", bg=sc["background"]) + " · " + " ".join(c for c in sc["palette"] if c != sc["background"])
+                        if sc.get("background") else T('、', ', ').join(sc['colours']) or '—')
+                L.append(f"| #{sc['shot']} | {sc['start']:.1f}–{sc['end']:.1f}s | {styles[sc.get('style', 'shapes')][0]} | {pic} | {sc['move']} | "
+                         f"{cols} | {' / '.join(w.replace('|', '/') for w in sc['on_screen_text']) or '—'} |")
+            L += code_motion_md(scenes)
     if plan["local"]:
         L += ["", T("### 本地重建", "### Local rebuild"), "", "- " + semi().join(f"#{x['shot']} {x['label_zh']} {x['duration']:.1f}s" for x in plan["local"])
               + T("：一张图 + 测得的缩放/平移参数，ffmpeg 直接出", ": one image + the measured zoom / pan parameters, rendered straight from ffmpeg")]

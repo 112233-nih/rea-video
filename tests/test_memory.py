@@ -113,6 +113,8 @@ def test_single_image_reader_cannot_flip_ai_vs_live_axis():
     assert _vlm_gate(rec(p(ai_video=0.9, avatar=0.03)), vlm_avatar, {}) is None          # tools sure + not in top-2
     assert _vlm_gate(rec(p(ai_video=0.74, cg_3d=0.1)), p(cg_3d=0.95), {}) is None         # tools sure on AI axis
     assert _vlm_gate(rec(p(cg_3d=0.56, code_render=0.36)), p(code_render=0.8), {})        # 3D vs code: VLM helps
+    assert _vlm_gate(rec(p(cg_3d=0.51, ai_video=0.18, code_render=0.12)), p(code_render=0.8), {})  # rendered subtype: reader picks
+    assert _vlm_gate(rec(p(ai_video=0.3, live_action=0.25, cg_3d=0.2)), p(avatar=0.9), {}) is None  # not for generated subtypes
     assert _vlm_gate(rec(p(ai_video=0.46, live_action=0.38), {"transcode_degraded": True, "pulldown": "24→30"}),
                      p(live_action=0.85), {"native30": False}) is None                    # 24fps transcode never -> live
     assert _vlm_gate(rec(p(ai_video=0.46, live_action=0.38), {"transcode_degraded": True, "native_cadence": True}),

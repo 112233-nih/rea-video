@@ -147,13 +147,17 @@ def _span(a, z) -> str:
 
 # ------------------------------------------------------------------ sections --------------------------------------
 
+TRANS_ZH = LangDict({"cut": "硬切", "flash": "闪亮切", "fade": "淡入淡出", "dissolve": "叠化", "mg_transition": "版式切换"},
+                    en={"cut": "cut", "flash": "flash cut", "fade": "fade", "dissolve": "dissolve", "mg_transition": "layout change"})
+
+
 def _head_md(b: dict) -> list[str]:
     s, src = b["summary"], b["source"]
     L = [T("# 视频拆解报告：{f}", "# Video breakdown: {f}", f=src["filename"]), "",
          T("**结论**：{v}", "**Verdict**: {v}", v=s["verdict"]), "",
          T("- 时长 {d}s · {w}×{h} · {fps}fps · {ar}；镜头 {n} 个，平均 {avg}s；转场：", "- {d}s · {w}×{h} · {fps}fps · {ar}; {n} shots, {avg}s average; transitions: ",
            d=src["duration"], w=src["width"], h=src["height"], fps=src["fps"], ar=src["aspect_ratio"], n=s["shots"], avg=s["avg_shot_s"])
-         + join(f"{k}×{v}" for k, v in s["transitions"].items()),
+         + (join(f"{TRANS_ZH[k] if k in TRANS_ZH else k}×{v}" for k, v in s["transitions"].items() if k != "start") or "—"),
          T("- 判断置信度（按时长加权）{c:.0%}；判定方式：{by}；{vlm}", "- Confidence (duration-weighted) {c:.0%}; decided by: {by}; {vlm}",
            c=s["confidence"], by=_decided_by(b), vlm=s.get("vlm") or vlm_note(b["analysis"]["vlm"], b["analysis"].get("review")))]
     if s.get("production"):
