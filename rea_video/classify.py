@@ -305,16 +305,19 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     resampled = (f.get("sharp_alt", 0) > 0.025 or f.get("sharp_period_ac", 0) > 0.45) and not ctx.get("transcoded")
     if resampled and not pulldown and family == "dynamic":
         pulldown = "interpolated"
-        ev.append(T("逐帧清晰度呈周期性起伏（周期 {p} 帧，相关 {ac:.2f}）：画面经过插帧/帧率转换，原始帧率更低",
-                    "Per-frame sharpness oscillates periodically (period {p} frames, correlation {ac:.2f}): the footage was frame-interpolated / frame-rate converted from a lower source rate",
+        ev.append(T("逐帧清晰度呈周期性起伏（周期 {p} 帧，相关 {ac:.2f}），但没有重复帧：可能是插帧/帧率转换，也可能只是重新压缩留下的节奏（去掉了平台标记的转码文件也会这样），单凭这一条不能定 AI",
+                    "Per-frame sharpness oscillates periodically (period {p} frames, correlation {ac:.2f}) with no duplicate frames: frame interpolation / rate conversion, or just the rhythm of a re-encode (transcodes whose platform tags were stripped show it too); not enough on its own to call AI",
                     p=f.get('sharp_period'), ac=f.get('sharp_period_ac', 0)))
     facts["pulldown"] = pulldown
+    # duplicate-frame pulldown is measured cadence; "interpolated" is only a sharpness rhythm, which any re-encode
+    # can fake when the platform tags that would switch it off are gone (re-compressed files, downloads with stripped metadata)
+    dup_pd = bool(pulldown) and pulldown != "interpolated"
     # this shot's own cadence: a 30 fps file whose frames never repeat was captured at 30 fps (phones) rather than
     # generated at 24 and pulled up. Per shot, unlike ctx["native30"], so a mixed edit (AI opener + phone footage)
     # keeps the signature on the filmed shots. Platform re-encodes add a GOP sharpness rhythm, so that cue is skipped there.
     facts["native_cadence"] = bool(fps and 29 <= fps <= 31 and dup < 0.02 and not pulldown
                                    and (ctx.get("transcoded") or f.get("sharp_period_ac", 0) < 0.45))
-    if pulldown:
+    if dup_pd:
         ev.append(T("重复帧呈 {pd} 规律（{dup:.0%}，周期 {per}）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材",
                     "Duplicate frames follow a {pd} pattern ({dup:.0%}, period {per}): a 24/25fps source transcoded up, typical of AI-generated video, 3D / animation renders or cinema footage",
                     pd=pulldown, dup=dup, per=per))
@@ -325,7 +328,7 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     live_hint += 0.3 * _sig((0.5 - zero) / 0.1)
     live_hint += 0.6 * (1.0 if f.get("camera") == "handheld_like" else 0.0)
     live_hint += 0.2 * (1.0 if dup < 0.03 else 0.0)
-    live_hint -= 0.9 * (1.0 if pulldown else 0.0)
+    live_hint -= (0.9 if dup_pd else 0.3 if pulldown else 0.0)
     # generators emit 24/25/30 fps; a native >=48 fps stream with no duplicated frames was
     # most likely captured by a phone/camera (or screen/game capture)
     native_hfr = bool(fps and fps >= 47 and dup < 0.05 and not pulldown)
@@ -347,7 +350,13 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     gen_tags0 = bool((provenance or {}).get("hints", {}).get("generator"))
     degraded = bool(ctx.get("transcoded") and noise < 0.9)
     facts["transcode_degraded"] = degraded
-    if degraded and not pulldown and not gen_tags0 and live_hint < 0.45:
+    if degraded and not pulldown and not gen_tags0 and ctx.get("native30") and facts["native_cadence"] and live_hint < 0.55:
+        # the noise is gone but the camera cadence is not: native 30fps file, and this shot has it too
+        live_hint = 0.55
+        ev.append(T("经过平台二次转码（{plat}），传感器噪声被压没了；但整片和这一镜都是原生 30fps、没有 24fps 源的重复帧，按手机实拍算",
+                    "Platform transcode ({plat}) has compressed the sensor noise away, but the file and this shot are native 30fps with no 24fps-source duplicate frames: counted as phone footage",
+                    plat=join(ctx.get("platform", []))))
+    elif degraded and not pulldown and not gen_tags0 and live_hint < 0.45:
         # compression erased the sensor noise: its absence no longer argues for AI
         live_hint = 0.45
         ev.append(T("经过平台二次转码（{plat}），传感器噪声被压没了：噪声类证据失效，实拍还是 AI 主要看帧率和画面内容",
@@ -387,7 +396,7 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
         s["static_hold"] += 0.5 * photo
         s["cg_3d"] += 0.4 * graphic * (1 - text_like) * (1 - 0.8 * max(fine_dark, fine_light, vector))
         s["code_render"] += 1.2 * graphic * max(fine_dark, fine_light, vector)
-        s["ai_video"] += 0.8 * photo * (1.4 if pulldown else 1.0)
+        s["ai_video"] += 0.8 * photo * (1.4 if dup_pd else 1.0)
         s["live_action"] += 0.3 * photo * live_hint
     else:
         axis_f = 1.2 if axis > 0.38 else 0.8
@@ -405,7 +414,7 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
                         sat=f.get('saturation', 0), pal=pal))
         s["screen_capture"] += 1.2 * graphic * text_like * (0.3 + _sig((0.12 - f.get("saturation", 0.3)) / 0.04))
         s["live_action"] += 1.5 * photo * live_hint
-        s["ai_video"] += 1.5 * photo * (1 - live_hint) * (1.4 if pulldown else 1.0)
+        s["ai_video"] += 1.5 * photo * (1 - live_hint) * (1.4 if dup_pd else 1.0)
         # a talking-head avatar is a fixed frame; a shaking handheld camera argues for a person filming
         moving_cam = RULES["avatar_moving_camera"] if f.get("camera") in ("handheld_like", "smooth_move") else 1.0
         s["avatar"] += 0.6 * photo * (1 if faces > 0.6 else 0.1) * (1.0 if speech else 0.4) * (1 - live_hint) * moving_cam

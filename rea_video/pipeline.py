@@ -243,6 +243,13 @@ def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict, seen_live
         if not seen:
             return T("AI 还是 24p 相机实拍待确认：只有帧率证据（24fps 源）、没有 AIGC 标识，需要看图确认",
                      "AI or 24p camera footage, to confirm: only frame-rate evidence (24fps source) and no AIGC label, needs an image reader")
+    if label == "ai_video" and facts.get("pulldown") == "interpolated" and not (prov.get("hints") or {}).get("generator"):
+        # a sharpness rhythm with no duplicate frames: a re-encode whose platform tags were stripped leaves the same rhythm
+        if seen_live >= 0.5:
+            return T("AI 还是实拍待确认：只有清晰度节奏、没有重复帧（重新压缩也会留下），看图的一方认为是实拍，又没有 AIGC 标识",
+                     "AI or live action, to confirm: only a sharpness rhythm and no duplicate frames (re-encodes leave it too), the image reader calls it live action, and there is no AIGC label")
+        return T("AI 还是实拍待确认：只有清晰度节奏、没有重复帧（重新压缩也会留下）、没有 AIGC 标识，需要看图确认",
+                 "AI or live action, to confirm: only a sharpness rhythm, no duplicate frames (re-encodes leave it too) and no AIGC label, needs an image reader")
     if not facts.get("transcode_degraded"):
         return None
     if label == "live_action" and not facts.get("pulldown"):
@@ -323,7 +330,8 @@ def _vlm_gate(rec: dict, vprobs: dict | None, vctx: dict) -> dict | None:
         return None
     # the tools' confidence only protects the AI / live axis (frame-rate evidence), not a "rendered" texture call
     if (d in AI_LIVE_AXIS or v in AI_LIVE_AXIS) and not (person and d not in AI_LIVE_AXIS):
-        if dp >= 0.65 and dp - sp >= 0.25:  # tools are sure: frame-rate evidence beats "looks real / looks like a presenter"
+        # a sharpness rhythm alone (pulldown "interpolated", no duplicate frames) is not frame-rate evidence
+        if dp >= 0.65 and dp - sp >= 0.25 and facts.get("pulldown") != "interpolated":  # tools are sure: frame-rate evidence beats "looks real / looks like a presenter"
             return None
     if (v == "live_action" and facts.get("transcode_degraded") and not vctx.get("native30")
             and not facts.get("native_cadence")):

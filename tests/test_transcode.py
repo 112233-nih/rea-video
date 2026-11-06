@@ -90,3 +90,36 @@ def test_reader_decides_when_tools_are_undecided():
     assert _vlm_gate(rec, live, {"native30": False}) is None          # a 0.45 lead is a call: live must be in the top two
     rec["deterministic"]["probs"] = {"cg_3d": 0.35, "ai_video": 0.3, "live_action": 0.12, "code_render": 0.23}
     assert _vlm_gate(rec, live, {"native30": False}) is None          # the reader's pick trails by too much
+
+
+def test_sharpness_rhythm_alone_is_weak_evidence():
+    # a re-encode with its platform tags stripped: no duplicate frames, only a sharpness rhythm
+    f = dict(PHOTO, noise_sigma=0.5, sharp_period_ac=0.68, sharp_period=4)
+    probs, ev, facts = deterministic(f, provenance={}, fps=30.0, ctx={})
+    assert facts["pulldown"] == "interpolated"
+    assert not any("重复帧呈" in e or "Duplicate frames follow" in e for e in ev)  # no "duplicate frames" claim at 0%
+    dup, _, _ = deterministic(dict(PHOTO, dup_ratio=0.2, dup_period=5, dup_regularity=0.6), provenance={}, fps=30.0, ctx={})
+    assert probs["ai_video"] < dup["ai_video"]  # weaker than real 24->30 duplicate frames
+
+
+def test_reviewer_overrides_sharpness_rhythm_only_call():
+    from rea_video.pipeline import _ai_or_live_doubt, _vlm_gate
+
+    live = {"live_action": 0.9, "ai_video": 0.1}
+    rec = {"deterministic": {"probs": {"ai_video": 0.86, "live_action": 0.05, "cg_3d": 0.05, "avatar": 0.04},
+                             "facts": {"pulldown": "interpolated"}},
+           "review": {"label_probs": live}}
+    assert _vlm_gate(rec, live, {}) == live
+    rec["deterministic"]["facts"]["pulldown"] = "24→30"
+    assert _vlm_gate(rec, live, {}) is None  # duplicate-frame pulldown still protects the tools' call
+    assert _ai_or_live_doubt("ai_video", {"pulldown": "interpolated"}, {}, {})
+    assert _ai_or_live_doubt("ai_video", {"pulldown": "interpolated"}, {"hints": {"generator": ["Kling"]}}, {}) is None
+
+
+def test_transcoded_native30_shot_counts_as_phone_footage():
+    # native 30fps file, this shot has no duplicate frames, platform transcode wiped the noise
+    ctx = video_context(_shots(0.0), PROV_DOUYIN, 30.0)
+    f = dict(PHOTO, noise_sigma=0.45, temporal_noise=0.5, zero_pixel_ratio=0.6, camera="static")
+    probs, _, facts = deterministic(f, provenance=PROV_DOUYIN, fps=30.0, ctx=ctx)
+    assert facts["transcode_degraded"] and facts["native_cadence"]
+    assert probs["live_action"] > probs["ai_video"]

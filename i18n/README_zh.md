@@ -71,6 +71,8 @@ rea-video --help
 
 ## 案例
 
+`docs/cases/videos/` 里的样片为了减小仓库体积重新压缩过，抹掉了抖音 / TikTok 的平台标记。自己拿它们跑，结果会和下面的报告不一样，不开看图模型时尤其明显。要复现请用平台下载的原文件。
+
 <table>
 <tr>
 <td width="50%" valign="top">

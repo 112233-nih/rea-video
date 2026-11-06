@@ -73,6 +73,8 @@ Add a video-capable model — Gemini or Doubao both work: give the agent the end
 
 ## Examples
 
+The sample videos in `docs/cases/videos/` are re-compressed to keep the repo small, which strips the TikTok / Douyin platform tags. Running them yourself gives different results from the reports below, especially without a vision model. Use the original platform download to reproduce.
+
 <table>
 <tr>
 <td width="50%" valign="top">
