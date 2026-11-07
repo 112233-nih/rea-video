@@ -1,0 +1,68 @@
+# 影视片段评测集：影视解说、混剪、名场面合集（剪进来的电影 / 电视剧 / 短剧画面），外加一条 AI 短剧解说作反例
+# 视频不入库（eval/media/ 已 gitignore）：用 TikHub 抖音搜索（douyin_search_fetch_video_search_v2）找到，
+#   douyin_app_v3_fetch_one_video_v3 取地址下载到 eval/media/film/；bit_rate 里 is_h265=2 的档位 ffmpeg 解不了，改用 play_addr_265
+# 真值来源：人工看联系表目测 + 视频标题和画面上的片名；没有生产记录，属于目测真值。
+# 影视片段在像素上就是摄影机拍的画面，工具只给线索（黑边版式、24/25fps 源、《》片名）、不下结论，
+# 所以只开工具时这一组的准确率预期很低，要看「标出待确认」的比例和看图复核后的准确率。
+videos:
+  - id: film_hk_kungfu_beat
+    path: eval/media/film/hk_kungfu_beat.mp4
+    source: 抖音 武术指导《以武为舞，便是最好的节奏！》aweme 7615916888199007514；港片功夫打斗踩点混剪，横屏 720p 30fps
+    label: film_footage
+    real_material: true
+
+  - id: film_gunshot_beat
+    path: eval/media/film/gunshot_beat.mp4
+    source: 抖音 可乐丶《听着很暖和，看着有点爽。数一下多少颗子弹？》aweme 7549583051311926568；欧美枪战电影枪声卡点混剪
+    label: film_footage
+    real_material: true
+
+  - id: film_kdrama_fight
+    path: eval/media/film/kdrama_fight.mp4
+    source: 抖音 一种感觉《拳拳到肉，战力值拉满》aweme 7702034302736861403；韩剧打斗混剪，20 秒；最后 0.7 秒是黑底光条片尾
+    segments:
+      - [0.000, 19.500, film_footage]
+      - [19.500, 20.200, [code_render, static_hold, film_footage]]
+    real_material: true
+
+  - id: film_tvdrama_scenes
+    path: eval/media/film/tvdrama_scenes.mp4
+    source: 抖音 月下栖梧楼《盘点影视剧中为爱退让的名场面》aweme 7699064909601967414；国产古装/现代剧名场面合集，每段左上角标「年份 ·《剧名》」，25fps；开头 2.6 秒是黑底文字卡，中间的白闪是转场
+    segments:
+      - [0.000, 2.600, [code_render, static_hold]]
+      - [2.600, 106.600, film_footage]
+    real_material: true
+
+  - id: film_kangri_funny
+    path: eval/media/film/kangri_funny.mp4
+    source: 抖音 晓洋嘚吧嘚《搞笑名场面经典回顾》aweme 7663357679745748250；抗日题材电视剧片段 + 配音吐槽，左上角账号水印；中间插了 0.4 秒彩条卡，末尾「点赞 转发 关注」叠在剧集画面上
+    segments:
+      - [0.000, 72.600, film_footage]
+      - [72.600, 73.000, [code_render, static_hold]]
+      - [73.000, 166.600, film_footage]
+    real_material: true
+
+  - id: film_vertical_recap
+    path: eval/media/film/vertical_movie_recap.mp4
+    source: 抖音 好气人 电影解说 aweme 7345728948321504547；竖屏 9:16，16:9 电影画面嵌在黑边里，顶部「点个关注吧」，画面下方解说字幕
+    label: film_footage
+    real_material: true
+
+  - id: film_french_comedy_recap
+    path: eval/media/film/french_comedy_recap_90s.mp4
+    source: 抖音 猛虎电影《法国搞笑三人组新作》aweme 7660900818614324490 的前 90 秒（原片 35 分钟，ffmpeg -c copy 截取）；法国喜剧电影解说，24→30
+    label: film_footage
+    real_material: true
+
+  - id: film_shortdrama_recap
+    path: eval/media/film/shortdrama_recap.mp4
+    source: 抖音 秋刀鱼（短剧解说）aweme 7619686582341895311；真人竖屏短剧（剧组拍摄）的解说剪辑，29.97fps
+    label: film_footage
+    real_material: true
+
+  # 反例：AI 生成的短剧做的解说，版式和真人短剧解说一样（《片名》、「影视效果」免责声明），画面是 AI 生成
+  - id: film_ai_shortdrama_recap
+    path: eval/media/film/ai_shortdrama_recap.mp4
+    source: 抖音 老北观影 aweme 7704868350626680115，话题 #ai短剧；人物脸过于完美、千人一面，25fps
+    label: ai_video
+    real_material: false

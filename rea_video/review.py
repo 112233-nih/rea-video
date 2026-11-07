@@ -133,7 +133,7 @@ def build_tasks(breakdown: dict, out_dir: str) -> tuple[dict, dict]:
         pk_answers = {"stickers": [{"id": st["id"], "is_overlay": None, "what": ""} for st in sts],
                       "text": [{"id": c["id"], "kind": ""} for c in txt[:80]], "missed": []}
     tasks = {"instructions": INSTRUCTIONS, "video": video, "storyboard": "storyboard.jpg",
-             "video_context": {k: ctx.get(k) for k in ("transcoded", "platform", "native30") if k in ctx},
+             "video_context": {k: ctx.get(k) for k in ("transcoded", "platform", "native30", "film_hint_share") if k in ctx},
              "aigc": (breakdown.get("provenance") or {}).get("aigc"),
              "shots": shots}
     if pk_tasks:
