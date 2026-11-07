@@ -37,6 +37,8 @@ rea-video --env-file <你的 .env> decompose ref.mp4 -o out/ref --vlm --lang <zh
 rea-video summary out/ref/breakdown.json
 ```
 
+**省 token**：结果以 `rea-video summary` 为准，不要整份读 `breakdown.json`（几十万字）或 `report.md`（附录占一半）。要某一节时先 `grep -n '^##' out/ref/report.md` 找行号，只读那一节；复核时每镜看 `shots/shot_XXX.jpg` 联系表就够（已含首 / 中 / 尾帧），`_first` / `_last` 是复刻时给生成模型参照用的，不用另开。
+
 ### 看图复核并入（能看图的 agent 必做，开了 VLM 也建议做低置信镜头）
 
 ```bash
@@ -47,7 +49,7 @@ rea-video apply-review out/ref --by <你的名字>  # 并入：重写 breakdown.
 rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
 ```
 
-没看过的镜头保持 label_probs 全 0，会被跳过。你的答案会和确定性结果融合（不是直接覆盖），所以帧率、AIGC 标识这类强证据仍然起作用；如果并入后的结论和你的看法不同，在回复里写明理由。
+没看过的镜头 label_probs 留空 `{}`，会被跳过。你的答案会和确定性结果融合（不是直接覆盖），所以帧率、AIGC 标识这类强证据仍然起作用；如果并入后的结论和你的看法不同，在回复里写明理由。
 
 融合规则、看不了图时怎么办、原片 / 转码视频的特殊规则，见 `references/review.md`。能看图时**一定要做看图复核**，开了 VLM 也要做，并且独立判断，不要照抄 VLM。
 
@@ -77,7 +79,7 @@ rea-video summary out/ref/breakdown.json      # 用并入后的结果写回复
 
 ## 2. 交付给用户
 
-按 `references/output-template.md` 回复：先一句话结论，再内容与角色（这条视频讲什么、主要角色和场景），然后复刻方案（按生成单元 / 拍摄场次组织）、分镜表、剪辑包装、声音、真实素材清单、不确定点，最后给 `report.html` 路径。不要把 breakdown.json 整段贴进对话。
+按 `references/output-template.md` 回复：先一句话结论，再内容与角色（这条视频讲什么、主要角色和场景），然后复刻方案（按生成单元 / 拍摄场次组织）、分镜表、剪辑包装、声音、真实素材清单、不确定点，最后给 `report.html` 路径。不要把 breakdown.json 贴进对话。
 
 **报告和回复都用用户的语言。**语言的判断顺序：用户明确指定的语言（「用英文出报告」「report in Chinese」）> 用户提问所用的语言 > `rea-video memory` 里的 `lang` 偏好 > 中文。
 - 工具支持 `--lang zh` 和 `--lang en`：`decompose` 时就传对，报告文件（`report.html` / `report.md`）、`summary` 输出、VLM 的画面描述和提示词都会是该语言；忘了传可以在 `apply-review out/ref --lang en` 时补上（会重新生成结论和报告文字；VLM 已写好的描述和提示词保持原语言）。看图复核时，`review_answers.json` 里的 evidence / description / prompt 也用这个语言写。

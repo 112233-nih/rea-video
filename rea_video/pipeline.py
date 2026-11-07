@@ -770,7 +770,7 @@ def finalize(breakdown: dict, out: Path, engine: str | None = None) -> dict:
     breakdown["production_plan"] = production_plan(breakdown, out, engine=engine)
     summary["production"] = breakdown["production_plan"]["summary"]
     breakdown["summary"] = summary
-    write_json(out / "breakdown.json", breakdown)
+    write_json(out / "breakdown.json", breakdown, compact=True)
     from .report import write_reports
 
     write_reports(breakdown, out)
