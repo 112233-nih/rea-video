@@ -597,6 +597,14 @@ def finalize(breakdown: dict, out: Path, engine: str | None = None) -> dict:
                                            seen or None, moving=fam != "frozen")
         if user.get("real_material") is not None:
             _user_real(rec["material"], bool(user["real_material"]))
+        elif label == "live_action" and not seen and rec["base"]["confidence"] < 0.6:
+            # pixels alone cannot tell the author's own footage from a cut-in film / drama clip: say so instead of
+            # promising "the user's material" (still counted as real material, only the wording changes)
+            note = T("（自己拍的还是影视片段，看图确认）", " (own footage or a film / drama clip, confirm by looking)")
+            rec["material"]["origin_zh"] += note
+            for it in rec["material"]["items"]:
+                if it["kind"] == "real_footage" and it["region"] == "full":
+                    it["kind_zh"] += note
         rec["verdict"] = verdict_text(label, img_src, rec["layers"])
         rec.pop("ai_edits", None)
         if label in ("live_action", "stop_motion"):
