@@ -120,7 +120,7 @@ AI 人物对话 + 代码界面 + 8 秒真实录屏。5 个对话镜头被界面�
 
 ## 复刻效果
 
-rea-video 拆完，交给 [cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) 的复刻配方生成：运镜、动作、节奏、转场跟着原片走，只换你指定的元素。
+rea-video 拆完，交给 [capsule-cinema](https://github.com/JuneYaooo/capsule-cinema) 的复刻配方生成：运镜、动作、节奏、转场跟着原片走，只换你指定的元素。
 目前的效果是用自己部署的 MiniMax H3 生成的：原镜头当动作参考，换好元素的关键帧（gpt-image-2）定长相和场景。
 下面是公众号文章里 OiiOii 做过的三组复刻，每组我们做了两版：和 OiiOii 同样的换法，以及把主体、场景、道具一起换掉。
 每个动图里四格同步播放：原片、OiiOii 复刻、我们的复刻、换元素版。
@@ -164,7 +164,7 @@ rea-video 拆完，交给 [cheap-claude-video](https://github.com/JuneYaooo/chea
 
 抖音带货两条（实拍开箱、AI 与真人混合）只用工具 46%，开看图模型 64%，agent 看图复核后 97.5%：拍真实手机屏幕的画面工具会判成 3D / AI，目前要靠看图纠正。
 
-真实素材识别 97–99%，镜头切点全对。明细和复现方法在 [eval/RESULTS.md](../eval/RESULTS.md)。
+真实素材识别 97–99%，切点在 9 条逐帧人工标注的片子上（带跳剪的口播、开箱、影视混剪、手机实拍）找到 95%，检出的切点 94% 是对的。明细和复现方法在 [eval/RESULTS.md](../eval/RESULTS.md)。
 
 ## 怎么判断的
 
@@ -198,7 +198,7 @@ rea-video 不直接出片。它先逐个镜头判断是拍的、AI 生成的还�
 <details>
 <summary>能自动把整条视频复刻出来吗？</summary>
 
-可以做「换元素复刻」：用 [cheap-claude-video](https://github.com/JuneYaooo/cheap-claude-video) 的复刻配方，原片的运镜、动作、节奏和声音不变，把人物、产品、服装、场景换掉，整条自动生成并拼回原时间线（见上面的「复刻效果」）。
+可以做「换元素复刻」：用 [capsule-cinema](https://github.com/JuneYaooo/capsule-cinema) 的复刻配方，原片的运镜、动作、节奏和声音不变，把人物、产品、服装、场景换掉，整条自动生成并拼回原时间线（见上面的「复刻效果」）。
 想按原样重做：AI 镜头可以自动生成；实拍镜头要你按拍摄方案去拍；代码镜头要 agent 写 Remotion 工程。详见 [docs/replicate.md](../docs/replicate.md)。
 
 </details>
