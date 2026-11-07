@@ -14,7 +14,7 @@ Base layer labels (what produced the moving picture of the shot):
   film_footage   影视片段（剪进来的电影、电视剧、短剧画面：影视解说、混剪、名场面）
 anim_2d / stop_motion have no pixel test yet (held frames "on twos" look like a frame-rate conversion); film_footage is
 camera footage like any other, so pixels cannot tell who shot it (the tools only collect hints: letterbox, 24/25fps
-source, a 《title》 on screen). Only an image reader (VLM or agent) can call these three, see UNMEASURED.
+source). Only an image reader (VLM or agent) can call these three, see UNMEASURED.
 Overlays (composited on top): subtitle / title / label text, static graphics, layout template.
 
 Deterministic evidence is decisive for *temporal* questions (is anything moving? is the
@@ -117,23 +117,17 @@ RULES = {
 
 
 FILM_HINT_ZH = LangDict({"letterbox": "画面嵌在上下或左右的黑边里（影视解说常见的版式）",
-                         "source_24": "素材是 24/25fps 源（电影、电视剧的帧率；AI 视频也常是这个帧率）",
-                         "title_mark": "画面上有《》书名号标注的片名"},
+                         "source_24": "素材是 24/25fps 源（电影、电视剧的帧率；AI 视频也常是这个帧率）"},
                         en={"letterbox": "the picture sits inside black bars (the usual film-recap layout)",
-                            "source_24": "the source is 24/25fps (the frame rate of films and TV; AI video often uses it too)",
-                            "title_mark": "a title in 《》 brackets is on screen"})
-TITLE_MARK = re.compile(r"《[^《》]{1,24}》")
+                            "source_24": "the source is 24/25fps (the frame rate of films and TV; AI video often uses it too)"})
 
 
-def film_hints(f: dict, text: dict | None, fps: float | None, pulldown: str | None) -> list[str]:
+def film_hints(f: dict, fps: float | None, pulldown: str | None) -> list[str]:
     """Hints that a photographic shot was cut from a film / series. letterbox: the picture inside fixed black bars,
-    wider than tall (features.picture_box). source_24: a 24/25fps source, pulled up to 30 or native. title_mark: a
-    《title》 on screen. source_24 alone is the AI-video signature too, so it only counts next to another hint."""
+    wider than tall (features.picture_box). source_24: a 24/25fps source, pulled up to 30 or native. source_24 alone is the AI-video signature too, so it only counts next to another hint."""
     out = []
     if f.get("picture_box") and f.get("picture_aspect", 0) >= 1.3:
         out.append("letterbox")
-    if any(TITLE_MARK.search(t) for tr in (text or {}).get("tracks", []) for t in tr.get("texts", [])):
-        out.append("title_mark")
     native_film_rate = bool(fps and (23.5 <= fps <= 25.5) and f.get("dup_ratio", 1) < 0.05)
     if out and (pulldown in ("24→30", "24→60", "25→30?") or native_film_rate):
         out.append("source_24")
@@ -169,9 +163,9 @@ def video_context(shots: list[dict], provenance: dict | None, fps: float | None)
         if f.get("dup_ratio", 1) < 0.02 and f.get("sharp_period_ac", 0) < 0.45:
             native_dur += d
     native30 = bool(fps and 29 <= fps <= 31 and photo_dur >= 3 and native_dur / photo_dur >= 0.7)
-    # photographic time carrying a film / TV hint (letterbox, 《title》): a film recap or compilation looks like this
+    # photographic time carrying a film / TV hint (letterbox): a film recap or compilation looks like this
     film_dur = sum(float(r.get("duration", 0)) for r in shots
-                   if (r.get("features") or {}).get("palette95", 0) >= 100 and film_hints(r.get("features") or {}, r.get("text"), fps, None))
+                   if (r.get("features") or {}).get("palette95", 0) >= 100 and film_hints(r.get("features") or {}, fps, None))
     total = sum(float(r.get("duration", 0)) for r in shots) or 1.0
     return {"transcoded": bool(plat), "platform": plat, "native30": native30,
             "native30_share": round(native_dur / photo_dur, 3) if photo_dur else None,
@@ -359,7 +353,7 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     # ---- film / TV footage hints -------------------------------------------------
     # who shot the picture is not in the pixels (a film still is camera footage, an AI drama can look the same):
     # these only say "this may be a clip cut from a film or series", the call is left to an image reader
-    hints = film_hints(f, text, fps, pulldown) if photo > 0.5 and family in ("dynamic", "mostly_static", "planar") else []
+    hints = film_hints(f, fps, pulldown) if photo > 0.5 and family in ("dynamic", "mostly_static", "planar") else []
     facts["film_hints"] = hints
     if hints:
         ev.append(T("影视片段线索：{h}。这些只说明可能是剪进来的影视剧画面，和 AI 视频、自己拍的实拍在像素上分不开，要看图确认",

@@ -246,10 +246,10 @@ def _ai_or_live_doubt(label: str, facts: dict, prov: dict, vctx: dict, seen_live
         return None
     hints = facts.get("film_hints") or []
     if hints and not seen:
-        # letterbox / 《title》 on screen: a film recap or compilation looks exactly like this, and so can an AI drama
-        return T("{l}还是影视片段待确认：{h}；剪进来的影视剧画面和{l}在像素上分不开，需要看图（认得出的演员或剧集、片名、台标、群演和布景的规模）",
+        # a letterboxed picture: a film recap or compilation looks exactly like this, and so can an AI drama
+        return T("{l}还是影视片段待确认：{h}；剪进来的影视剧画面和{l}在像素上分不开，需要看图（认得出的演员或剧集、台标、群演和布景的规模）",
                  "{l} or film / TV footage, to confirm: {h}; a clip cut from a film or series cannot be told from {l} by pixels, needs an image reader "
-                 "(recognisable actors or series, a title, a channel logo, the scale of extras and sets)",
+                 "(recognisable actors or series, a channel logo, the scale of extras and sets)",
                  l=LABEL_ZH[label], h=join(FILM_HINT_ZH[k] for k in hints))
     if label == "ai_video" and facts.get("pulldown") in PULLDOWN_24 and not (prov.get("hints") or {}).get("generator"):
         # a cinema / mirrorless camera shooting 24p and exported at 30 fps leaves the same cadence as a generator:
@@ -574,8 +574,8 @@ def finalize(breakdown: dict, out: Path, engine: str | None = None) -> dict:
                      " ({r:.0%} of the duration is live action or AI, to confirm: the platform transcode erased the noise evidence, needs a VLM pass or a human look at the frames)",
                      r=unsure / total)
     if (vctx.get("film_hint_share") or 0) > 0.3 and not any(r["base"]["label"] == "film_footage" for r in shot_records):
-        verdict += T("（其中 {r:.0%} 时长有影视片段线索（黑边版式、《》片名），可能是影视解说或混剪，需看图确认）",
-                     " ({r:.0%} of the duration carries film / TV hints (letterbox layout, a 《title》), possibly a film recap or compilation, to confirm by looking)",
+        verdict += T("（其中 {r:.0%} 时长有影视片段线索（黑边版式），可能是影视解说或混剪，需看图确认）",
+                     " ({r:.0%} of the duration carries film / TV hints (letterbox layout), possibly a film recap or compilation, to confirm by looking)",
                      r=vctx["film_hint_share"])
     doubtful = sum(r["duration"] for r in shot_records if r["base"].get("uncertain"))
     if doubtful / total > 0.3 and not (unsure / total > 0.3 and not any(visual_opinion(r) for r in shot_records)):

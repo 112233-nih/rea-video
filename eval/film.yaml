@@ -2,7 +2,7 @@
 # 视频不入库（eval/media/ 已 gitignore）：用 TikHub 抖音搜索（douyin_search_fetch_video_search_v2）找到，
 #   douyin_app_v3_fetch_one_video_v3 取地址下载到 eval/media/film/；bit_rate 里 is_h265=2 的档位 ffmpeg 解不了，改用 play_addr_265
 # 真值来源：人工看联系表目测 + 视频标题和画面上的片名；没有生产记录，属于目测真值。
-# 影视片段在像素上就是摄影机拍的画面，工具只给线索（黑边版式、24/25fps 源、《》片名）、不下结论，
+# 影视片段在像素上就是摄影机拍的画面，工具只给线索（黑边版式、24/25fps 源）、不下结论，
 # 所以只开工具时这一组的准确率预期很低，要看「标出待确认」的比例和看图复核后的准确率。
 videos:
   - id: film_hk_kungfu_beat
@@ -60,7 +60,7 @@ videos:
     label: film_footage
     real_material: true
 
-  # 反例：AI 生成的短剧做的解说，版式和真人短剧解说一样（《片名》、「影视效果」免责声明），画面是 AI 生成
+  # 反例：AI 生成的短剧做的解说，版式和真人短剧解说一样（「影视效果」免责声明），画面是 AI 生成
   - id: film_ai_shortdrama_recap
     path: eval/media/film/ai_shortdrama_recap.mp4
     source: 抖音 老北观影 aweme 7704868350626680115，话题 #ai短剧；人物脸过于完美、千人一面，25fps

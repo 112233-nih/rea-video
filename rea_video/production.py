@@ -16,7 +16,7 @@ from pathlib import Path
 
 import cv2
 
-from .classify import LABEL_ZH, TITLE_MARK
+from .classify import LABEL_ZH
 from .aspects.camera import SUPPORT_ZH
 from .plan import CODE_STYLES, Planner, code_scene, shot_prompts
 
@@ -444,17 +444,15 @@ def production_plan(b: dict, out: Path, engine: str = "seedance2.0") -> dict:
 
 
 def footage_runs(shots: list[dict]) -> list[dict]:
-    """Film / TV clips in a row, with the 《titles》 read on screen: what to look for in the source."""
+    """Film / TV clips in a row: the stretches to find in the source."""
     runs, cur = [], []
     for r in shots + [None]:
         if r is not None and r["base"]["label"] == "film_footage":
             cur.append(r)
             continue
         if cur:
-            titles = list(dict.fromkeys(m for x in cur for tr in (x.get("text") or {}).get("tracks", [])
-                                        for t in tr.get("texts", []) for m in TITLE_MARK.findall(t)))
             runs.append({"shots": [x["index"] for x in cur], "start": cur[0]["start"], "end": cur[-1]["end"],
-                         "duration": round(cur[-1]["end"] - cur[0]["start"], 3), "titles": titles[:8]})
+                         "duration": round(cur[-1]["end"] - cur[0]["start"], 3)})
             cur = []
     return runs
 
@@ -622,6 +620,5 @@ def report_md(plan: dict) -> list[str]:
                 "- These shots are cut from existing films or series: find the same clips in the source and cut them; rights belong to the studio and commercial use needs a licence. "
                 "Without the source, shoot them yourself with the same shot size, camera setup and lighting, or approximate them with AI"), ""]
         for f in plan["footage"]:
-            L.append(f"- {f['start']:.1f}–{f['end']:.1f}s " + T("{n} 镜", "{n} shot{s}", n=len(f["shots"]), s=_s(len(f["shots"])))
-                     + (T("，画面上的片名：{t}", ", titles on screen: {t}", t=T("、", ", ").join(f["titles"])) if f["titles"] else ""))
+            L.append(f"- {f['start']:.1f}–{f['end']:.1f}s " + T("{n} 镜", "{n} shot{s}", n=len(f["shots"]), s=_s(len(f["shots"]))))
     return L

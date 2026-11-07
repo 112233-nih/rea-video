@@ -8,7 +8,6 @@ from rea_video.production import footage_runs
 PHOTO = {"noise_sigma": 0.5, "temporal_noise": 1.2, "flat_ratio": 0.02, "palette95": 220, "axis_edge_ratio": 0.2,
          "dup_ratio": 0.2, "dup_period": 5, "dup_regularity": 0.6, "moving_pair_ratio": 1.0, "zero_pixel_ratio": 0.1,
          "camera": "smooth_move", "saturation": 0.3}
-TITLE = {"tracks": [{"texts": ["2026 ·《长安十二时辰》"], "text_height": 0.03}], "text_coverage": 0.02}
 
 
 def _letterboxed(seed: int, h: int = 852, w: int = 480, top: int = 300, ph: int = 270) -> np.ndarray:
@@ -48,8 +47,8 @@ def test_intersect_box():
 
 def test_film_hints_are_evidence_not_a_verdict():
     f = dict(PHOTO, picture_box=[0, 0.35, 1, 0.31], picture_aspect=1.78)
-    probs, ev, facts = deterministic(f, text=TITLE, fps=30.0)
-    assert set(facts["film_hints"]) == {"letterbox", "title_mark", "source_24"}
+    probs, ev, facts = deterministic(f, fps=30.0)
+    assert set(facts["film_hints"]) == {"letterbox", "source_24"}
     assert any("影视片段线索" in e or "Film / TV footage hints" in e for e in ev)
     assert max(probs, key=probs.get) != "film_footage"  # the tools never call it on hints alone
     assert probs["film_footage"] > 0.05
@@ -62,7 +61,7 @@ def test_24fps_alone_is_not_a_film_hint():
 
 def test_tool_only_run_flags_film_hints_as_to_confirm():
     f = dict(PHOTO, picture_box=[0, 0.35, 1, 0.31], picture_aspect=1.78)
-    _, _, facts = deterministic(f, text=TITLE, fps=30.0)
+    _, _, facts = deterministic(f, fps=30.0)
     doubt = _ai_or_live_doubt("ai_video", facts, {}, {}, seen=False)
     assert doubt and ("影视片段" in doubt or "film / TV" in doubt)
 
@@ -85,13 +84,12 @@ def test_video_context_film_share():
     assert video_context(shots, None, 30.0)["film_hint_share"] == 0.75
 
 
-def test_footage_runs_collect_titles():
-    def shot(i, label, texts=()):
-        return {"index": i, "start": i, "end": i + 1, "base": {"label": label}, "text": {"tracks": [{"texts": list(texts)}]}}
-    runs = footage_runs([shot(1, "film_footage", ["2024 ·《庆余年》"]), shot(2, "film_footage"), shot(3, "live_action"),
-                         shot(4, "film_footage", ["《狂飙》第 3 集"])])
+def test_footage_runs_group_contiguous_film_shots():
+    def shot(i, label):
+        return {"index": i, "start": i, "end": i + 1, "base": {"label": label}}
+    runs = footage_runs([shot(1, "film_footage"), shot(2, "film_footage"), shot(3, "live_action"), shot(4, "film_footage")])
     assert [r["shots"] for r in runs] == [[1, 2], [4]]
-    assert runs[0]["titles"] == ["《庆余年》"] and runs[1]["titles"] == ["《狂飙》"]
+    assert (runs[0]["start"], runs[0]["end"]) == (1, 3)
 
 
 def test_reader_picks_film_over_live_action_inside_the_filmed_group():

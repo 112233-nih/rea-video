@@ -33,7 +33,7 @@ signals:
   static_hold:         {detected_by: [analyze.shot_boundary], desc: 静帧定格（图片或卡片停留）}
   anim_2d:             {detected_by: [analyze.video_understanding], desc: 2D 动画（手绘逐帧、Live2D、AE/Spine 角色动画），工具测不出，靠看图}
   stop_motion:         {detected_by: [analyze.video_understanding], desc: 定格动画（实物/黏土/纸偶逐帧拍摄），工具测不出，靠看图}
-  film_footage:        {detected_by: [analyze.video_understanding, analyze.ocr_text_track], desc: 剪进来的电影/电视剧/短剧画面（影视解说、混剪、名场面），像素上和实拍、AI 分不开，工具只给线索（黑边版式、24/25fps 源、《》片名），靠看图}
+  film_footage:        {detected_by: [analyze.video_understanding], desc: 剪进来的电影/电视剧/短剧画面（影视解说、混剪、名场面），像素上和实拍、AI 分不开，工具只给线索（黑边版式、24/25fps 源），靠看图}
   ai_edited_footage:   {detected_by: [analyze.video_understanding], desc: 实拍画面被 AI 二次加工（换脸、对口型、风格化、换装、换背景）}
 
 # ---------------------------------------------------------------- 拆分
