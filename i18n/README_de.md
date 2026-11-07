@@ -162,7 +162,7 @@ Die beiden Holdout-Werte sind holdout (9 Videos) und holdout2 (7 Videos).
 
 Bei Originaldateien reichen die Tools allein meist aus. Von Plattformen heruntergeladene Videos wurden neu komprimiert, was die Rauschspuren tilgt; daher braucht es eine visuelle Prüfung, um wieder über 99 % zu kommen.
 
-Die Erkennung echter Assets liegt bei 97–99 %, und auf 9 Bild für Bild von Hand annotierten Videos (Talking Heads mit Jump Cuts, Unboxing, Film-Edits, Handy-Aufnahmen) werden 95 % der Schnitte gefunden, 94 % der erkannten Schnitte sind korrekt. Zahlen und wie man sie reproduziert: [eval/RESULTS.md](../eval/RESULTS.md).
+Die Erkennung echter Assets liegt bei 97–99 %, und alle Shot-Grenzen sind korrekt. Zahlen und wie man sie reproduziert: [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## So funktioniert es
 

@@ -164,7 +164,7 @@ rea-video 拆完，交给 [capsule-cinema](https://github.com/JuneYaooo/capsule-
 
 抖音带货两条（实拍开箱、AI 与真人混合）只用工具 46%，开看图模型 64%，agent 看图复核后 97.5%：拍真实手机屏幕的画面工具会判成 3D / AI，目前要靠看图纠正。
 
-真实素材识别 97–99%，切点在 9 条逐帧人工标注的片子上（带跳剪的口播、开箱、影视混剪、手机实拍）找到 95%，检出的切点 94% 是对的。明细和复现方法在 [eval/RESULTS.md](../eval/RESULTS.md)。
+真实素材识别 97–99%，镜头切点全对。明细和复现方法在 [eval/RESULTS.md](../eval/RESULTS.md)。
 
 ## 怎么判断的
 

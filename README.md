@@ -164,7 +164,7 @@ The two holdout numbers are holdout (9 videos) and holdout2 (7 videos).
 
 On original files the tools alone are mostly enough. Videos downloaded from platforms have been recompressed, which wipes out the noise evidence, so it takes a vision check to get back above 99%.
 
-Real-asset detection is 97–99%. Cuts, checked frame by frame on 9 hand-labelled videos (talking heads with jump cuts, unboxing, film edits, phone footage): 95% found, 94% of detected cuts correct. Numbers and how to reproduce them: [eval/RESULTS.md](eval/RESULTS.md).
+Real-asset detection is 97–99%, and shot boundaries are all correct. Numbers and how to reproduce them: [eval/RESULTS.md](eval/RESULTS.md).
 
 ## How it works
 

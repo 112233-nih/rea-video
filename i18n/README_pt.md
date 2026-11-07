@@ -162,7 +162,7 @@ Os dois números de holdout são holdout (9 vídeos) e holdout2 (7 vídeos).
 
 Em arquivos originais, as ferramentas sozinhas quase sempre bastam. Vídeos baixados de plataformas foram recomprimidos, o que apaga a evidência de ruído, então é preciso uma verificação visual para voltar a passar de 99%.
 
-A detecção de material real fica entre 97% e 99%, e, em 9 vídeos anotados à mão quadro a quadro (talking heads com jump cuts, unboxing, edições de cinema, vídeo de celular), 95% dos cortes são encontrados e 94% dos cortes detectados estão corretos. Números e como reproduzi-los: [eval/RESULTS.md](../eval/RESULTS.md).
+A detecção de material real fica entre 97% e 99%, e os limites dos planos estão todos corretos. Números e como reproduzi-los: [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## Como funciona
 

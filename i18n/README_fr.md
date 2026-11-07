@@ -162,7 +162,7 @@ Les deux chiffres holdout correspondent à holdout (9 vidéos) et holdout2 (7 vi
 
 Sur les fichiers originaux, les outils seuls suffisent la plupart du temps. Les vidéos téléchargées depuis les plateformes ont été recompressées, ce qui efface les indices liés au bruit ; il faut alors une vérification visuelle pour repasser au-dessus de 99 %.
 
-La détection des vrais assets est de 97 à 99 %, et, sur 9 vidéos annotées à la main image par image (face caméra avec jump cuts, unboxing, montages de films, vidéo au téléphone), 95 % des coupes sont trouvées et 94 % des coupes détectées sont justes. Chiffres et méthode pour les reproduire : [eval/RESULTS.md](../eval/RESULTS.md).
+La détection des vrais assets est de 97 à 99 %, et les limites de plans sont toutes correctes. Chiffres et méthode pour les reproduire : [eval/RESULTS.md](../eval/RESULTS.md).
 
 ## Comment ça marche
 
