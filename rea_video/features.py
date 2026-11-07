@@ -328,6 +328,8 @@ def shot_features(samples: ShotSamples, fps: float) -> dict:
     dup = mad < 0.15
     moving_pairs = mad > 0.6
     per = _periodicity(dup.tolist())
+    if samples.pair_mad:
+        agg["dup_count"] = int(dup.sum())  # absent for a single-frame shot: nothing to count
     agg.update({
         "pair_mad_median": float(np.median(mad)),
         "pair_mad_p90": float(np.percentile(mad, 90)),

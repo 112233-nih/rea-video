@@ -76,6 +76,12 @@ def _sig(x: float) -> float:
     return 1.0 / (1.0 + math.exp(-x))
 
 
+def no_repeats(f: dict) -> bool:
+    """No duplicate frames of a 24/25 fps source: under 2% of frame pairs, or a single repeated frame in a
+    short shot (a 24 -> 30 fps pull-up repeats every fifth frame, one repeat alone says nothing)."""
+    return f.get("dup_ratio", 1) < 0.02 or f.get("dup_count", 99) <= 1
+
+
 def _norm(d: dict[str, float]) -> dict[str, float]:
     s = sum(max(v, 0.0) for v in d.values()) or 1.0
     return {k: max(v, 0.0) / s for k, v in d.items()}
@@ -160,7 +166,7 @@ def video_context(shots: list[dict], provenance: dict | None, fps: float | None)
             continue  # rendered graphics or frozen frames say nothing about camera cadence
         d = float(r.get("duration", 0))
         photo_dur += d
-        if f.get("dup_ratio", 1) < 0.02 and f.get("sharp_period_ac", 0) < 0.45:
+        if no_repeats(f) and f.get("sharp_period_ac", 0) < 0.45:
             native_dur += d
     native30 = bool(fps and 29 <= fps <= 31 and photo_dur >= 3 and native_dur / photo_dur >= 0.7)
     # photographic time carrying a film / TV hint (letterbox): a film recap or compilation looks like this
@@ -343,7 +349,7 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     # this shot's own cadence: a 30 fps file whose frames never repeat was captured at 30 fps (phones) rather than
     # generated at 24 and pulled up. Per shot, unlike ctx["native30"], so a mixed edit (AI opener + phone footage)
     # keeps the signature on the filmed shots. Platform re-encodes add a GOP sharpness rhythm, so that cue is skipped there.
-    facts["native_cadence"] = bool(fps and 29 <= fps <= 31 and dup < 0.02 and not pulldown
+    facts["native_cadence"] = bool(fps and 29 <= fps <= 31 and no_repeats(f) and not pulldown
                                    and (ctx.get("transcoded") or f.get("sharp_period_ac", 0) < 0.45))
     if dup_pd:
         ev.append(T("重复帧呈 {pd} 规律（{dup:.0%}，周期 {per}）：原始素材为 24/25fps 后转码，常见于 AI 生成视频、3D/动画渲染或电影素材",
@@ -379,7 +385,7 @@ def deterministic(f: dict, overlay: dict | None = None, text: dict | None = None
     if cam_tags:
         live_hint += 1.0
         ev.append(T("容器元数据含拍摄设备信息（make/model/location）", "Container metadata carries capture-device tags (make/model/location)"))
-    if ctx.get("native30") and dup < 0.02 and not pulldown:
+    if ctx.get("native30") and no_repeats(f) and not pulldown:
         live_hint += 0.9
         ev.append(T("整片是原生 30fps、实拍类镜头没有 24fps 源的重复帧（{share:.0%} 时长）：手机直出常见，生成模型多输出 24fps",
                     "The whole file is native 30fps and photographic shots carry no 24fps-source duplicate frames ({share:.0%} of the duration): typical of straight-from-phone footage, generators mostly output 24fps",
