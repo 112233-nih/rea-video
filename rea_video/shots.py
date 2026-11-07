@@ -143,12 +143,16 @@ def detect_shots(track: FrameTrack, min_shot_s: float = 0.35, cut_threshold: flo
         # frames; a filmed screen whose content changes keeps sensor noise, 0.002-0.03, and is not a cut)
         still_swap = (s > cut_threshold and track.hist_dist[i] > 0.25 and chg[i] > 0.18 and chg_base[i] < 0.01
                       and s > base[i] * 5 + 0.1 and i >= 3 and float(track.pix_diff[i - 3:i].max()) < 1e-3)
-        if strong or relative or still_swap or _jump_cut(track, i):
+        jump = _jump_cut(track, i)
+        if strong or relative or still_swap or jump:
             # a muzzle flash / strobe, or the frame where a one- or two-frame flash or glitch ends: the picture
             # is back to what it was, so nothing was cut
             if _brief_flash(track, i) or _back_to_before(track.thumbs, i):
                 continue
-            boundaries[i] = ("cut", float(max(s, chg[i])))
+            # a jump cut keeps the camera setup: same colours, less than half the frame changes. Shots joined by
+            # jump cuts are pieces of one take (one VLM look, one generation in the remake plan)
+            same_take = jump and track.hist_dist[i] < 0.4 and chg[i] < 0.5
+            boundaries[i] = ("jump" if same_take else "cut", float(max(s, chg[i])))
 
     # 2) fades through black / white: luma dips to an extreme and comes back
     lo_l = min(10.0, float(np.percentile(track.luma, 50)) * 0.35)
@@ -237,7 +241,7 @@ def detect_shots(track: FrameTrack, min_shot_s: float = 0.35, cut_threshold: flo
 
 def _clean_cut(boundaries: dict[int, tuple[str, float]], b: int) -> bool:
     kind, strength = boundaries[b]
-    return kind == "cut" and strength >= 0.35
+    return kind in ("cut", "jump") and strength >= 0.35
 
 
 def _brief_flash(track: FrameTrack, i: int) -> bool:

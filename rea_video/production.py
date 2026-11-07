@@ -176,7 +176,7 @@ def _runs(shots: list[dict], same_scene, labels: tuple) -> list[list[dict]]:
                 runs.append(cur)
             cur, gap = [], False
             continue
-        joinable = cur and same_scene(cur[-1], r) and (gap or r.get("transition_in") in ("cut", "flash"))
+        joinable = cur and same_scene(cur[-1], r) and (gap or r.get("transition_in") in ("cut", "jump", "flash"))
         if cur and not joinable:
             runs.append(cur)
             cur = []
@@ -265,7 +265,7 @@ def _unit(seg: list[dict], k: int, lim: dict, model: dict | None, style: str, ca
                      + T("：参考动作、运镜和剪辑节奏（只作参考，不复制画面）",
                          ": reference for action, camera movement and cutting rhythm (reference only, do not copy the picture)"), "user": False})
     cont = None
-    if prev_unit and same_scene_prev and seg[0].get("transition_in") in ("cut", "flash") and abs(prev_unit["ranges"][-1][1] - t0) < 1e-3:
+    if prev_unit and same_scene_prev and seg[0].get("transition_in") in ("cut", "jump", "flash") and abs(prev_unit["ranges"][-1][1] - t0) < 1e-3:
         cont = T("首帧用 {p} 的尾帧，接上动作", "first frame = last frame of {p}, continue the action", p=prev_unit["id"])
     elif lim["first_frame"]:
         cont = T("首帧：参照原片第 {i} 镜首帧（{f}）的构图出图", "first frame: generate an image matching the composition of source shot {i}'s first frame ({f})",

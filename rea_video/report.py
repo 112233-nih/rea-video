@@ -147,8 +147,8 @@ def _span(a, z) -> str:
 
 # ------------------------------------------------------------------ sections --------------------------------------
 
-TRANS_ZH = LangDict({"cut": "硬切", "flash": "闪亮切", "fade": "淡入淡出", "dissolve": "叠化", "mg_transition": "版式切换"},
-                    en={"cut": "cut", "flash": "flash cut", "fade": "fade", "dissolve": "dissolve", "mg_transition": "layout change"})
+TRANS_ZH = LangDict({"cut": "硬切", "jump": "跳剪", "flash": "闪亮切", "fade": "淡入淡出", "dissolve": "叠化", "mg_transition": "版式切换"},
+                    en={"cut": "cut", "jump": "jump cut", "flash": "flash cut", "fade": "fade", "dissolve": "dissolve", "mg_transition": "layout change"})
 
 
 def _head_md(b: dict) -> list[str]:

@@ -15,7 +15,7 @@ from .sound_source import MUSIC_ZH, classify_sound_sources, per_clip_audio
 from .classify import FILM_HINT_ZH, LABEL_ZH, OVERLAY_KIND_ZH, RULES, UNMEASURED, decide, deterministic, drop_scene_text, fuse, group_of, image_source_guess, overlay_layers, top, verdict_text, video_context
 from .features import collect_samples, crop_box, intersect_box, photo_letterbox, shot_features
 from .media import cut_clip, extract_frame, require_tools, video_info
-from .overlay import ocr_frames, persistent_template, static_overlays, summarize_text
+from .overlay import ocr_frames, persistent_template, shot_ocr_frames, shot_ocr_items, static_overlays, summarize_text
 from .plan import Planner
 from .probe import provenance
 from .motion import element_crops, motion_events, palette, strip_frames
@@ -25,7 +25,7 @@ from . import aspects
 from .faces import shot_faces
 from .visual import LABEL_SHORT, shot_sheet, storyboard
 from .i18n import T, join, semi, set_lang
-from .vlm import SHOT_PROMPT, WHOLE_PROMPT, VLMClient, VLMConfig, normalize_shot_result, normalize_whole, prompt_lang_note, shot_hints, vlm_note
+from .vlm import SHOT_PROMPT, TAKE_NOTE, WHOLE_PROMPT, VLMClient, VLMConfig, normalize_shot_result, normalize_whole, prompt_lang_note, shot_hints, take_results, vlm_note
 
 
 def _sha256_head(path: Path, limit: int = 64 << 20) -> str:
@@ -33,6 +33,32 @@ def _sha256_head(path: Path, limit: int = 64 << 20) -> str:
     with path.open("rb") as f:
         h.update(f.read(limit))
     return h.hexdigest()
+
+
+TAKE_MAX_S, TAKE_MAX_PIECES = 12.0, 8  # one VLM look at most this long / this many jump-cut pieces
+
+
+def vlm_units(records: list[dict], max_calls: int) -> list[list[dict]]:
+    """Group shots for the VLM: jump-cut pieces of one take (same camera setup, cut apart in the edit) are one
+    clip and one call; every other shot is its own call. Past `max_calls`, the calls go to the units the
+    pixel statistics are least sure about, weighted by length, rather than to the first ones in the video."""
+    units: list[list[dict]] = []
+    for r in records:
+        u = units[-1] if units else None
+        if (u and r.get("transition_in") == "jump" and len(u) < TAKE_MAX_PIECES
+                and r["end"] - u[0]["start"] <= TAKE_MAX_S):
+            u.append(r)
+        else:
+            units.append([r])
+    if len(units) <= max_calls:
+        return units
+
+    def need(u: list[dict]) -> float:
+        sure = min(top(r["deterministic"]["probs"])[1] for r in u)
+        return (u[-1]["end"] - u[0]["start"]) * (1.05 - sure)
+
+    keep = sorted(sorted(range(len(units)), key=lambda k: -need(units[k]))[:max_calls])
+    return [units[k] for k in keep]
 
 
 def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, whole_vlm: bool = True,
@@ -75,6 +101,8 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
             ev = [e for e in visual_events(pack["text_cues"], pack["stickers"], []) if e["type"] != "subtitle_in"]
             pack["sfx_anchored"] = anchored_sfx(video, ev, (audio.get("sfx") or {}).get("events", []))
         pack["version"] = PACKAGING_VERSION
+    ocr_items = pack.pop("_ocr_items", None) if pack else None  # whole-video OCR hits, reused per shot below
+    ocr_step = float((pack or {}).get("ocr", {}).get("step_s") or 0.0)
 
     shot_records: list[dict] = []
     template_frames: list[np.ndarray] = []
@@ -88,6 +116,8 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
 
     from .packaging import clean_region
 
+    still_pool = ThreadPoolExecutor(max_workers=4)
+    stills = []
     for s in shots:
         smp = samples_by_shot[s.index]
         crop = clean_region(pack["stickers"], s.start, s.end) if pack else None
@@ -104,7 +134,13 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         if crop and not lbox:
             feats["measured_region"] = list(crop)
         ov = static_overlays(smp.frames)
-        text = summarize_text(ocr_frames(smp.frames, smp.frame_times)) if ocr else {"tracks": [], "text_coverage": 0.0, "items": []}
+        if ocr:
+            hits = shot_ocr_items(ocr_items, ocr_step, s.start, s.end)
+            if hits is None:  # no whole-video pass, or too sparse here: read a few of this shot's own frames
+                hits = ocr_frames(smp.frames, smp.frame_times, max_frames=shot_ocr_frames(s.duration))
+            text = summarize_text(hits)
+        else:
+            text = {"tracks": [], "text_coverage": 0.0, "items": []}
         embedded = detect_embedded(smp.frames, text.get("items"))
         # faces, framing and light are read on the picture itself (inside the letterbox), not on the bars
         pic = [crop_box(f, lbox["box"]) for f in smp.frames] if lbox else smp.frames
@@ -119,8 +155,10 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         sid = f"shot_{s.index:03d}"
         shot_sheet(smp.frames, smp.frame_times, out / "shots" / f"{sid}.jpg")
         still_w = min(1080, info.display_size[0] or 1080)  # never upscale; rotated video: displayed width
-        extract_frame(video, s.start + min(0.05, s.duration / 4), out / "shots" / f"{sid}_first.jpg", width=still_w)
-        extract_frame(video, max(s.start, s.end - min(0.08, s.duration / 4)), out / "shots" / f"{sid}_last.jpg", width=still_w)
+        # full-resolution first / last frames (remake keyframes): ffmpeg runs in the background while the next shot is measured
+        stills.append(still_pool.submit(extract_frame, video, s.start + min(0.05, s.duration / 4), out / "shots" / f"{sid}_first.jpg", still_w))
+        stills.append(still_pool.submit(extract_frame, video, max(s.start, s.end - min(0.08, s.duration / 4)),
+                                        out / "shots" / f"{sid}_last.jpg", still_w))
         motion = None
         if top(probs)[0] in ("code_render", "screen_capture") or facts.get("graphic_score", 0.0) >= 0.5:
             # rendered picture: element-level motion timeline, key-frame strip and hex palette for a code remake
@@ -148,6 +186,10 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
         dl, dp = top(probs)
         LOG.info("%s %s-%s det=%s(%.0f%%) %s", sid, fmt_time(s.start), fmt_time(s.end), dl, dp * 100, facts.get("temporal_family"))
 
+    for job in stills:
+        job.result()
+    still_pool.shutdown()
+
     # ---------------- VLM pass ------------------------------------------------------
     # "used" means at least one VLM answer actually came back; "status" says why not otherwise.
     vlm_info = {"used": False, "requested": use_vlm, "status": "off"}
@@ -161,31 +203,49 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
             client = VLMClient(cfg, out / "vlm_cache")
             vlm_info = {"used": False, "requested": True, "status": "failed", "model": cfg.describe(), "media": cfg.media, "errors": []}
 
-            def run_shot(rec: dict) -> None:
+            def run_unit(unit: list[dict]) -> None:
+                """One VLM call per unit: a single shot, or the jump-cut pieces of one take seen as one clip."""
+                first, last = unit[0], unit[-1]
+                span = last["end"] - first["start"]
                 media = []
                 if cfg.media in ("both", "video"):
-                    clip = cut_clip(video, rec["start"], min(rec["duration"], 12.0), out / "clips" / f"{rec['id']}.mp4", width=480)
+                    clip = cut_clip(video, first["start"], min(span, 12.0), out / "clips" / f"{first['id']}.mp4", width=480)
                     media.append((clip, "video/mp4"))
                 if cfg.media in ("both", "frames"):
-                    media += [(out / rec["assets"]["first_frame"], "image/jpeg"), (out / rec["assets"]["sheet"], "image/jpeg"),
-                              (out / rec["assets"]["last_frame"], "image/jpeg")]
-                dl, dp = top(rec["deterministic"]["probs"])
-                prompt = SHOT_PROMPT.format(hints=shot_hints(rec["features"], rec["deterministic"]["facts"], dl, dp)) + prompt_lang_note()
+                    mid = unit[len(unit) // 2]
+                    media += [(out / first["assets"]["first_frame"], "image/jpeg"), (out / mid["assets"]["sheet"], "image/jpeg"),
+                              (out / last["assets"]["last_frame"], "image/jpeg")]
+                lead = max(unit, key=lambda r: r["duration"])
+                dl, dp = top(lead["deterministic"]["probs"])
+                prompt = SHOT_PROMPT.format(hints=shot_hints(lead["features"], lead["deterministic"]["facts"], dl, dp))
+                if len(unit) > 1:
+                    prompt += TAKE_NOTE.format(n=len(unit), cuts=", ".join(f"{r['start'] - first['start']:.2f}" for r in unit[1:]))
+                prompt += prompt_lang_note()
+                fallback = None
                 try:
-                    rec["vlm"] = normalize_shot_result(client.ask_json(prompt, media))
+                    raw = client.ask_json(prompt, media)
                 except Exception as exc:  # keep going; deterministic result stands
+                    raw = None
                     if cfg.media == "both":
                         try:
-                            frames_only = [m for m in media if m[1] != "video/mp4"]
-                            rec["vlm"] = normalize_shot_result(client.ask_json(prompt, frames_only))
-                            rec["vlm"]["_fallback"] = "frames_only"
-                            return
+                            raw = client.ask_json(prompt, [m for m in media if m[1] != "video/mp4"])
+                            fallback = "frames_only"
                         except Exception as exc2:  # pragma: no cover
                             exc = exc2
-                    vlm_info["errors"].append(f"{rec['id']}: {str(exc)[:160]}")
+                    if raw is None:
+                        vlm_info["errors"].append(f"{first['id']}: {str(exc)[:160]}")
+                        return
+                answers = take_results(raw, len(unit)) if len(unit) > 1 else [raw]
+                for i, (rec, ans) in enumerate(zip(unit, answers)):
+                    rec["vlm"] = normalize_shot_result(ans)
+                    if fallback:
+                        rec["vlm"]["_fallback"] = fallback
+                    if len(unit) > 1:
+                        rec["vlm"]["take"] = {"shots": [r["index"] for r in unit], "piece": i + 1}
 
+            units = vlm_units(shot_records, max_shots_vlm)
             with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-                list(pool.map(run_shot, shot_records[:max_shots_vlm]))
+                list(pool.map(run_unit, units))
             if whole_vlm:
                 try:
                     low = cut_clip(video, 0, info.duration, out / "clips" / "whole_480p.mp4", width=480, audio=True, crf=30)
@@ -193,9 +253,9 @@ def decompose(video: str | Path, out_dir: str | Path, *, use_vlm: bool = False, 
                     whole = normalize_whole(client.ask_json(WHOLE_PROMPT.format(shots=cuts) + prompt_lang_note(), [(low, "video/mp4")], max_tokens=6000))
                 except Exception as exc:
                     vlm_info["errors"].append(f"whole: {str(exc)[:160]}")
-            asked = shot_records[:max_shots_vlm]
+            asked = [r for u in units for r in u]
             ok_shots = sum(1 for r in asked if r.get("vlm"))
-            vlm_info.update(ok_shots=ok_shots, asked_shots=len(asked), whole_ok=whole is not None)
+            vlm_info.update(ok_shots=ok_shots, asked_shots=len(asked), calls=len(units), whole_ok=whole is not None)
             if ok_shots == len(asked) and (whole is not None or not whole_vlm):
                 vlm_info.update(used=True, status="ok")
             elif ok_shots or whole is not None:

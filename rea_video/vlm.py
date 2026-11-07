@@ -10,6 +10,7 @@ REA_VLM_MEDIA = both | video | frames  (default both: a short clip as data:video
 from __future__ import annotations
 
 import base64
+import copy
 import hashlib
 import json
 import os
@@ -248,6 +249,33 @@ AI 仿定格风格（材质在帧间漂移）与真正的定格动画（同一�
     "video_prompt_en": "same video prompt in English"
   }}
 }}"""
+
+
+# appended to SHOT_PROMPT when one clip covers several jump-cut pieces of the same take
+TAKE_NOTE = """
+这段片子是同一机位、同一条素材剪成的 {n} 段（跳剪），后面几段从片段开头后 {cuts} 秒开始。
+制作方式、拍法和素材（label_probs、aspects、embedded_assets 等）对整段给一次即可；
+另外加一个 segments 数组，按顺序给每一段的内容，共 {n} 项：
+"segments": [{{"description": "这一段的主体、动作和结束状态", "replication": {{"video_prompt": "复刻这一段的中文视频提示词", "video_prompt_en": "same in English"}}}}]
+"""
+
+
+def take_results(raw: dict, n: int) -> list[dict]:
+    """Split one answer about a jump-cut take into per-piece answers: the shared verdict, with each piece's own
+    description and video prompt when the model gave one per piece."""
+    segs = raw.pop("segments", None)
+    segs = segs if isinstance(segs, list) and len(segs) == n else [None] * n
+    out = []
+    for seg in segs:
+        r = copy.deepcopy(raw)
+        if isinstance(seg, dict):
+            if isinstance(seg.get("description"), str) and seg["description"].strip():
+                r["description"] = seg["description"]
+            rep = seg.get("replication")
+            if isinstance(rep, dict):
+                r["replication"] = {**(r.get("replication") or {}), **{k: v for k, v in rep.items() if isinstance(v, str) and v.strip()}}
+        out.append(r)
+    return out
 
 
 WHOLE_PROMPT = """你是短视频拆解专家。完整观看并**仔细收听**这条视频，拆解它的结构、文案、声音与整体制作方式。
